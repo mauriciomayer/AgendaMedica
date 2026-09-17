@@ -1,0 +1,34 @@
+Aplicativo de Agendamento Médico
+
+Funcionalidades Confirmadas (escopo fechado)
+App Android apenas (por enquanto)
+Agendamento de consultas em intervalos de 15 minutos
+Antecedência mínima para agendar: 48h
+Cancelamento/reagendamento pelo paciente ou médico, com tolerância de 24h antes da consulta
+Após as 24h, o cancelamento é bloqueado totalmente pelo app (não há opção de cancelar tardiamente pelo sistema)
+Autocadastro de médico sem validação (ex.: CRM) — fica visível na busca imediatamente
+Médico define: especialidade (uma única, não pode atuar em mais de uma), convênios atendidos, dias/horários de atendimento
+Convênios: lista fixa — Unimed, Amil e Bradesco — sem opção de edição/remoção pelo médico, mesmo com consultas já agendadas (simplifica a lógica: não há necessidade de tratar consultas "órfãs" por remoção de convênio)
+Busca por especialidade e localização
+Notificações de lembrete via push, SMS e e-mail
+Bloqueio de conflito de agenda (evitar agendamento duplo no mesmo horário/médico)
+Sem cobrança dentro do app
+Sem integrações externas, sem telemedicina, sem exigência formal de LGPD
+
+Volume Inicial
+20 usuários/semana — permite arquitetura simples no MVP.
+
+Complexidade
+Média. A regra de negócio central (bloqueio automático de cancelamento após 24h + antecedência mínima de 48h + trava de concorrência de agenda) é o núcleo técnico do sistema, mas o escopo é bem definido e sem ramificações complexas — a decisão de "bloquear totalmente" elimina a necessidade de lógica adicional (avisos, notificações extras ao médico, registro de "cancelamento tardio", penalidades).
+
+Risco
+Baixo. Todos os pontos anteriormente indefinidos foram resolvidos, o volume é pequeno, não há dependências externas, e as regras de negócio ficaram simples e diretas (sem exceções a tratar).
+
+SMS
+Recomendação mantida: aproveitar a franquia gratuita mensal de um provedor de autenticação para o volume inicial, migrando para um gateway nacional pré-pago (sem mensalidade) apenas se o volume crescer.
+
+Pontos em Aberto
+Nenhum ponto crítico permanece em aberto. O escopo está pronto para orçamento e planejamento técnico.
+
+Resumo Executivo
+O escopo do aplicativo de agendamento médico está 100% definido: app Android, autocadastro médico sem validação, uma especialidade por médico, convênios fixos (Unimed, Amil, Bradesco) sem opção de edição, agendamento com 48h de antecedência mínima, cancelamento com tolerância de 24h — bloqueado totalmente após esse prazo —, controle de concorrência para evitar agendamento duplo, e notificações via push/SMS/e-mail. Sem cobrança, sem integrações externas, sem telemedicina, sem exigência formal de LGPD e com volume inicial baixo (20 usuários/semana). Complexidade Média, risco Baixo. O projeto está pronto para avançar à fase de estimativa de prazo/orçamento e elaboração da proposta técnico-comercial.
