@@ -22,4 +22,4 @@ Conteúdo técnico-how que não pertence ao PRD. Decisões tomadas na Arquitetur
 
 ## Agendamento de tarefa do lembrete de 24h (novo, específico do Supabase)
 
-O Supabase não oferece `pg_cron` (agendador dentro do banco) na camada gratuita — só em planos pagos. **Status:** resolvido (AD-5) com um agendador externo (GitHub Actions, gratuito) chamando uma Edge Function a cada 5 minutos.
+**Status:** resolvido (AD-5). `pg_cron` está disponível em todos os planos do Supabase, incluindo o gratuito — um job `pg_cron` roda a cada 5 minutos e usa `pg_net` para chamar a Edge Function `send-reminders`, tudo dentro do próprio projeto Supabase, sem agendador externo.
