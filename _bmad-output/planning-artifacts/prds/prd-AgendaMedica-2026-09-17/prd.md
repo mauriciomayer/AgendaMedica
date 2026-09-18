@@ -312,8 +312,8 @@ Um usuário (Paciente ou Médico) que esqueceu a senha pode solicitar redefiniç
 ## 9. Índice de Assunções
 
 - §4.3 (RF-4) — Sem GPS, busca manual retorna correspondência por região, ordenada alfabeticamente pelo nome do Médico como fallback (sem cálculo preciso de distância).
-- §4.4 (RF-7) — Atualização em tempo real da grade após conflito é resolvida por listener em tempo real do Firestore (decisão fechada na Arquitetura, ver `addendum.md`).
-- §4.6 (RF-10) — Canais de notificação (push, e-mail) são melhor esforço, sem retry garantido ou SLA formal em v1. Provedores: push via Firebase Cloud Messaging, e-mail via Resend (camada gratuita) — ver `addendum.md`.
+- §4.4 (RF-7) — Atualização em tempo real da grade após conflito é resolvida por realtime do banco de dados (decisão fechada na Arquitetura, ver `addendum.md`).
+- §4.6 (RF-10) — Canais de notificação (push, e-mail) são melhor esforço, sem retry garantido ou SLA formal em v1. E-mail via Resend (camada gratuita); provedor de push ainda em aberto — tratado como decisão a fazer no momento oportuno (ver `addendum.md`).
 - §4.7 (RF-11) — Prazo de expiração do link/código de recuperação de senha a definir na Arquitetura (ex.: 30-60 minutos).
 - §RNFs Transversais — Todas as regras de tempo (15min, 24h, 48h) usam o fuso horário local do dispositivo; sem suporte a médico e paciente em fusos diferentes.
 
