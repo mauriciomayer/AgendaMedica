@@ -307,7 +307,7 @@ Um usuário (Paciente ou Médico) que esqueceu a senha pode solicitar redefiniç
 
 ## 8. Perguntas Abertas
 
-1. A tela "Minha agenda" do Médico (design de UX) ainda não tem os controles de cancelar/reagendar previstos em RF-8 — pendente de adicionar ao design.
+Nenhuma pendente. A questão sobre os controles de cancelar/reagendar do Médico em "Minha Agenda" (RF-8) foi resolvida na quebra de épicos e histórias — ver Épico 2, História 2.5 em `epics.md`.
 
 ## 9. Índice de Assunções
 

@@ -379,15 +379,15 @@ Para que eu receba notificações push assim que esse canal for decidido, sem pe
 
 **Given** que uma consulta é agendada
 **When** a função `book_appointment` é concluída
-**Then** um registro de evento ("nova_consulta") é criado, associado ao médico e à consulta
+**Then** um registro é criado em `notification_events` com `event_type = 'new_appointment'`, associado ao médico (`recipient_id`) e à consulta (`appointment_id`), na mesma transação (AD-12)
 
 **Given** que uma consulta é cancelada ou reagendada
-**When** a função correspondente conclui
-**Then** um registro de evento ("cancelamento"/"reagendamento") é criado, associado à outra parte
+**When** a função correspondente (`cancel_appointment`/`reschedule_appointment`) conclui
+**Then** um registro é criado em `notification_events` com `event_type = 'cancellation'`/`'reschedule'`, associado à outra parte, na mesma transação (AD-12)
 
 **Given** que um evento foi registrado
-**When** consulto a tabela de eventos
-**Then** encontro tipo do evento, destinatário e timestamp — pronto para ser consumido por uma futura função de push, sem reprocessar dados históricos
+**When** consulto `notification_events`
+**Then** encontro `event_type`, `recipient_id`, `appointment_id` e `created_at` — pronto para um futuro consumidor de push filtrar por `delivered_at IS NULL`, sem reprocessar dados históricos (AD-12)
 
 **Given** que o provedor de push ainda não está implementado
 **When** um evento é criado

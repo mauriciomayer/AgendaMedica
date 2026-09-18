@@ -95,6 +95,12 @@ companions: []
 - **Prevents:** um contribuinte tratando `specialty`/`insurances` como editáveis via `UPDATE` direto do cliente (quebrando a regra de imutabilidade do PRD).
 - **Rule:** `doctors (id uuid references profiles primary key, specialty text, insurances text[])` é atualizável diretamente pelo dono via RLS (`USING (id = auth.uid())`) — mas um trigger `BEFORE UPDATE`, função `enforce_doctor_immutable_fields()`, recusa a escrita se `specialty` ou `insurances` mudarem em relação ao valor já salvo (`OLD` vs `NEW`). A criação inicial desses dois campos acontece só na Edge Function de cadastro (AD-6). `doctor_schedules` (dias/horários, AD-4) não tem essa trigger — é livremente editável pelo dono, conforme RF-2.
 
+### AD-12 — Eventos de notificação ficam num outbox simples, pronto para um consumidor de push futuro
+
+- **Binds:** FR10 (notificações de evento — nova consulta, cancelamento/reagendamento)
+- **Prevents:** o Story que implementa o registro de eventos (hoje) e o futuro job de push (quando essa decisão for tomada) inventando formatos incompatíveis para a mesma informação — um grava um formato, o outro espera outro.
+- **Rule:** tabela `notification_events (id uuid PK default gen_random_uuid(), recipient_id uuid references profiles(id), event_type text check (event_type in ('new_appointment','cancellation','reschedule')), appointment_id uuid references appointments(id), created_at timestamptz default now(), delivered_at timestamptz)`. É escrita **pelas mesmas funções `SECURITY DEFINER`** de `book_appointment`/`cancel_appointment`/`reschedule_appointment` (AD-1), **na mesma transação** da mutação da Consulta — nunca por um processo separado que poderia perder o evento se falhar entre os dois passos. `delivered_at IS NULL` marca um evento ainda não entregue; um futuro consumidor de push filtra por isso e marca `delivered_at` ao entregar (mesmo padrão de "reivindicar antes de agir" do AD-5). RLS: nenhum cliente lê essa tabela diretamente — é infraestrutura interna, não uma superfície de API do app; só uma futura Edge Function de push (com `service_role`) a consome.
+
 ### Direção de dependência
 
 ```mermaid
@@ -196,6 +202,15 @@ erDiagram
     string insurance
     timestamptz reminder_sent_at
   }
+  APPOINTMENT ||--o{ NOTIFICATION_EVENT : "gera (AD-12)"
+  NOTIFICATION_EVENT {
+    uuid id PK
+    uuid recipient_id FK
+    uuid appointment_id FK
+    string event_type
+    timestamptz created_at
+    timestamptz delivered_at
+  }
 ```
 
 Árvore mínima:
@@ -212,7 +227,8 @@ app/
 supabase/
   migrations/    # Schema versionado: tabelas, ENUM, indice unico parcial (AD-1),
                  # triggers (sync_booked_slots — AD-10; enforce_doctor_immutable_fields — AD-11),
-                 # job pg_cron + pg_net chamando send-reminders (AD-5)
+                 # job pg_cron + pg_net chamando send-reminders (AD-5),
+                 # tabela notification_events (AD-12)
   functions/
     register-patient/   # Edge Function (AD-6)
     register-doctor/    # Edge Function (AD-6)
@@ -229,12 +245,12 @@ supabase/
 | Horários disponíveis (RF-5) | `app/domain` (cálculo local a partir de `doctor_schedules` + `booked_slots`) | AD-4, AD-10 |
 | Agendamento (RF-6, RF-7) | função Postgres `book_appointment` | AD-1, AD-4, AD-8, AD-9, AD-10 |
 | Cancelamento/Reagendamento (RF-8, RF-9) | funções Postgres `cancel_appointment` / `reschedule_appointment` | AD-1, AD-3, AD-8, AD-9, AD-10 |
-| Notificações (RF-10) | `supabase/functions/send-reminders` + job `pg_cron`/`pg_net` (migração SQL) | AD-5 |
+| Notificações (RF-10) | `supabase/functions/send-reminders` + job `pg_cron`/`pg_net` (migração SQL) + tabela `notification_events` | AD-5, AD-12 |
 | Recuperação de senha (RF-11) | Supabase Auth (nativo) | — (funcionalidade pronta do Supabase Auth, sem função própria; expiração do link segue o padrão do provedor — ver Deferred) |
 
 ## Deferred
 
-- **Provedor de push notification (RF-10):** deliberadamente em aberto — por decisão do usuário, vira sua própria decisão/épico no momento oportuno, não bloqueia o restante da arquitetura. Candidatos a avaliar então: Firebase Cloud Messaging isolado (plano gratuito Spark, sem precisar do resto do Firebase) ou um serviço como OneSignal (tem camada gratuita própria).
+- **Provedor de push notification (RF-10):** deliberadamente em aberto — por decisão do usuário, vira sua própria decisão/épico no momento oportuno, não bloqueia o restante da arquitetura. Candidatos a avaliar então: Firebase Cloud Messaging isolado (plano gratuito Spark, sem precisar do resto do Firebase) ou um serviço como OneSignal (tem camada gratuita própria). Quando essa decisão for tomada, o consumidor de push só precisa ler `notification_events` (AD-12) — a parte de registrar o evento já está pronta.
 - **Ambientes dev/produção:** um único projeto Supabase no MVP; separar em dois projetos fica para se/quando o projeto sair do estágio de portfólio.
 - **CI/CD:** nenhum pipeline automatizado definido além do workflow de lembrete — deploy manual via Supabase CLI (`supabase db push`, `supabase functions deploy`) é aceitável no volume e estágio atuais.
 - **Publicação na Play Store:** fora de escopo — instalação direta no dispositivo (Android Studio/USB ou APK assinado) é suficiente para os critérios de sucesso do PRD.
