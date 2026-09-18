@@ -1,0 +1,614 @@
+
+<helmet data-dc-atomics="">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<style>/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("dd7b350d-6b86-423f-a574-f3508aa2de0e") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c1512743-359a-4d69-9b12-fa7da857bdc3") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("b7e41854-0bed-4334-b207-de8780a1ed10") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("c28b4d4a-85ee-43b4-bcf8-c5ad35c852f9") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("781e717b-cd93-4523-83bd-40065fe8e710") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("486b15d1-96d0-4a95-afd8-81ac0bb0d0fa") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url("a0ff2e6c-6cae-4802-9621-440c66d2209e") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("dd7b350d-6b86-423f-a574-f3508aa2de0e") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c1512743-359a-4d69-9b12-fa7da857bdc3") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("b7e41854-0bed-4334-b207-de8780a1ed10") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("c28b4d4a-85ee-43b4-bcf8-c5ad35c852f9") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("781e717b-cd93-4523-83bd-40065fe8e710") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("486b15d1-96d0-4a95-afd8-81ac0bb0d0fa") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("a0ff2e6c-6cae-4802-9621-440c66d2209e") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("dd7b350d-6b86-423f-a574-f3508aa2de0e") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c1512743-359a-4d69-9b12-fa7da857bdc3") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("b7e41854-0bed-4334-b207-de8780a1ed10") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("c28b4d4a-85ee-43b4-bcf8-c5ad35c852f9") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("781e717b-cd93-4523-83bd-40065fe8e710") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("486b15d1-96d0-4a95-afd8-81ac0bb0d0fa") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("a0ff2e6c-6cae-4802-9621-440c66d2209e") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+/* cyrillic-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("dd7b350d-6b86-423f-a574-f3508aa2de0e") format('woff2');
+  unicode-range: U+0460-052F, U+1C80-1C8A, U+20B4, U+2DE0-2DFF, U+A640-A69F, U+FE2E-FE2F;
+}
+/* cyrillic */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c1512743-359a-4d69-9b12-fa7da857bdc3") format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+/* greek-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("b7e41854-0bed-4334-b207-de8780a1ed10") format('woff2');
+  unicode-range: U+1F00-1FFF;
+}
+/* greek */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("c28b4d4a-85ee-43b4-bcf8-c5ad35c852f9") format('woff2');
+  unicode-range: U+0370-0377, U+037A-037F, U+0384-038A, U+038C, U+038E-03A1, U+03A3-03FF;
+}
+/* vietnamese */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("781e717b-cd93-4523-83bd-40065fe8e710") format('woff2');
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+/* latin-ext */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("486b15d1-96d0-4a95-afd8-81ac0bb0d0fa") format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+/* latin */
+@font-face {
+  font-family: 'Inter';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("a0ff2e6c-6cae-4802-9621-440c66d2209e") format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+</style>
+<style>
+  body{margin:0;background:oklch(0.97 0.015 150);font-family:'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+  a{color:#3B6FE0}
+  a:hover{color:#2c56b3}
+  ::-webkit-scrollbar{width:0;height:0}
+  input,select,button{font-family:'Inter',system-ui,sans-serif}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 20px;box-sizing:border-box">
+
+  <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+    <div style="font-size:13px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:oklch(0.5 0.02 75)">Protótipo — Agendamento Médico (Android)</div>
+    <div style="display:flex;background:#fff;border:1px solid oklch(0.9 0.01 75);border-radius:100px;padding:4px;gap:4px;box-shadow:0 1px 2px rgba(0,0,0,0.04)">
+      <button style="{{ tabStylePaciente }}" sc-camel-on-click="{{ setRolePaciente }}">Visão Paciente</button>
+      <button style="{{ tabStyleMedico }}" sc-camel-on-click="{{ setRoleMedico }}">Visão Médico</button>
+    </div>
+  </div>
+
+  <x-import component-from-global-scope="AndroidDevice" from="93c2f9df-0280-4159-be4e-f8ddc30d3d4b#/android-frame.jsx" hint-size="412,892">
+    <div style="height:100%;display:flex;flex-direction:column;background:oklch(0.97 0.015 150);font-family:'Inter',system-ui,sans-serif">
+
+      <div style="flex:none;display:flex;align-items:center;gap:10px;padding:18px 18px 14px;background:#fff;border-bottom:1px solid oklch(0.93 0.01 75)">
+        <sc-if value="{{ showBack }}" hint-placeholder-val="{{ false }}">
+          <button sc-camel-on-click="{{ onBack }}" style="flex:none;width:36px;height:36px;border-radius:50%;border:none;background:oklch(0.95 0.01 75);display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+            <div style="width:9px;height:9px;border-left:2px solid oklch(0.3 0.02 75);border-bottom:2px solid oklch(0.3 0.02 75);transform:rotate(45deg);margin-left:3px"></div>
+          </button>
+        </sc-if>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:18px;font-weight:700;color:oklch(0.25 0.02 75);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ headerTitle }}</div>
+          <sc-if value="{{ headerSubtitle }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:12.5px;color:oklch(0.55 0.02 75);margin-top:2px">{{ headerSubtitle }}</div>
+          </sc-if>
+        </div>
+        <sc-if value="{{ isBusca }}" hint-placeholder-val="{{ true }}">
+          <button sc-camel-on-click="{{ goMinhas }}" style="flex:none;padding:8px 12px;border-radius:100px;border:1px solid #3B6FE0;background:#fff;color:#3B6FE0;font-size:12.5px;font-weight:600;cursor:pointer">Minhas consultas</button>
+        </sc-if>
+      </div>
+
+      <div style="flex:1;overflow:auto;padding:16px 18px 16px;box-sizing:border-box">
+
+        <sc-if value="{{ isLogin }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;animation:fadeIn .2s ease">
+            <div style="display:flex;background:#fff;border:1px solid oklch(0.9 0.01 75);border-radius:100px;padding:4px;gap:4px;align-self:flex-start">
+              <button style="{{ tabStylePaciente }}" sc-camel-on-click="{{ setRolePaciente }}">Paciente</button>
+              <button style="{{ tabStyleMedico }}" sc-camel-on-click="{{ setRoleMedico }}">Médico</button>
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">E-mail</div>
+              <input placeholder="voce@email.com" value="{{ loginEmail }}" sc-camel-on-change="{{ onLoginEmail }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Senha</div>
+              <input type="password" placeholder="••••••••" value="{{ loginSenha }}" sc-camel-on-change="{{ onLoginSenha }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+            <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:12.5px;color:oklch(0.5 0.14 25);background:oklch(0.95 0.04 40);border-radius:10px;padding:10px 12px">{{ loginError }}</div>
+            </sc-if>
+            <button sc-camel-on-click="{{ onEntrar }}" style="width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">Entrar</button>
+            <button sc-camel-on-click="{{ goRecuperar }}" style="background:none;border:none;color:#3B6FE0;font-size:13px;font-weight:600;cursor:pointer;padding:4px 0">Esqueci minha senha</button>
+            <div style="text-align:center;font-size:13px;color:oklch(0.5 0.02 75);margin-top:6px">Não tem conta? <a href="javascript:void(0)" sc-camel-on-click="{{ goEscolha }}" style="font-weight:600">Criar conta</a></div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRecuperar }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:14px;animation:fadeIn .2s ease">
+            <sc-if value="{{ recSenhaEnviado }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13.5px;color:oklch(0.35 0.02 75);background:oklch(0.94 0.05 150);border-radius:10px;padding:12px">Se o e-mail informado existir, enviamos um link para redefinir a senha.</div>
+              <button sc-camel-on-click="{{ voltarLogin }}" style="width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">Voltar ao login</button>
+            </sc-if>
+            <sc-if value="{{ recSenhaPendente }}" hint-placeholder-val="{{ true }}">
+              <div>
+                <div style="font-size:13px;color:oklch(0.5 0.02 75);margin-bottom:12px">Informe seu e-mail para receber um link de redefinição de senha.</div>
+                <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">E-mail</div>
+                <input placeholder="voce@email.com" value="{{ recSenhaEmail }}" sc-camel-on-change="{{ onRecSenhaEmail }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+              </div>
+              <button sc-camel-on-click="{{ onEnviarRecuperacao }}" style="width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">Enviar link de recuperação</button>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isEscolha }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:fadeIn .2s ease">
+            <div style="font-size:13px;color:oklch(0.5 0.02 75)">Como você quer usar o app?</div>
+            <div sc-camel-on-click="{{ escolherPaciente }}" style="background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:16px;cursor:pointer">
+              <div style="font-size:15px;font-weight:700;color:oklch(0.25 0.02 75)">Sou paciente</div>
+              <div style="font-size:12.5px;color:oklch(0.5 0.02 75);margin-top:4px">Buscar médicos e agendar consultas</div>
+            </div>
+            <div sc-camel-on-click="{{ escolherMedico }}" style="background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:16px;cursor:pointer">
+              <div style="font-size:15px;font-weight:700;color:oklch(0.25 0.02 75)">Sou médico</div>
+              <div style="font-size:12.5px;color:oklch(0.5 0.02 75);margin-top:4px">Cadastrar meu perfil e atender pacientes</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCadastroPacienteAuth }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;animation:fadeIn .2s ease">
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Nome completo</div>
+              <input placeholder="Seu nome" value="{{ pacNome }}" sc-camel-on-change="{{ onPacNome }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">E-mail</div>
+              <input placeholder="voce@email.com" value="{{ pacEmail }}" sc-camel-on-change="{{ onPacEmail }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Senha</div>
+              <input type="password" placeholder="••••••••" value="{{ pacSenha }}" sc-camel-on-change="{{ onPacSenha }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+            <button disabled="{{ pacCadastroDisabled }}" sc-camel-on-click="{{ onCriarContaPaciente }}" style="width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">Criar conta</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isBusca }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:14px;animation:fadeIn .2s ease">
+            <div style="display:flex;flex-direction:column;gap:10px;background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px">
+              <sc-raw-select style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;color:oklch(0.25 0.02 75);background:oklch(0.98 0.005 75)" value="{{ filtroEsp }}" sc-camel-on-change="{{ onFiltroEsp }}">
+                <option value="">Todas as especialidades</option>
+                <sc-for list="{{ especialidadeOptions }}" as="esp" hint-placeholder-count="6">
+                  <option value="{{ esp }}">{{ esp }}</option>
+                </sc-for>
+              </sc-raw-select>
+              <div style="display:flex;gap:8px">
+                <input placeholder="Cidade (ex.: São Paulo, SP)" style="flex:1;min-width:0;padding:10px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;color:oklch(0.25 0.02 75);box-sizing:border-box" value="{{ filtroLocal }}" sc-camel-on-change="{{ onFiltroLocal }}">
+                <button sc-camel-on-click="{{ onUsarLocalizacao }}" title="Usar minha localização" style="flex:none;width:40px;height:40px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);background:oklch(0.98 0.005 75);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0">
+                  <div style="width:14px;height:14px;border-radius:50%;border:2px solid #3B6FE0;position:relative"><div style="position:absolute;top:-5px;left:4px;width:2px;height:5px;background:#3B6FE0"></div></div>
+                </button>
+              </div>
+            </div>
+
+            <div style="font-size:13px;color:oklch(0.5 0.02 75)">{{ resultCountLabel }}</div>
+
+            <sc-for list="{{ doctorList }}" as="doc" hint-placeholder-count="3">
+              <div sc-camel-on-click="{{ doc.onSelect }}" style="display:flex;gap:12px;background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px;cursor:pointer;align-items:flex-start">
+                <div style="flex:none;width:44px;height:44px;border-radius:50%;background:#3B6FE0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:15px">{{ doc.iniciais }}</div>
+                <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:15px;font-weight:600;color:oklch(0.25 0.02 75)">{{ doc.nome }}</div>
+                  <div style="font-size:13px;color:oklch(0.5 0.02 75)">{{ doc.especialidade }} · {{ doc.cidade }}</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:2px">
+                    <sc-for list="{{ doc.convenioChips }}" as="cv" hint-placeholder-count="2">
+                      <span style="font-size:11px;font-weight:600;color:oklch(0.4 0.08 150);background:oklch(0.94 0.05 150);padding:3px 8px;border-radius:100px">{{ cv }}</span>
+                    </sc-for>
+                  </div>
+                </div>
+              </div>
+            </sc-for>
+            <sc-if value="{{ noResults }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:30px 10px;color:oklch(0.55 0.02 75);font-size:13.5px">Nenhum médico encontrado com esses filtros.</div>
+            </sc-if>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isDetalhe }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;animation:fadeIn .2s ease">
+            <div style="display:flex;gap:12px;align-items:center;background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px">
+              <div style="flex:none;width:48px;height:48px;border-radius:50%;background:#3B6FE0;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:600;font-size:16px">{{ selectedDoctor.iniciais }}</div>
+              <div>
+                <div style="font-size:16px;font-weight:700;color:oklch(0.25 0.02 75)">{{ selectedDoctor.nome }}</div>
+                <div style="font-size:13px;color:oklch(0.5 0.02 75)">{{ selectedDoctor.especialidade }} · {{ selectedDoctor.cidade }}</div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <sc-for list="{{ selectedDoctor.convenioChips }}" as="cv" hint-placeholder-count="2">
+                <span style="font-size:12px;font-weight:600;color:oklch(0.4 0.08 150);background:oklch(0.94 0.05 150);padding:4px 10px;border-radius:100px">{{ cv }}</span>
+              </sc-for>
+            </div>
+
+            <div>
+              <div style="font-size:13px;font-weight:600;color:oklch(0.3 0.02 75);margin-bottom:8px">Escolha o dia</div>
+              <div style="display:flex;gap:8px;overflow-x:auto;padding-bottom:4px">
+                <sc-for list="{{ dateOptions }}" as="d" hint-placeholder-count="5">
+                  <button sc-camel-on-click="{{ d.onClick }}" style="{{ d.style }}">
+                    <div style="font-size:11px;opacity:0.75">{{ d.weekday }}</div>
+                    <div style="font-size:15px;font-weight:700">{{ d.day }}</div>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:13px;font-weight:600;color:oklch(0.3 0.02 75);margin-bottom:8px">Horários disponíveis (intervalos de 15 min)</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px">
+                <sc-for list="{{ slotOptions }}" as="s" hint-placeholder-count="9">
+                  <button sc-camel-on-click="{{ s.onClick }}" disabled="{{ s.disabled }}" title="{{ s.reason }}" style="{{ s.style }}">{{ s.time }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ noSlots }}" hint-placeholder-val="{{ false }}">
+                <div style="text-align:center;padding:16px;color:oklch(0.55 0.02 75);font-size:13px">Sem atendimento neste dia.</div>
+              </sc-if>
+              <div style="font-size:11.5px;color:oklch(0.55 0.02 75);margin-top:10px">Agendamento exige mínimo de {{ antecedenciaLabel }}h de antecedência.</div>
+            </div>
+          </div>
+
+        </sc-if>
+
+        <sc-if value="{{ isConfirmacao }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:20px;animation:fadeIn .2s ease">
+            <div style="width:64px;height:64px;border-radius:50%;background:oklch(0.94 0.05 150);display:flex;align-items:center;justify-content:center">
+              <svg width="28" height="28" sc-camel-view-box="0 0 24 24"><path d="M4 12.5l5 5L20 7" fill="none" stroke="oklch(0.45 0.1 150)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+            </div>
+            <div style="font-size:19px;font-weight:700;color:oklch(0.25 0.02 75)">Consulta agendada!</div>
+            <div style="width:100%;background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px">
+              <div style="font-size:15px;font-weight:600;color:oklch(0.25 0.02 75)">{{ lastAppointment.doctorNome }}</div>
+              <div style="font-size:13px;color:oklch(0.5 0.02 75)">{{ lastAppointment.especialidade }}</div>
+              <div style="font-size:13.5px;color:oklch(0.3 0.02 75);margin-top:4px">{{ lastAppointment.dataLabel }} às {{ lastAppointment.timeStr }}</div>
+              <div style="font-size:12px;color:oklch(0.55 0.02 75)">Convênio: {{ lastAppointment.convenio }}</div>
+            </div>
+            <button sc-camel-on-click="{{ goMinhas }}" style="width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">Ver minhas consultas</button>
+            <button sc-camel-on-click="{{ goBuscaFromConfirm }}" style="width:100%;padding:13px;border-radius:12px;border:1px solid oklch(0.88 0.01 75);background:#fff;color:oklch(0.3 0.02 75);font-size:14.5px;font-weight:600;cursor:pointer">Buscar outro médico</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isMinhas }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:fadeIn .2s ease">
+            <sc-if value="{{ noAppointments }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:40px 10px;color:oklch(0.55 0.02 75);font-size:13.5px">Você ainda não tem consultas agendadas.</div>
+            </sc-if>
+            <sc-for list="{{ appointmentCards }}" as="a" hint-placeholder-count="2">
+              <div style="background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:8px">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                  <div>
+                    <div style="font-size:15px;font-weight:600;color:oklch(0.25 0.02 75)">{{ a.doctorNome }}</div>
+                    <div style="font-size:12.5px;color:oklch(0.5 0.02 75)">{{ a.especialidade }}</div>
+                  </div>
+                  <span style="{{ a.badgeStyle }}">{{ a.badgeLabel }}</span>
+                </div>
+                <div style="font-size:13.5px;color:oklch(0.3 0.02 75)">{{ a.dataLabel }} às {{ a.timeStr }} · {{ a.convenio }}</div>
+                <sc-if value="{{ a.blocked }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:11.5px;color:oklch(0.5 0.12 40);background:oklch(0.95 0.04 40);border-radius:8px;padding:6px 10px">Bloqueado: faltam menos de {{ toleranciaLabel }}h — não é mais possível cancelar ou reagendar.</div>
+                </sc-if>
+                <div style="display:flex;gap:8px;margin-top:2px">
+                  <button disabled="{{ a.blocked }}" sc-camel-on-click="{{ a.onReagendar }}" style="{{ a.actionBtnStyle }}">Reagendar</button>
+                  <button disabled="{{ a.blocked }}" sc-camel-on-click="{{ a.onCancelarClick }}" style="{{ a.cancelBtnStyle }}">Cancelar</button>
+                </div>
+                <sc-if value="{{ a.confirmingCancel }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;gap:8px;align-items:center;background:oklch(0.97 0.01 40);border-radius:10px;padding:10px">
+                    <div style="flex:1;font-size:12.5px;color:oklch(0.35 0.02 75)">Confirmar cancelamento desta consulta?</div>
+                    <button sc-camel-on-click="{{ a.onCancelarConfirm }}" style="padding:8px 12px;border-radius:8px;border:none;background:oklch(0.5 0.14 25);color:#fff;font-size:12.5px;font-weight:600;cursor:pointer">Sim</button>
+                    <button sc-camel-on-click="{{ a.onCancelarAbort }}" style="padding:8px 12px;border-radius:8px;border:1px solid oklch(0.85 0.01 75);background:#fff;color:oklch(0.3 0.02 75);font-size:12.5px;cursor:pointer">Não</button>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-for>
+            <button sc-camel-on-click="{{ goBuscaFromMinhas }}" style="margin-top:6px;width:100%;padding:13px;border-radius:12px;border:none;background:#3B6FE0;color:#fff;font-size:14.5px;font-weight:600;cursor:pointer">+ Nova consulta</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isCadastroMedico }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:16px;animation:fadeIn .2s ease">
+            <div style="font-size:12.5px;color:oklch(0.5 0.02 75);background:oklch(0.95 0.02 250);border-radius:10px;padding:10px 12px">Sem validação de CRM — seu perfil fica visível na busca assim que você concluir o cadastro.</div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Nome completo</div>
+              <input placeholder="Dr(a). Nome Sobrenome" value="{{ medNome }}" sc-camel-on-change="{{ onMedNome }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">E-mail</div>
+              <input placeholder="voce@email.com" value="{{ medEmail }}" sc-camel-on-change="{{ onMedEmail }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Senha</div>
+              <input type="password" placeholder="••••••••" value="{{ medSenha }}" sc-camel-on-change="{{ onMedSenha }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;box-sizing:border-box">
+            </div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Especialidade</div>
+              <sc-raw-select value="{{ medEspecialidade }}" sc-camel-on-change="{{ onMedEspecialidade }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;background:#fff">
+                <option value="">Selecione…</option>
+                <sc-for list="{{ especialidadeOptions }}" as="esp" hint-placeholder-count="6">
+                  <option value="{{ esp }}">{{ esp }}</option>
+                </sc-for>
+              </sc-raw-select>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Convênios atendidos</div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ convenioChoices }}" as="c" hint-placeholder-count="3">
+                  <button sc-camel-on-click="{{ c.onClick }}" style="{{ c.style }}">{{ c.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div>
+              <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Dias de atendimento</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <sc-for list="{{ diaChoices }}" as="d" hint-placeholder-count="7">
+                  <button sc-camel-on-click="{{ d.onClick }}" style="{{ d.style }}">{{ d.label }}</button>
+                </sc-for>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px">
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Início</div>
+                <sc-raw-select value="{{ medHoraIni }}" sc-camel-on-change="{{ onMedHoraIni }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;background:#fff">
+                  <sc-for list="{{ horaOptions }}" as="h" hint-placeholder-count="10">
+                    <option value="{{ h }}">{{ h }}</option>
+                  </sc-for>
+                </sc-raw-select>
+              </div>
+              <div style="flex:1">
+                <div style="font-size:12.5px;font-weight:600;color:oklch(0.4 0.02 75);margin-bottom:6px">Fim</div>
+                <sc-raw-select value="{{ medHoraFim }}" sc-camel-on-change="{{ onMedHoraFim }}" style="width:100%;padding:11px 12px;border-radius:10px;border:1px solid oklch(0.88 0.01 75);font-size:14px;background:#fff">
+                  <sc-for list="{{ horaOptions }}" as="h" hint-placeholder-count="10">
+                    <option value="{{ h }}">{{ h }}</option>
+                  </sc-for>
+                </sc-raw-select>
+              </div>
+            </div>
+
+            <button disabled="{{ cadastroDisabled }}" sc-camel-on-click="{{ onCriarPerfil }}" style="{{ criarPerfilStyle }}">Criar perfil e começar a atender</button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isAgendaMedico }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:12px;animation:fadeIn .2s ease">
+            <div style="background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px">
+              <div style="font-size:15px;font-weight:700;color:oklch(0.25 0.02 75)">{{ medNome }}</div>
+              <div style="font-size:13px;color:oklch(0.5 0.02 75)">{{ medEspecialidade }}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px">
+                <sc-for list="{{ medConvenios }}" as="cv" hint-placeholder-count="2">
+                  <span style="font-size:11px;font-weight:600;color:oklch(0.4 0.08 150);background:oklch(0.94 0.05 150);padding:3px 8px;border-radius:100px">{{ cv }}</span>
+                </sc-for>
+              </div>
+            </div>
+            <div style="font-size:12px;color:oklch(0.4 0.1 250);background:oklch(0.95 0.02 250);border-radius:10px;padding:10px 12px">Conflitos de horário no mesmo período são bloqueados automaticamente pelo sistema — não é possível haver dois pacientes no mesmo horário.</div>
+            <div style="font-size:13px;font-weight:600;color:oklch(0.3 0.02 75)">Próximas consultas</div>
+            <sc-if value="{{ noDoctorAppointments }}" hint-placeholder-val="{{ false }}">
+              <div style="text-align:center;padding:30px 10px;color:oklch(0.55 0.02 75);font-size:13.5px">Nenhuma consulta agendada ainda.</div>
+            </sc-if>
+            <sc-for list="{{ doctorAppointmentCards }}" as="a" hint-placeholder-count="3">
+              <div style="background:#fff;border:1px solid oklch(0.92 0.01 75);border-radius:14px;padding:14px;display:flex;justify-content:space-between;align-items:center;gap:10px">
+                <div>
+                  <div style="font-size:14.5px;font-weight:600;color:oklch(0.25 0.02 75)">{{ a.paciente }}</div>
+                  <div style="font-size:12.5px;color:oklch(0.5 0.02 75)">{{ a.dataLabel }} às {{ a.timeStr }} · {{ a.convenio }}</div>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+
+      </div>
+
+      <sc-if value="{{ isDetalhe }}" hint-placeholder-val="{{ false }}">
+        <div style="flex:none;padding:14px 18px;background:#fff;border-top:1px solid oklch(0.93 0.01 75)">
+          <button disabled="{{ confirmDisabled }}" sc-camel-on-click="{{ onConfirmarAgendamento }}" style="{{ confirmButtonStyle }}">{{ confirmButtonLabel }}</button>
+        </div>
+      </sc-if>
+    </div>
+  </x-import>
+
+</div>
+

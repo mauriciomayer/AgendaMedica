@@ -90,14 +90,14 @@ O levantamento de escopo original classificou o projeto como Complexidade Média
 
 - **Paciente** — usuário que busca e agenda consultas.
 - **Médico** — usuário que oferece consultas; possui exatamente uma Especialidade.
-- **Especialidade** — área de atuação médica; um Médico tem exatamente uma.
+- **Especialidade** — área de atuação médica; um Médico tem exatamente uma. Lista fixa do sistema (mesmo padrão do Convênio): Cardiologia, Dermatologia, Pediatria, Ortopedia, Clínico Geral, Ginecologia.
 - **Convênio** — plano de saúde (ou atendimento "Particular", sem convênio) aceito por um Médico. Lista fixa do sistema: Unimed, Amil, Bradesco, Particular. Não editável nem removível pelo Médico após seleção inicial, mesmo com Consultas já agendadas naquele Convênio.
 - **Consulta** — um agendamento entre um Paciente e um Médico em um Slot específico.
 - **Slot** — intervalo de 15 minutos na Agenda de um Médico, disponível ou ocupado.
 - **Agenda** — conjunto de Slots de um Médico, derivado dos dias/horários de atendimento que ele define.
 - **Antecedência mínima** — regra de 48 horas: uma Consulta só pode ser agendada para um Slot cujo horário esteja a 48h ou mais no futuro, contadas a partir do instante do agendamento. Um Slot a menos de 48h (inclusive exatamente 48h menos um segundo) não é agendável.
-- **Janela de cancelamento** — período em que Cancelamento/reagendamento é permitido: enquanto faltar mais de 24h para o horário da Consulta. No instante exato de 24h antes (e depois dele), a Janela já está encerrada.
-- **Bloqueio de cancelamento** — a partir do instante exato de 24h antes do horário da Consulta (inclusive), a Consulta não pode mais ser cancelada ou reagendada por ninguém através do app.
+- **Janela de cancelamento** — período em que Cancelamento/reagendamento é permitido: enquanto faltarem 24h ou mais para o horário da Consulta (o instante exato de 24h ainda está dentro da Janela).
+- **Bloqueio de cancelamento** — assim que faltar menos de 24h (estritamente) para o horário da Consulta, ela não pode mais ser cancelada ou reagendada por ninguém através do app.
 - **Conflito de agenda** — tentativa de duas Consultas ocupando o mesmo Slot do mesmo Médico; deve ser sempre impedido pelo sistema.
 - **Autocadastro** — cadastro de Médico sem validação externa (ex.: CRM); o perfil fica visível na busca imediatamente após salvar.
 
@@ -119,10 +119,10 @@ Um Médico pode se cadastrar informando dados básicos e ficar visível na busca
 
 #### RF-2: Definição de perfil profissional do médico
 
-Um Médico define exatamente uma Especialidade, um ou mais Convênios (dentre Unimed, Amil, Bradesco, Particular) e os dias/horários em que atende. Realiza JU-2.
+Um Médico define exatamente uma Especialidade (dentre a lista fixa — ver Glossário, §3), um ou mais Convênios (dentre Unimed, Amil, Bradesco, Particular) e os dias/horários em que atende. Realiza JU-2.
 
 **Consequências (testáveis):**
-- O sistema rejeita a seleção de mais de uma Especialidade por Médico.
+- O sistema rejeita a seleção de mais de uma Especialidade por Médico, e rejeita qualquer Especialidade fora da lista fixa.
 - Convênios que não fazem parte da lista fixa (Unimed, Amil, Bradesco, Particular) não podem ser selecionados.
 - Uma vez que um Convênio é selecionado e salvo, o Médico não tem opção de removê-lo ou editá-lo pela interface — inclusive se já houver Consultas agendadas sob aquele Convênio.
 - Dias/horários definidos geram automaticamente os Slots de 15 minutos correspondentes na Agenda do Médico.
@@ -205,16 +205,16 @@ O sistema deve garantir que nunca dois agendamentos coexistam para o mesmo Slot 
 
 #### RF-8: Cancelamento/reagendamento dentro da janela de 24h
 
-Paciente ou Médico podem cancelar ou reagendar uma Consulta enquanto faltarem mais de 24h para o horário marcado.
+Paciente ou Médico podem cancelar ou reagendar uma Consulta enquanto faltarem 24h ou mais para o horário marcado.
 
 **Consequências (testáveis):**
 - Ao cancelar dentro da janela, o Slot correspondente volta a ficar disponível imediatamente para outros Pacientes.
-- A UX exata de reagendamento (fluxo dedicado de "mover para outro horário" vs. cancelar + agendar novamente, sujeito às mesmas regras de RF-6 e RF-7) será definida a partir do design visual em elaboração em ferramenta externa. [NOTE FOR PM: ver §9, "Dependências pendentes do design visual".]
+- Reagendar é um fluxo dedicado (não é cancelar + criar uma nova consulta): o usuário escolhe um novo dia/horário para a mesma Consulta, sujeito às mesmas regras de RF-6 e RF-7, e a Consulta original é atualizada em vez de substituída por um novo registro. Confirmado pelo protótipo de UX.
 - A outra parte (Médico, se o Paciente cancelou; Paciente, se o Médico cancelou) é notificada do cancelamento.
 
 #### RF-9: Bloqueio total de cancelamento após 24h
 
-Nenhum ator (Paciente, Médico) pode cancelar ou reagendar uma Consulta cujo horário esteja a 24h ou menos de distância, através do app (o instante exato de 24h já conta como bloqueado — ver Glossário (§3), "Bloqueio de cancelamento").
+Nenhum ator (Paciente, Médico) pode cancelar ou reagendar uma Consulta cujo horário esteja a menos de 24h de distância, através do app (o instante exato de 24h ainda permite cancelamento — ver Glossário (§3), "Bloqueio de cancelamento").
 
 **Consequências (testáveis):**
 - A interface de cancelamento fica desabilitada/oculta para Consultas dentro dessa janela, com mensagem explicativa.
@@ -224,21 +224,21 @@ Nenhum ator (Paciente, Médico) pode cancelar ou reagendar uma Consulta cujo hor
 
 ### 4.6 Notificações
 
-**Descrição:** O sistema envia lembretes automáticos de Consulta por push, SMS e e-mail, 24h antes do horário marcado, para o Paciente. O lembrete de rotina é exclusivo do Paciente; o Médico recebe apenas notificações de evento (nova consulta, cancelamento), não lembrete de rotina.
+**Descrição:** O sistema envia lembretes automáticos de Consulta por push e e-mail, 24h antes do horário marcado, para o Paciente. O lembrete de rotina é exclusivo do Paciente; o Médico recebe apenas notificações de evento (nova consulta, cancelamento), não lembrete de rotina. [NOTE: SMS foi removido do escopo — decisão do usuário em 2026-09-17, não compensa o esforço/custo para um MVP de portfólio.]
 
 **Requisitos Funcionais:**
 
 #### RF-10: Lembrete de consulta 24h antes
 
-O sistema envia automaticamente um lembrete por push, SMS e e-mail ao Paciente 24h antes do horário da Consulta.
+O sistema envia automaticamente um lembrete por push e e-mail ao Paciente 24h antes do horário da Consulta.
 
 **Consequências (testáveis):**
 - O lembrete é despachado uma única vez por Consulta, no marco de 24h antes (não repete).
 - Se a Consulta for cancelada antes do marco de 24h, o lembrete correspondente não é enviado.
-- Os três canais (push, SMS, e-mail) são disparados a partir do mesmo evento; falha em um canal não deve impedir os demais. [ASSUMPTION: canais são melhor esforço — não há retry garantido nem SLA formal em v1, dado o volume inicial baixo.]
+- Os dois canais (push, e-mail) são disparados a partir do mesmo evento; falha em um canal não deve impedir o outro. [ASSUMPTION: canais são melhor esforço — não há retry garantido nem SLA formal em v1, dado o volume inicial baixo.]
 
 **RNFs específicos da funcionalidade:**
-- SMS deve inicialmente usar a franquia gratuita mensal de um provedor de autenticação (dado o volume de 20 usuários/semana), com plano de migração para gateway nacional pré-pago sem mensalidade caso o volume cresça — decisão de custo, ver §Restrições e Salvaguardas.
+- E-mail deve usar um provedor transacional com camada gratuita (ver `addendum.md` para a escolha técnica) — nenhum custo recorrente é aceitável no volume inicial. Ver §Restrições e Salvaguardas.
 
 ### 4.7 Autenticação e Recuperação de Senha
 
@@ -278,7 +278,7 @@ Um usuário (Paciente ou Médico) que esqueceu a senha pode solicitar redefiniç
 - Visualização de agenda em slots de 15 minutos, respeitando antecedência mínima de 48h.
 - Agendamento com bloqueio de conflito de agenda sob concorrência.
 - Cancelamento/reagendamento com janela de 24h e bloqueio total após esse prazo.
-- Notificações de lembrete (push, SMS, e-mail) 24h antes da consulta.
+- Notificações de lembrete (push, e-mail) 24h antes da consulta.
 - Recuperação de senha (redefinição via e-mail) para paciente e médico.
 
 ### 6.2 Fora de Escopo
@@ -307,27 +307,25 @@ Um usuário (Paciente ou Médico) que esqueceu a senha pode solicitar redefiniç
 
 ## 8. Perguntas Abertas
 
-1. Qual é o provedor técnico de push/SMS/e-mail a ser usado? (decisão técnica — recomenda-se registrar em `addendum.md` durante a Arquitetura.)
-2. Quando o design visual (em elaboração em ferramenta externa) estiver pronto — trazendo campos de cadastro de Paciente/Médico e a UX de reagendamento — como será formalmente incorporado a este PRD (via `bmad-ux` ou anexo direto)?
+1. A tela "Minha agenda" do Médico (design de UX) ainda não tem os controles de cancelar/reagendar previstos em RF-8 — pendente de adicionar ao design.
 
 ## 9. Índice de Assunções
 
 - §4.3 (RF-4) — Sem GPS, busca manual retorna correspondência por região, ordenada alfabeticamente pelo nome do Médico como fallback (sem cálculo preciso de distância).
-- §4.4 (RF-7) — Atualização em tempo real da grade após conflito é resolvida por polling ou push; mecanismo exato é decisão de arquitetura (ver `addendum.md`).
-- §4.6 (RF-10) — Canais de notificação (push/SMS/e-mail) são melhor esforço, sem retry garantido ou SLA formal em v1.
+- §4.4 (RF-7) — Atualização em tempo real da grade após conflito é resolvida por listener em tempo real do Firestore (decisão fechada na Arquitetura, ver `addendum.md`).
+- §4.6 (RF-10) — Canais de notificação (push, e-mail) são melhor esforço, sem retry garantido ou SLA formal em v1. Provedores: push via Firebase Cloud Messaging, e-mail via Resend (camada gratuita) — ver `addendum.md`.
 - §4.7 (RF-11) — Prazo de expiração do link/código de recuperação de senha a definir na Arquitetura (ex.: 30-60 minutos).
 - §RNFs Transversais — Todas as regras de tempo (15min, 24h, 48h) usam o fuso horário local do dispositivo; sem suporte a médico e paciente em fusos diferentes.
 
-**Dependências pendentes do design visual** *(sendo elaborado em ferramenta externa por Mauricio, a incorporar quando importado)*:
-- Campos exatos do formulário de cadastro de Médico (§4.1) e de Paciente (§4.2) — serão mais do que nome/e-mail/senha.
-- UX exata de reagendamento (§4.5, RF-8) — fluxo dedicado de "mover horário" vs. cancelar+recriar.
+**Dependências pendentes do design visual** *(primeira versão importada em 2026-09-17 via `bmad-ux`; ver `_bmad-output/planning-artifacts/ux-designs/ux-AgendaMedica-2026-09-17/`)*:
+- Campos exatos do formulário de cadastro de Médico (§4.1) e de Paciente (§4.2) — a versão atual do design usa apenas nome/e-mail/senha, mas o usuário sinalizou que pode crescer em versões futuras do design.
 
 ---
 
 ## RNFs Transversais
 
 - **Consistência de dados sob concorrência:** a regra de bloqueio de conflito de agenda (RF-7) deve ser garantida no nível de armazenamento de dados (constraint de unicidade e/ou transação com lock), não apenas na camada de aplicação — é o requisito não-funcional mais crítico do sistema, dado que toda a "Complexidade Média" do projeto vem dele.
-- **Confiabilidade de notificações:** falha em um canal (push/SMS/e-mail) não deve impedir os demais nem quebrar o fluxo de agendamento/cancelamento — notificação é best-effort, nunca bloqueante.
+- **Confiabilidade de notificações:** falha em um canal (push/e-mail) não deve impedir o outro nem quebrar o fluxo de agendamento/cancelamento — notificação é best-effort, nunca bloqueante.
 - **Disponibilidade:** dado o volume inicial (20 usuários/semana), não há exigência de alta disponibilidade formal (sem SLA), mas o app não deve perder ou duplicar uma Consulta já confirmada em nenhuma circunstância.
 - **Desempenho:** buscas e visualização de agenda devem responder de forma percebida como instantânea para o volume-alvo (20 usuários/semana) — sem exigência de otimização para escala maior em v1.
 - **Proteção de dados:** apesar de não haver exigência formal de LGPD (ver §Restrições e Salvaguardas → Privacidade), dados de Paciente e histórico de Consultas só podem ser lidos pelo próprio Paciente e pelo Médico das Consultas em questão — nenhum outro Paciente ou Médico tem acesso a esses dados. Autenticação obrigatória em toda operação que leia ou grave Consulta.
@@ -339,7 +337,7 @@ Um usuário (Paciente ou Médico) que esqueceu a senha pode solicitar redefiniç
 - Não há exigência formal de conformidade com a LGPD em v1 (decisão de escopo deliberada, dado o caráter de portfólio e volume baixo). [NOTE FOR PM: o app ainda trata dados de saúde por natureza (especialidade buscada, histórico de consultas); mesmo sem exigência formal, vale documentar no addendum boas práticas mínimas de proteção de dados como diferencial técnico do portfólio.]
 
 **Custo**
-- SMS deve usar inicialmente a franquia gratuita mensal de um provedor de autenticação, migrando para um gateway nacional pré-pago sem mensalidade apenas se o volume crescer além do estimado. Nenhum custo recorrente é aceitável no volume inicial.
+- SMS foi removido do escopo de notificações (decisão do usuário, 2026-09-17): não compensa o esforço/custo para um MVP de portfólio, dado que não há provedor gratuito de envio de SMS de texto livre. E-mail usa um provedor transacional gratuito (Resend, ver `addendum.md`). Nenhum custo recorrente é aceitável no volume inicial.
 
 ## Plataforma
 
