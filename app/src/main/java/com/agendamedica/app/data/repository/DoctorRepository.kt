@@ -120,7 +120,10 @@ class DoctorRepository(
                     startTime = row.startTime,
                     endTime = row.endTime,
                 )
-            }.sortedBy { it.dia.isoValue },
+                // Sort by DiaSemana.ordered's index (Monday-first), matching the order the
+                // médico picked days in during Cadastro (CadastroMedicoScreen) — sorting by
+                // isoValue (Sunday-first) would show e.g. "Sábado, Domingo" reversed here.
+            }.sortedBy { DiaSemana.ordered.indexOf(it.dia) },
         )
     }
 

@@ -37,7 +37,7 @@ comment on column public.doctors.insurances is 'One or more of the 4 fixed Conve
 create table public.doctor_schedules (
   id uuid primary key default gen_random_uuid(),
   doctor_id uuid not null references public.doctors (id) on delete cascade,
-  weekday smallint not null check (weekday between 0 and 6), -- 0 = Sunday .. 6 = Saturday (ISO/Postgres convention)
+  weekday smallint not null check (weekday between 0 and 6), -- 0 = Sunday .. 6 = Saturday (Postgres EXTRACT(DOW) convention — NOT ISO 8601)
   start_time time not null,
   end_time time not null,
   created_at timestamptz not null default now(),

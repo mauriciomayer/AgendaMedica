@@ -24,9 +24,13 @@ val localProperties = Properties().apply {
 // machine's localhost), so it is a safe default for local Supabase development.
 // The anon key IS environment-specific and has no default: the build fails loudly
 // if it's missing instead of silently shipping an empty/broken key.
-val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL") ?: "http://10.0.2.2:54321"
-val supabaseAnonKey: String = localProperties.getProperty("SUPABASE_ANON_KEY")
-    ?: if (gradle.startParameter.taskNames.any { it.contains("test", ignoreCase = true) }) {
+val supabaseUrl: String = localProperties.getProperty("SUPABASE_URL")?.takeIf { it.isNotBlank() }
+    ?: "http://10.0.2.2:54321"
+val supabaseAnonKey: String = localProperties.getProperty("SUPABASE_ANON_KEY")?.takeIf { it.isNotBlank() }
+    ?: if (gradle.startParameter.taskNames.all { it.contains("test", ignoreCase = true) }) {
+        // Only when EVERY requested task is test-related — an `assembleDebug testDebugUnitTest`
+        // invocation (this story's own Verification) must still require a real key for the
+        // assembleDebug half, not silently ship the placeholder in a real debug APK.
         "test-anon-key-placeholder"
     } else {
         throw GradleException(
@@ -109,10 +113,8 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("io.mockk:mockk:1.14.7")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation(platform("androidx.compose:compose-bom:2026.08.00"))
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    // No androidTest/Espresso/Compose-UI-test dependencies: no src/androidTest exists yet in
+    // this story. Add them back (with the src/androidTest sourceset) when a future story
+    // actually adds an instrumented test — declaring them unused was flagged as dead weight.
 }

@@ -99,6 +99,12 @@ fun CadastroMedicoScreen(
                 label = "Senha",
                 isPassword = true,
             )
+            Text(
+                text = "Mínimo de 6 caracteres.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AgendaMedicaColors.inkSecondary,
+                modifier = Modifier.padding(top = 4.dp),
+            )
             Spacer(Modifier.height(20.dp))
 
             SectionLabel("Especialidade")

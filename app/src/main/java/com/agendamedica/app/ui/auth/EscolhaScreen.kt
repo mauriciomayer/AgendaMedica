@@ -49,8 +49,15 @@ fun EscolhaScreen(
             Spacer(Modifier.height(12.dp))
             OutlineButton(
                 text = "Sou paciente",
-                onClick = { /* Story 1.2 — Cadastro de Paciente */ },
+                onClick = {}, // Story 1.2 builds this screen — the caption below says so instead
+                // of a silent no-op that reads as the app being unresponsive.
                 borderColor = AgendaMedicaColors.borderInput,
+            )
+            Spacer(Modifier.height(6.dp))
+            Text(
+                text = "Cadastro de paciente chega em breve.",
+                style = MaterialTheme.typography.bodySmall,
+                color = AgendaMedicaColors.inkSecondary,
             )
         }
     }

@@ -5,7 +5,8 @@ package com.agendamedica.app.domain.model
  * explicit domain model list (only Especialidade/Convenio are), but the same fixed-list
  * pattern applies: it's a closed, code-versioned set, never user-entered text.
  *
- * [isoValue] matches Postgres/ISO convention (0 = Sunday .. 6 = Saturday) used by
+ * [isoValue] matches Postgres's `EXTRACT(DOW)` convention (0 = Sunday .. 6 = Saturday, NOT
+ * ISO 8601, which numbers Monday=1..Sunday=7) — used by
  * `doctor_schedules.weekday` — see supabase/migrations/0001_init.sql.
  */
 enum class DiaSemana(val isoValue: Int, val label: String) {

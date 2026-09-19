@@ -47,6 +47,10 @@ function jsonResponse(body: unknown, status: number): Response {
 }
 
 const TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+// Basic shape check only (not full RFC 5322) — mirrors the same check in
+// CadastroMedicoViewModel.kt so a malformed address is rejected before hitting the Auth
+// Admin API, where it would otherwise surface only as a generic UNEXPECTED failure.
+const EMAIL_PATTERN = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 
 /** Mirrors the I/O matrix row "Especialidade/Convênio fora da lista fixa -> INVALID:". */
 function validatePayload(payload: Partial<RegisterDoctorPayload>): string | null {
@@ -55,6 +59,9 @@ function validatePayload(payload: Partial<RegisterDoctorPayload>): string | null
   }
   if (typeof payload.email !== "string" || payload.email.trim().length === 0) {
     return "INVALID: e-mail é obrigatório";
+  }
+  if (!EMAIL_PATTERN.test(payload.email.trim())) {
+    return "INVALID: e-mail inválido";
   }
   if (typeof payload.password !== "string" || payload.password.length < 6) {
     return "INVALID: senha deve ter ao menos 6 caracteres";
@@ -68,8 +75,17 @@ function validatePayload(payload: Partial<RegisterDoctorPayload>): string | null
   if (payload.insurances.some((insurance) => !CONVENIOS.includes(insurance as typeof CONVENIOS[number]))) {
     return "INVALID: convênio inválido";
   }
+  if (new Set(payload.insurances).size !== payload.insurances.length) {
+    return "INVALID: convênio duplicado";
+  }
   if (!Array.isArray(payload.schedules) || payload.schedules.length === 0) {
     return "INVALID: selecione ao menos um dia de atendimento";
+  }
+  // The Android client can't produce a duplicate weekday (it builds this array from a Set),
+  // but this function is the actual trust boundary (AD-1/AD-6) — a direct API call must not
+  // be able to insert two doctor_schedules rows for the same day.
+  if (new Set(payload.schedules.map((schedule) => schedule?.weekday)).size !== payload.schedules.length) {
+    return "INVALID: dia de atendimento duplicado";
   }
   for (const schedule of payload.schedules) {
     const validWeekday = typeof schedule?.weekday === "number" && schedule.weekday >= 0 && schedule.weekday <= 6;
@@ -146,7 +162,15 @@ Deno.serve(async (req: Request) => {
 
   if (rpcError) {
     // Compensating transaction (AD-6): never leave an orphaned Auth user with no profile.
-    await admin.auth.admin.deleteUser(userId);
+    // If the delete itself fails, we can't silently pretend AD-6's guarantee held — log it so
+    // there's at least a record for manual cleanup, since nothing else will ever know.
+    const { error: deleteError } = await admin.auth.admin.deleteUser(userId);
+    if (deleteError) {
+      console.error(
+        `register-doctor: compensating deleteUser failed for orphaned auth user ${userId} — manual cleanup needed`,
+        deleteError,
+      );
+    }
 
     const message = rpcError.message ?? "";
     if (message.startsWith("CONFLICT:") || message.startsWith("INVALID:") || message.startsWith("FORBIDDEN:")) {

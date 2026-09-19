@@ -20,6 +20,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+/** Basic shape check only (not full RFC 5322) — enough to catch an obviously malformed address
+ * before it reaches the Edge Function, where the real failure mode today is a generic
+ * "não foi possível criar a conta" from deep inside the Auth Admin API call. */
+private val EMAIL_PATTERN = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
 /** 30-minute options for the início/fim "select nativo (dropdown)" (DESIGN.md). */
 val HORARIOS_DISPONIVEIS: List<String> = buildList {
     for (hour in 6..21) {
@@ -49,7 +54,7 @@ data class CadastroMedicoUiState(
     val isSubmitEnabled: Boolean
         get() = !isLoading &&
             name.isNotBlank() &&
-            email.isNotBlank() &&
+            EMAIL_PATTERN.matches(email) &&
             password.length >= 6 &&
             especialidade != null &&
             conveniosSelecionados.isNotEmpty() &&

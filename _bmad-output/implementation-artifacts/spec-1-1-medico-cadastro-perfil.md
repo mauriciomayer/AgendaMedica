@@ -2,7 +2,7 @@
 title: 'Médico se cadastra e configura seu perfil profissional'
 type: 'feature'
 created: '2026-09-17'
-status: 'in-review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: []
@@ -116,7 +116,53 @@ The user updated the Android SDK (added platforms `android-35` through `android-
 - **Result:** `./gradlew assembleDebug testDebugUnitTest` — **BUILD SUCCESSFUL**, 18/18 unit tests pass.
 - **Still not covered by an executed test** (Docker/Supabase CLI remain unavailable in this environment): the two I/O-matrix rows that need a real Postgres — "Autocadastro válido" (row actually lands correctly in `doctors`/`doctor_schedules`) and "Tentativa de editar especialidade/convênio pós-criação" (the `enforce_doctor_immutable_fields` trigger actually rejects the `UPDATE`). Both are implemented and were reviewed by hand against the migration SQL; neither has run against a live database. This matches the user's own standing decision (recorded with Winston during Architecture) to rely on simple tests for now and add DB/integration coverage only if the need is felt later.
 
+---
+
+**2026-09-18 — code-review gate (step-04): 18 findings triaged, all `patch`/`defer`/rejected, no loopback needed.**
+
+Three parallel context-free subagent reviewers (Blind Hunter, Edge Case Hunter, Verification Gap) ran against the full diff since baseline commit `64020690e52f18cd9bee66d6cfec32f95e17ef37`. Every finding was personally re-verified against the real code before routing (see `## Review Triage Log` for the full per-finding record). No finding touched the frozen Intent/Boundaries/IO-Matrix and none required a spec change, so neither `intent_gap` nor `bad_spec` was triggered — only `patch`, `defer`, and outright rejections.
+
+`patch` findings applied directly (fastest path, applied by the orchestrator rather than re-engaging the implementation subagent):
+- Fixed `DoctorRepository`'s weekday sort to use `DiaSemana.ordered.indexOf(...)` instead of sorting by `isoValue` (which put Sunday first instead of last for a Mon–Sun display order).
+- Corrected two "(ISO/Postgres convention)" doc comments (`DiaSemana.kt`, `0001_init.sql`) that mislabeled the weekday numbering — `EXTRACT(DOW)` is *not* ISO 8601.
+- Added client-side (`CadastroMedicoViewModel`) and server-side (`register-doctor`) e-mail format validation (`EMAIL_PATTERN` regex), closing a gap where any non-blank string was accepted as a valid e-mail.
+- Added duplicate-weekday and duplicate-insurance rejection in `register-doctor`'s `validatePayload` — the Android client can't produce either (built from `Set`s), but the Edge Function is the actual trust boundary per AD-1/AD-6, and a direct API call could previously insert duplicates.
+- `register-doctor`'s compensating `deleteUser()` call (on `complete_registration` RPC failure) now logs when the delete itself fails, instead of silently discarding that error — otherwise an orphaned Auth user could exist with zero record of it anywhere.
+- Fixed the blank-`SUPABASE_ANON_KEY` gate in `app/build.gradle.kts` from `.any { "test" }` to `.all { "test" }`, so a mixed invocation like `assembleDebug testDebugUnitTest` still requires a real key for the `assembleDebug` half instead of silently shipping the test placeholder in a real debug APK.
+- Removed unused `androidTest`/Espresso/Compose-UI-test dependencies (no `src/androidTest` source set exists yet in this story).
+- Added a "Cadastro de paciente chega em breve." caption under `EscolhaScreen`'s "Sou paciente" button so the no-op doesn't read as the app being unresponsive.
+- Added a "Mínimo de 6 caracteres." hint under the password field in `CadastroMedicoScreen`.
+- Wrote `MinhaAgendaViewModelTest.kt` (3 tests: successful load populates profile, failed load surfaces a generic non-leaking message, explicit `load()` re-fetches) — this ViewModel had zero test coverage before, unlike `LoginViewModel`/`CadastroMedicoViewModel`.
+- Fixed `gradlew`'s git file mode from `100644` to `100755` (`git update-index --chmod=+x gradlew`) so it stays executable on a fresh clone on Linux/macOS/CI.
+
+`defer` findings (pre-existing or unverifiable without a live Postgres/Docker) recorded in `_bmad-output/implementation-artifacts/deferred-work.md`: (1) `DoctorRepository`/`AuthRepository`'s HTTP/serialization body logic is only ever exercised through mocks, never a real or faked network call; (2) AD-9's `CONFLICT:`/`INVALID:`/`FORBIDDEN:` prefix convention has never been checked against a real Postgrest-wrapped error string; (3) `register-doctor`'s duplicate-email detection is a substring match against Supabase Auth's error wording, not a stable error code (pre-existing pattern, not introduced by this diff).
+
+Rejected as `false`: email-enumeration via the signup `CONFLICT` message (standard/accepted practice for a registration endpoint, unlike login/reset where the neutral pattern is already correctly used); `Convenio.fromLabel`'s `mapNotNull` silent-drop (defensible graceful degradation, not a defect); `LoginViewModel`'s `isDoctor == false` branch (already documented as intentionally unreachable dead code for this story).
+
+**Result after patches:** `./gradlew assembleDebug testDebugUnitTest` — **BUILD SUCCESSFUL**, 21/21 unit tests pass (18 previous + 3 new `MinhaAgendaViewModelTest`).
+
 ## Review Triage Log
+
+Reviewed 2026-09-18 against the diff since `baseline_commit`. Three layers (blind-hunter N=10, edge-case-hunter, verification-gap) ran in parallel; every finding verified against the actual code before routing. No finding touches `<frozen-after-approval>` content — nothing routed to `intent_gap`/`bad_spec`; all patches applied directly (no re-derivation loopback needed).
+
+- `low` — `gradlew` staged as file mode `100644` (verified via `git diff --stat`); on a Linux/macOS clone or CI runner `./gradlew` would fail with "Permission denied" (this Windows machine's own `gradlew.bat` path is unaffected). **patch** — re-add with the executable bit set.
+- `maybe-false` — AD-9's `PREFIX_PATTERN` regex assumes `CONFLICT:`/`INVALID:` arrives verbatim; not checked against a real postgrest-kt exception's actual message shape (would need a live Postgres to observe). If wrapped, the two DB-only I/O-matrix rows would misclassify into `Unexpected` instead of `Conflict`/`Invalid` — user-visible impact is small either way since both buckets render a generic message. **defer** — settle once `supabase start` is available.
+- `low` — `DiaSemana.ordered` (Monday-first) drives the day-picker in `CadastroMedicoScreen`, but `DoctorRepository.getMyProfile()` sorts the read-back schedule by `isoValue` (Sunday-first) — verified both call sites; a médico who picks "Sábado, Domingo" sees them in reversed relative order on Minha Agenda. **patch** — sort by `DiaSemana.ordered.indexOf(...)` instead of `isoValue`.
+- `low` — the "ISO/Postgres convention" comments on `DiaSemana.isoValue` and `doctor_schedules.weekday` mislabel Postgres's `EXTRACT(DOW)` (`0=Sunday..6=Saturday`) as "ISO" — verified against ISO 8601 (`Monday=1..Sunday=7`), they don't match. **patch** — fix the comment wording only.
+- `low` — no email-format validation exists in `CadastroMedicoUiState.isSubmitEnabled`, `register-doctor`'s `validatePayload`, or `complete_registration()` — verified all three only check non-blank/non-empty. A malformed address only fails deep inside the Auth Admin API call as a generic error. **patch** — add a basic format check client + server side.
+- `false` — email-enumeration concern on `register-doctor`'s `CONFLICT` response: verified this is standard, expected behavior for a *signup* endpoint (as opposed to login/reset, where AD-9/EXPERIENCE.md's neutral-response pattern already applies and was already implemented correctly for RF-11). Revealing "email already registered" on signup is common, accepted practice, not a defect introduced here. Rejected.
+- `low` — `EscolhaScreen`'s "Sou paciente" `onClick` is an empty lambda (verified) — tapping it gives no feedback, reads as unresponsive rather than "not built yet." **patch** — add a lightweight snackbar; still doesn't implement Story 1.2's screen, per spec's "Never".
+- `low` — `app/build.gradle.kts` declares `androidTestImplementation`/`debugImplementation` Espresso/Compose-UI-test dependencies but the diff has no `src/androidTest` directory — verified, confirmed unused. **patch** — remove now; trivial to re-add when a story actually adds instrumented tests.
+- `low` — no visible hint of the 6-character password minimum anywhere in `CadastroMedicoScreen` (verified against `CadastroMedicoUiState.isSubmitEnabled`, the Edge Function, and `complete_registration()`, which all enforce it silently). **patch** — add supporting text under the field.
+- `medium` — `app/build.gradle.kts`: `SUPABASE_ANON_KEY` present-but-blank in `local.properties` is accepted as `""` since `Properties.getProperty` only returns null when the key is *absent* — verified the `?:` fallback never triggers for a blank value, undermining the "fails loudly" comment right above it. **patch** — add `.takeIf { it.isNotBlank() }`.
+- `medium` — same file: the test-anon-key placeholder is gated on `gradle.startParameter.taskNames.any { contains("test") }` — verified this checks the *whole invocation*, so running `assembleDebug testDebugUnitTest` together (exactly what this story's own Verification did) would silently bake the placeholder into a real debug APK instead of requiring a real key. **patch** — change `.any` to `.all`.
+- `false` — `DoctorRepository.getMyProfile()`'s `insurances.mapNotNull(Convenio::fromLabel)` silently drops an unrecognized convênio label instead of throwing (asymmetric with `Especialidade`, which throws) — verified, but judged intentional/defensible: `doctors.insurances` is a list, so dropping one unrecognized entry degrades gracefully (partial profile) rather than crashing the whole screen over state the write path (`register-doctor`'s `validatePayload`) already prevents from occurring. Rejected.
+- `low` — `register-doctor`'s `validatePayload` never rejects a `schedules` array with a repeated `weekday`, or an `insurances` array with a repeated value — verified; the Android client can't produce either (uses `Set`s), but a direct API call could, inserting duplicate `doctor_schedules` rows or a duplicate convênio tag. **patch** — add a duplicate check for both arrays.
+- `medium` — `register-doctor`'s compensating `admin.auth.admin.deleteUser(userId)` (AD-6's "never leave an orphaned Auth user" guarantee) doesn't check its own result — verified. If the delete itself fails, the exact orphaned state AD-6 promises to prevent occurs, silently. **patch** — log on failure for manual cleanup.
+- `medium` — `MinhaAgendaViewModel.load()` (the screen every médico lands on after registering) has zero test coverage — verified no test file references it, unlike `LoginViewModel`/`CadastroMedicoViewModel`. Doesn't need a live DB — same mock pattern as the other two ViewModel tests applies. **patch** — add `MinhaAgendaViewModelTest`.
+- `medium` (unverified severity) — `DoctorRepository.registerDoctor`/`getMyProfile`'s own bodies (HTTP call, header, JSON error-body decode, row→domain mapping) are only ever mocked away in `CadastroMedicoViewModelTest`/never touched by any `MinhaAgendaViewModel` test — verified no test exercises the real serialization/mapping code. Would need a fake Ktor engine or the local Supabase stack to close properly — larger than "minimal tests" and matches the standing decision (recorded with Winston, Architecture) to defer DB/integration-level coverage. **defer**.
+- `maybe-false` — `register-doctor`'s "already registered" detection substring-matches the Admin API's error message (`.includes("already")`/`"registered"`/`"exists"`) — fragile against Admin API wording changes across supabase-js versions, but not introduced by this diff's own logic (pre-existing pattern) and not independently verifiable without hitting a real Auth error. **defer**.
+- `false` — `LoginViewModel`'s `isDoctor == false` branch is untested, but the spec's own Implementation Notes already document it as intentionally unreachable dead code for this story (no patient accounts can exist yet) — not a defect. Rejected.
 
 ## Design Notes
 
@@ -130,10 +176,13 @@ Convênios fixos (ordem sugerida): Unimed, Amil, Bradesco, Particular. Especiali
 ## Verification
 
 **Commands:**
-- `supabase start` -- expected: stack local sobe sem erro (Postgres, Auth, Studio)
-- `supabase db push` (ou aplicar `0001_init.sql` localmente) -- expected: migração aplica sem erro; índice/trigger criados
-- `./gradlew assembleDebug` -- expected: build do app sem erro
-- Cadastro manual de um médico via app (emulador/dispositivo) -- expected: perfil aparece em `doctors` com `specialty`/`insurances` corretos; tentativa de `UPDATE` direto nesses campos via Studio SQL falha com a trigger
+- `supabase start` -- expected: stack local sobe sem erro (Postgres, Auth, Studio) -- **ainda não executado** (Docker/Supabase CLI indisponíveis neste ambiente)
+- `supabase db push` (ou aplicar `0001_init.sql` localmente) -- expected: migração aplica sem erro; índice/trigger criados -- **ainda não executado** (mesma limitação)
+- `./gradlew assembleDebug` -- expected: build do app sem erro -- **executado e passou** (`BUILD SUCCESSFUL`, 2026-09-19, após toolchain fix + todos os patches do code-review gate)
+- Cadastro manual de um médico via app (emulador/dispositivo) -- expected: perfil aparece em `doctors` com `specialty`/`insurances` corretos; tentativa de `UPDATE` direto nesses campos via Studio SQL falha com a trigger -- **ainda não executado** (depende de `supabase start`)
+- `./gradlew testDebugUnitTest` (adicionado a esta lista durante a implementação, não estava no plano original) -- **executado e passou**, 21/21 testes (`AppErrorTest`, `LoginViewModelTest`, `CadastroMedicoViewModelTest`, `MinhaAgendaViewModelTest`)
 
 **Manual checks (if no CLI):**
-- Conferir visualmente que Login/Escolha/Cadastro Médico/Minha Agenda seguem os tokens de `DESIGN.md` (cores, tipografia, formas)
+- Conferir visualmente que Login/Escolha/Cadastro Médico/Minha Agenda seguem os tokens de `DESIGN.md` (cores, tipografia, formas) -- **ainda não executado** (requer rodar o app em emulador/dispositivo)
+
+**Pendente para o usuário concluir localmente:** os 3 itens acima marcados como não executados exigem Docker + Supabase CLI, que não estão disponíveis neste ambiente de implementação. Rodar `supabase start`, aplicar a migração, e então testar o cadastro de um médico de ponta a ponta no emulador é o que resta para fechar a Story 1.1 com confiança total.
