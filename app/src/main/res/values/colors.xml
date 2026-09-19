@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      XML-only colors for the launch theme / adaptive icon, which cannot consume the
+      OKLCH tokens directly. The Compose theme (ui/theme/Color.kt) is the source of
+      truth for everything drawn once Compose takes over — see DESIGN.md.
+    -->
+    <color name="surface_canvas_approx">#F3F8F4</color>
+    <color name="accent_primary">#3B6FE0</color>
+    <color name="white">#FFFFFF</color>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--
+      Minimal launch/window theme. All real theming (colors, typography, shapes from
+      DESIGN.md) is applied by the Compose theme in ui/theme/Theme.kt — this XML theme
+      only avoids a flash-of-wrong-background before Compose renders.
+    -->
+    <style name="Theme.AgendaMedica" parent="android:Theme.Material.Light.NoActionBar">
+        <item name="android:windowBackground">@color/surface_canvas_approx</item>
+        <item name="android:statusBarColor">@color/surface_canvas_approx</item>
+    </style>
+</resources>

@@ -1,0 +1,14 @@
+# Copy this file to "local.properties" (already git-ignored) and fill in the values
+# below. Never commit real values — see spec-1-1-medico-cadastro-perfil.md, "Never".
+#
+# sdk.dir is normally added automatically by Android Studio on first sync.
+# sdk.dir=/path/to/Android/sdk
+
+# Supabase local stack (started with `supabase start` from supabase/).
+# 10.0.2.2 is the Android emulator's alias for the host machine's localhost.
+# For a physical device on the same network, use the host machine's LAN IP instead.
+SUPABASE_URL=http://10.0.2.2:54321
+
+# Printed by `supabase start` as "anon key". This is the LOCAL dev key only —
+# it is meaningless outside your own machine's Supabase stack.
+SUPABASE_ANON_KEY=
