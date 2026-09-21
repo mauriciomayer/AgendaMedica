@@ -9,6 +9,8 @@ import com.agendamedica.app.ui.auth.EscolhaScreen
 import com.agendamedica.app.ui.auth.LoginScreen
 import com.agendamedica.app.ui.doctor.CadastroMedicoScreen
 import com.agendamedica.app.ui.doctor.MinhaAgendaScreen
+import com.agendamedica.app.ui.patient.BuscaScreen
+import com.agendamedica.app.ui.patient.CadastroPacienteScreen
 
 /** Route names for this story's screens (Information Architecture, EXPERIENCE.md). */
 private object Routes {
@@ -16,6 +18,8 @@ private object Routes {
     const val ESCOLHA = "escolha"
     const val CADASTRO_MEDICO = "cadastro_medico"
     const val MINHA_AGENDA = "minha_agenda"
+    const val CADASTRO_PACIENTE = "cadastro_paciente"
+    const val BUSCA = "busca"
 }
 
 /**
@@ -35,6 +39,11 @@ fun AgendaMedicaNavHost(navController: NavHostController = rememberNavController
                         popUpTo(Routes.LOGIN) { inclusive = true }
                     }
                 },
+                onNavigateToBusca = {
+                    navController.navigate(Routes.BUSCA) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
                 onNavigateToEscolha = { navController.navigate(Routes.ESCOLHA) },
             )
         }
@@ -42,7 +51,21 @@ fun AgendaMedicaNavHost(navController: NavHostController = rememberNavController
             EscolhaScreen(
                 onBack = { navController.popBackStack() },
                 onSouMedico = { navController.navigate(Routes.CADASTRO_MEDICO) },
+                onSouPaciente = { navController.navigate(Routes.CADASTRO_PACIENTE) },
             )
+        }
+        composable(Routes.CADASTRO_PACIENTE) {
+            CadastroPacienteScreen(
+                onBack = { navController.popBackStack() },
+                onRegistered = {
+                    navController.navigate(Routes.BUSCA) {
+                        popUpTo(Routes.LOGIN) { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable(Routes.BUSCA) {
+            BuscaScreen()
         }
         composable(Routes.CADASTRO_MEDICO) {
             CadastroMedicoScreen(

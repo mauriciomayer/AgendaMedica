@@ -87,6 +87,27 @@ class LoginViewModelTest {
     }
 
     @Test
+    fun `patient credentials authenticate and navigate to Busca`() = runTest(testDispatcher) {
+        viewModel.onRoleSelected(LoginRole.PACIENTE)
+        viewModel.onEmailChanged("paciente@example.com")
+        viewModel.onPasswordChanged("senha123")
+        coEvery { authRepository.signIn("paciente@example.com", "senha123") } returns Result.success(Unit)
+        coEvery { doctorRepository.isCurrentUserDoctor() } returns Result.success(false)
+
+        var navigatedToBusca = false
+        var navigatedToAgenda = false
+        backgroundScope.launch { viewModel.navigateToBusca.collect { navigatedToBusca = true } }
+        backgroundScope.launch { viewModel.navigateToMinhaAgenda.collect { navigatedToAgenda = true } }
+
+        viewModel.submit()
+        advanceUntilIdle()
+
+        assertTrue("expected navigation to Busca for a patient", navigatedToBusca)
+        assertFalse(navigatedToAgenda)
+        assertNull(viewModel.uiState.value.errorMessage)
+    }
+
+    @Test
     fun `wrong credentials show a generic error and do not navigate`() = runTest(testDispatcher) {
         viewModel.onEmailChanged("medico@example.com")
         viewModel.onPasswordChanged("senhaerrada")

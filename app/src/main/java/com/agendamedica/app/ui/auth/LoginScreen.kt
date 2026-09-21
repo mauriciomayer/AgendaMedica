@@ -35,6 +35,7 @@ import com.agendamedica.app.ui.theme.AgendaMedicaColors
 @Composable
 fun LoginScreen(
     onNavigateToMinhaAgenda: () -> Unit,
+    onNavigateToBusca: () -> Unit,
     onNavigateToEscolha: () -> Unit,
     viewModel: LoginViewModel = viewModel(),
 ) {
@@ -42,6 +43,9 @@ fun LoginScreen(
 
     LaunchedEffect(Unit) {
         viewModel.navigateToMinhaAgenda.collect { onNavigateToMinhaAgenda() }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.navigateToBusca.collect { onNavigateToBusca() }
     }
 
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->

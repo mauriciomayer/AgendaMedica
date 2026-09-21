@@ -1,5 +1,9 @@
 package com.agendamedica.app.data.repository
 
+import io.github.jan.supabase.exceptions.BadRequestRestException
+import io.github.jan.supabase.exceptions.UnknownRestException
+import io.ktor.client.statement.HttpResponse
+import io.mockk.mockk
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -31,6 +35,19 @@ class AppErrorTest {
     fun `FORBIDDEN prefix maps to Forbidden bucket`() {
         val error = IllegalStateException("FORBIDDEN: papel incompatível com a ação").toAppError()
         assertTrue(error is AppError.Forbidden)
+    }
+
+    @Test
+    fun `Edge Function RestException reads the prefix from its JSON error body`() {
+        val response = mockk<HttpResponse>(relaxed = true)
+        val conflict = BadRequestRestException("""{"error":"CONFLICT: já existe uma conta com este e-mail"}""", response)
+            .toAppError()
+        val invalid = BadRequestRestException("""{"error":"INVALID: nome é obrigatório"}""", response).toAppError()
+        val nonJson = UnknownRestException("Bad Gateway", response).toAppError()
+
+        assertTrue(conflict is AppError.Conflict)
+        assertTrue(invalid is AppError.Invalid)
+        assertTrue(nonJson is AppError.Unexpected)
     }
 
     @Test

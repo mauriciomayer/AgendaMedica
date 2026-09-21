@@ -36,3 +36,19 @@ real) but out of scope to fix within this story. Each entry names the spec that 
   evidence: Pre-existing pattern (not introduced by this story's diff), so not blocking for
   Story 1.1. No stable error-code alternative was found in the current `@supabase/supabase-js`
   Admin API surface at review time; worth revisiting if/when the SDK exposes one.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
+  summary: Tela Minhas Consultas do Paciente com estado vazio "Você ainda não tem consultas agendadas." e botão "+ Nova consulta" (4º critério de aceite da Story 1.2 no epics.md), incluindo a ação "Minhas consultas" na Busca.
+  evidence: Separada da Story 1.2 por decisão do usuário para manter a spec dentro do escopo (~2.000 tokens > 1.600). É uma tela isolada, sem dependência do cadastro; deve entrar junto com a lista real de consultas do Épico 2 (Story 2.4) ou como história própria antes dela.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
+  summary: `register-patient` copia a deteção de e-mail duplicado por substring (`already`/`registered`/`exists`) na mensagem do `createUser`, agora em duas Edge Functions.
+  evidence: Severidade `medium` não verificada — se o Supabase Auth mudar o texto, o CONFLICT vira `UNEXPECTED` e some a mensagem "Já existe uma conta com este e-mail." Resolver junto com o item equivalente da 1.1 (usar o `code` do erro, ex.: `email_exists`, quando o SDK expuser).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
+  summary: Sem testes automatizados de servidor: `complete_registration` (ramos `doctor` e `patient`, reescrito por `create or replace` na 0002), RLS de `patients` e as Edge Functions `register-doctor`/`register-patient`.
+  evidence: Só há verificação por chamadas reais ao projeto hospedado (201/409/400 e regressão do médico). Uma regressão silenciosa no ramo do médico copiado na 0002 não falharia nenhum teste Kotlin (todos mockam o repositório). Precisa de pgTAP/SQL smoke ou testes Deno; alinhado à decisão de adiar testes de banco/integração.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
+  summary: O cadastro (médico e paciente) cria conta com `email_confirm: true`, sem verificar que o cadastrante é dono do e-mail; `patients.email` alimenta lembretes da Story 3.1.
+  evidence: Severidade `medium` não verificada, vem de decisão de design da 1.1 (sem etapa de validação). Antes de enviar e-mails na 3.1, decidir se basta o risco (projeto de portfólio) ou se cabe confirmação de e-mail / opção de descadastro.

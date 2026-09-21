@@ -53,6 +53,9 @@ class LoginViewModel @JvmOverloads constructor(
     private val _navigateToMinhaAgenda = MutableSharedFlow<Unit>()
     val navigateToMinhaAgenda: SharedFlow<Unit> = _navigateToMinhaAgenda.asSharedFlow()
 
+    private val _navigateToBusca = MutableSharedFlow<Unit>()
+    val navigateToBusca: SharedFlow<Unit> = _navigateToBusca.asSharedFlow()
+
     fun onRoleSelected(role: LoginRole) {
         _uiState.update { it.copy(selectedRole = role, errorMessage = null) }
     }
@@ -102,11 +105,7 @@ class LoginViewModel @JvmOverloads constructor(
             if (isDoctor) {
                 _navigateToMinhaAgenda.emit(Unit)
             } else {
-                // Patient registration/home doesn't exist yet (Story 1.2) — this branch is a
-                // safety net, not an expected path, since no patient accounts can exist yet.
-                _uiState.update {
-                    it.copy(errorMessage = "Ainda não há suporte para esse tipo de conta nesta versão.")
-                }
+                _navigateToBusca.emit(Unit)
             }
         }
     }

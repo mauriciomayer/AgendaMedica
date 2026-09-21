@@ -20,15 +20,14 @@ import com.agendamedica.app.ui.components.PrimaryButton
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 
 /**
- * "Criar conta" choice screen — Login -> "Criar conta" -> here. Only "Sou médico" leads
- * anywhere in this story; "Sou paciente" is intentionally a no-op (Story 1.2 builds the
- * screen it should navigate to — spec explicitly forbids implementing patient registration
- * here, but the choice screen itself is in scope, per Code Map).
+ * "Criar conta" choice screen — Login -> "Criar conta" -> here. "Sou médico" and
+ * "Sou paciente" lead to their respective registration screens.
  */
 @Composable
 fun EscolhaScreen(
     onBack: () -> Unit,
     onSouMedico: () -> Unit,
+    onSouPaciente: () -> Unit,
 ) {
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(18.dp)) {
@@ -49,15 +48,7 @@ fun EscolhaScreen(
             Spacer(Modifier.height(12.dp))
             OutlineButton(
                 text = "Sou paciente",
-                onClick = {}, // Story 1.2 builds this screen — the caption below says so instead
-                // of a silent no-op that reads as the app being unresponsive.
-                borderColor = AgendaMedicaColors.borderInput,
-            )
-            Spacer(Modifier.height(6.dp))
-            Text(
-                text = "Cadastro de paciente chega em breve.",
-                style = MaterialTheme.typography.bodySmall,
-                color = AgendaMedicaColors.inkSecondary,
+                onClick = onSouPaciente,
             )
         }
     }
