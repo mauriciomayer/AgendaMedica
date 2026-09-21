@@ -20,3 +20,9 @@ app/release/
 supabase/.branches/
 supabase/.temp/
 supabase/.env
+
+## Node (Supabase CLI via npx/devDependency)
+node_modules/
+
+## Gerado pelo Android Studio (fixa JDK local)
+gradle/gradle-daemon-jvm.properties
