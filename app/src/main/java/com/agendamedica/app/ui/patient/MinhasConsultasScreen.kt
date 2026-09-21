@@ -114,7 +114,11 @@ fun MinhasConsultasScreen(
                     LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
                         items(state.consultas, key = { it.consulta.id }) { item ->
                             ConsultaCard(
-                                item = item,
+                                titulo = item.consulta.doctorName,
+                                subtitulo = item.consulta.especialidade,
+                                start = item.consulta.start,
+                                convenio = item.consulta.convenio,
+                                bloqueada = item.bloqueada,
                                 confirmando = state.confirmandoId == item.consulta.id,
                                 cancelando = state.cancelandoId == item.consulta.id,
                                 onCancelar = { viewModel.onCancelarClick(item.consulta.id) },
@@ -140,9 +144,14 @@ private fun ActionMessage(text: String) {
     )
 }
 
+/** Card shared by Minhas Consultas (titulo = doctor) and Minha Agenda do Médico (titulo = patient). */
 @Composable
-private fun ConsultaCard(
-    item: ConsultaItem,
+internal fun ConsultaCard(
+    titulo: String,
+    subtitulo: String?,
+    start: java.time.Instant,
+    convenio: String,
+    bloqueada: Boolean,
     confirmando: Boolean,
     cancelando: Boolean,
     onCancelar: () -> Unit,
@@ -150,9 +159,8 @@ private fun ConsultaCard(
     onSim: () -> Unit,
     onNao: () -> Unit,
 ) {
-    val consulta = item.consulta
     // Every card repeats the same button labels: name the appointment so TalkBack can tell them apart.
-    val quem = "${consulta.doctorName}, ${formatarDataHora(consulta.start)}"
+    val quem = "$titulo, ${formatarDataHora(start)}"
     Card(
         shape = ShapeMd,
         colors = CardDefaults.cardColors(containerColor = AgendaMedicaColors.surfaceCard),
@@ -162,20 +170,22 @@ private fun ConsultaCard(
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Row(verticalAlignment = Alignment.Top, modifier = Modifier.fillMaxWidth()) {
                 Column(modifier = Modifier.weight(1f)) {
-                    Text(consulta.doctorName, style = MaterialTheme.typography.titleMedium, color = AgendaMedicaColors.inkPrimary)
-                    Text(consulta.especialidade, style = MaterialTheme.typography.bodyMedium, color = AgendaMedicaColors.inkSecondary)
+                    Text(titulo, style = MaterialTheme.typography.titleMedium, color = AgendaMedicaColors.inkPrimary)
+                    if (subtitulo != null) {
+                        Text(subtitulo, style = MaterialTheme.typography.bodyMedium, color = AgendaMedicaColors.inkSecondary)
+                    }
                 }
                 Spacer(Modifier.padding(4.dp))
-                StatusBadge(bloqueada = item.bloqueada)
+                StatusBadge(bloqueada = bloqueada)
             }
             Text(
-                formatarDataHora(consulta.start),
+                formatarDataHora(start),
                 style = MaterialTheme.typography.bodyLarge,
                 color = AgendaMedicaColors.inkPrimary,
             )
-            Text("Convênio: ${consulta.convenio}", style = MaterialTheme.typography.bodySmall, color = AgendaMedicaColors.inkTertiary)
+            Text("Convênio: $convenio", style = MaterialTheme.typography.bodySmall, color = AgendaMedicaColors.inkTertiary)
             Spacer(Modifier.height(8.dp))
-            if (item.bloqueada) {
+            if (bloqueada) {
                 Text(MSG_JANELA_24H, style = MaterialTheme.typography.bodySmall, color = AgendaMedicaColors.warningInk)
             }
             if (confirmando) {
@@ -204,14 +214,14 @@ private fun ConsultaCard(
                     OutlineButton(
                         text = "Cancelar",
                         onClick = onCancelar,
-                        enabled = !item.bloqueada,
+                        enabled = !bloqueada,
                         borderColor = AgendaMedicaColors.dangerInk,
                         modifier = Modifier.weight(1f).semantics { contentDescription = "Cancelar a consulta com $quem" },
                     )
                     OutlineButton(
                         text = "Reagendar",
                         onClick = onReagendar,
-                        enabled = !item.bloqueada,
+                        enabled = !bloqueada,
                         modifier = Modifier.weight(1f).semantics { contentDescription = "Reagendar a consulta com $quem" },
                     )
                 }

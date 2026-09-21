@@ -185,7 +185,8 @@ fun AgendaMedicaNavHost(
                     }
                 },
                 onReagendar = { doctorId, consultaId ->
-                    navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId")
+                    // launchSingleTop: a double tap must not stack two copies of the reschedule screen.
+                    navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId") { launchSingleTop = true }
                 },
             )
         }
@@ -199,8 +200,14 @@ fun AgendaMedicaNavHost(
                 },
             )
         }
-        composable(Routes.MINHA_AGENDA) {
-            MinhaAgendaScreen()
+        composable(Routes.MINHA_AGENDA) { entry ->
+            MinhaAgendaScreen(
+                lifecycleOwner = entry,
+                onReagendar = { doctorId, consultaId ->
+                    // launchSingleTop: a double tap must not stack two copies of the reschedule screen.
+                    navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId") { launchSingleTop = true }
+                },
+            )
         }
     }
 }

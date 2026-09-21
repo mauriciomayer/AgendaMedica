@@ -7,6 +7,9 @@
 // the 24h window (just outside -> CONFLICT: cancel_window, just inside -> allowed), racing reschedules
 // to one slot (exactly 1 wins), foreign/unknown/anon callers, already-cancelled appointments, the doctor
 // as caller, denied direct UPDATE/DELETE and that book_appointment still behaves as in Story 2.3.
+// Story 2.5 adds list_doctor_appointments() (migration 0007): only the caller's own upcoming confirmed
+// appointments with the patient NAME (never e-mail), empty for a patient, denied to anon; plus the
+// doctor's cancel/reschedule flow with events to the patient. Run AFTER migration 0007 is applied.
 // Every test row is removed at the end.
 //
 // The exact-24h boundary cannot be hit against the real clock (now() advances between the SQL insert
@@ -294,6 +297,84 @@ async function main() {
   check(!inserted.some((r) => listed.includes(r.id)), "the past confirmed and the cancelled one are excluded");
   check(rows.every((r, i) => i === 0 || instant(rows[i - 1].start_time) <= instant(r.start_time)), "ordered by start time ascending");
   check(rows.length > 0 && rows.every((r) => r.doctors?.name === "Dr. Cancelamento" && r.doctors?.specialty === "Clínico Geral"), "embedded doctor name and specialty decode");
+
+  console.log("\nlist_doctor_appointments (Story 2.5)");
+  const other = `${PREFIX}-doctor2@example.com`;
+  await fn("register-doctor", {
+    name: "Dr. Outro",
+    email: other,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+  });
+  const otherId = sql(`select id from auth.users where email = '${other}'`)[0].id;
+  const tOther = await login(other);
+  const own = (await book(t0, doctorId, saoPauloSlot(22, 9, 0), "Unimed")).message.replace(/"/g, "");
+  const foreign = (await book(t1, otherId, saoPauloSlot(22, 9, 0), "Unimed")).message.replace(/"/g, "");
+  const nearMine = insertAppt(ids[1], "23 hours 30 minutes");
+  const cancelledMine = insertAppt(ids[2], "10 days");
+  sql(`update appointments set status = 'cancelled' where id = '${cancelledMine}'`);
+  const pastMine = sql(
+    `insert into appointments (patient_id, doctor_id, start_time, status, insurance) values ('${ids[2]}', '${doctorId}', now() - interval '2 days', 'confirmed', 'Unimed') returning id`,
+  )[0].id;
+
+  const parse = (res) => {
+    try {
+      return JSON.parse(res.message);
+    } catch {
+      return [];
+    }
+  };
+  r = await rpc(tDoctor, "list_doctor_appointments", {});
+  let dlist = parse(r);
+  check(r.ok, `the doctor can call it (got ${r.status})`);
+  const listedIds = dlist.map((x) => x.id);
+  check(listedIds.includes(own) && listedIds.includes(nearMine), "own confirmed future appointments are listed (including under 24h)");
+  check(!listedIds.includes(foreign), "another doctor's appointment is not listed");
+  check(!listedIds.includes(cancelledMine) && !listedIds.includes(pastMine), "cancelled and past ones are excluded");
+  check(dlist.every((x, i) => i === 0 || instant(dlist[i - 1].start_time) <= instant(x.start_time)), "ordered by start time ascending");
+  const mine = dlist.find((x) => x.id === own);
+  check(mine?.patient_name === "Paciente 0" && mine?.insurance === "Unimed", "patient_name and insurance are returned");
+  check(dlist.every((x) => Object.keys(x).sort().join(",") === "id,insurance,patient_name,start_time"), "only id, start_time, insurance, patient_name (no e-mail)");
+  check(!r.message.includes("@example.com"), "no e-mail anywhere in the payload");
+
+  r = await rpc(tOther, "list_doctor_appointments", {});
+  check(r.ok && parse(r).every((x) => x.id !== own) && parse(r).some((x) => x.id === foreign), "another doctor only sees their own");
+  r = await rpc(t0, "list_doctor_appointments", {});
+  check(r.ok && r.message.trim() === "[]", `a patient receives an empty list (got ${r.message})`);
+  r = await rpc(null, "list_doctor_appointments", {});
+  check(!r.ok, `no session (anon) is denied (got ${r.status})`);
+  const leak = await fetch(`${URL_BASE}/rest/v1/patients?select=email`, { headers: { apikey: ANON, Authorization: `Bearer ${tDoctor}` } });
+  check(leak.ok && (await leak.json()).length === 0, "the doctor still cannot read the patients table");
+
+  console.log("\nDoctor flow: cancel and reschedule with event to the patient, 24h window");
+  const R1 = saoPauloSlot(23, 9, 0);
+  r = await reschedule(tDoctor, own, R1);
+  check(r.ok, `doctor reschedules within their own schedule (got ${r.message})`);
+  check(apptRow(own).id === own && instant(apptRow(own).start_time) === instant(R1), "same appointment id at the new slot");
+  ev = events(own, "reschedule");
+  check(ev.length === 1 && ev[0].recipient_id === ids[0], "reschedule event goes to the PATIENT");
+  r = await reschedule(tDoctor, own, R1);
+  check(!r.ok && r.message.startsWith("INVALID:"), `same slot -> INVALID (got ${r.message})`);
+  r = await reschedule(tDoctor, own, new Date(Math.floor((Date.now() + 40 * 3600000) / 900000) * 900000).toISOString());
+  check(!r.ok && r.message === "CONFLICT: lead_time", `new slot under 48h -> lead_time (got ${r.message})`);
+  r = await reschedule(tDoctor, nearMine, saoPauloSlot(24, 9, 0));
+  check(!r.ok && r.message === "CONFLICT: cancel_window", `doctor reschedule under 24h -> cancel_window (got ${r.message})`);
+  r = await cancel(tDoctor, nearMine);
+  check(!r.ok && r.message === "CONFLICT: cancel_window", `doctor cancel under 24h -> cancel_window (got ${r.message})`);
+  r = await cancel(tOther, own);
+  check(!r.ok && r.message.startsWith("FORBIDDEN:"), `another doctor cannot cancel it (got ${r.message})`);
+  r = await cancel(tDoctor, own);
+  check(r.ok, `doctor cancels (got ${r.message})`);
+  check(apptRow(own).status === "cancelled" && bookedCount(doctorId, R1) === 0, "status cancelled and slot released");
+  ev = events(own, "cancellation");
+  check(ev.length === 1 && ev[0].recipient_id === ids[0], "cancellation event goes to the PATIENT");
+  r = await rpc(tDoctor, "list_doctor_appointments", {});
+  check(r.ok && !parse(r).some((x) => x.id === own), "cancelled appointment leaves the doctor's list");
+  r = await cancel(tDoctor, own);
+  check(!r.ok && r.message.startsWith("INVALID:"), `cancelling again -> INVALID (got ${r.message})`);
 
   console.log("\nOutside the doctor's schedule (last: removes one weekday's block)");
   const far = saoPauloSlot(21, 10, 0);

@@ -118,6 +118,24 @@ private data class AppointmentRow(
     val doctors: AppointmentDoctorRow,
 )
 
+/** One upcoming confirmed appointment of the doctor; only the patient's name is known (AD-10). */
+data class ConsultaDoMedico(
+    val id: String,
+    val patientName: String,
+    val start: Instant,
+    val convenio: String,
+)
+
+@Serializable
+internal data class DoctorAppointmentRow(
+    val id: String,
+    @SerialName("start_time") val startTime: String,
+    val insurance: String,
+    @SerialName("patient_name") val patientName: String,
+)
+
+internal fun DoctorAppointmentRow.toConsulta() = ConsultaDoMedico(id, patientName, parseTimestamptz(startTime), insurance)
+
 /** A change of `booked_slots` for one doctor, pushed by Realtime. */
 sealed interface BookedSlotChange {
     data class Taken(val start: Instant) : BookedSlotChange
@@ -176,6 +194,17 @@ class AppointmentRepository(
             .map {
                 MinhaConsulta(it.id, it.doctorId, it.doctors.name, it.doctors.specialty, parseTimestamptz(it.startTime), it.insurance)
             }
+    }
+
+    /**
+     * The caller's (doctor) upcoming confirmed appointments with the patient's name, soonest first,
+     * through `list_doctor_appointments` (the function scopes by `auth.uid()` and never returns e-mail).
+     */
+    suspend fun getDoctorUpcomingAppointments(): Result<List<ConsultaDoMedico>> = runCatching {
+        client.postgrest.rpc("list_doctor_appointments")
+            .decodeList<DoctorAppointmentRow>()
+            .map { it.toConsulta() }
+            .sortedBy { it.start }
     }
 
     suspend fun cancelAppointment(appointmentId: String): CancelResult =
