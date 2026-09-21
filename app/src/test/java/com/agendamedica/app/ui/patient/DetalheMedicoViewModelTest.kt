@@ -1,5 +1,9 @@
 package com.agendamedica.app.ui.patient
 
+import com.agendamedica.app.data.repository.AppError
+import com.agendamedica.app.data.repository.AppointmentRepository
+import com.agendamedica.app.data.repository.BookedSlotChange
+import com.agendamedica.app.data.repository.BookingResult
 import com.agendamedica.app.data.repository.DoctorRepository
 import com.agendamedica.app.domain.agenda.DoctorDetail
 import com.agendamedica.app.domain.agenda.MOTIVO_ANTECEDENCIA
@@ -9,7 +13,11 @@ import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.Especialidade
 import com.agendamedica.app.domain.model.ScheduleBlock
 import io.mockk.coEvery
+import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
@@ -35,6 +43,7 @@ import java.time.ZoneId
 class DetalheMedicoViewModelTest {
 
     private val repository: DoctorRepository = mockk()
+    private val appointments: AppointmentRepository = mockk()
     private val testDispatcher = UnconfinedTestDispatcher()
 
     // Monday 2026-09-21 10:00 in Sao Paulo (13:00 UTC); device zone deliberately different.
@@ -59,7 +68,7 @@ class DetalheMedicoViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun vm() = DetalheMedicoViewModel("d1", repository, clock)
+    private fun vm() = DetalheMedicoViewModel("d1", repository, clock, appointments)
 
     @Test
     fun `opens with header, working days and no selection`() = runTest(testDispatcher) {
@@ -147,5 +156,125 @@ class DetalheMedicoViewModelTest {
     fun `booked slots failure also shows error`() = runTest(testDispatcher) {
         coEvery { repository.getBookedSlots("d1", any(), any()) } returns Result.failure(IOException("x"))
         assertNotNull(vm().uiState.value.errorMessage)
+    }
+
+    // ---- Story 2.3: booking ----
+
+    private val twoConvenios = detail(monWedFri).copy(convenios = listOf(Convenio.UNIMED, Convenio.AMIL))
+    private val target = LocalDate.of(2026, 9, 30) // Wednesday, more than 48h ahead
+
+    private fun DetalheMedicoViewModel.pickSlot(): Instant {
+        onDiaSelected(target)
+        val slot = uiState.value.slots.first()
+        onSlotSelected(slot)
+        return slot.start
+    }
+
+    @Test
+    fun `button needs doctor, day, slot and convenio`() = runTest(testDispatcher) {
+        coEvery { repository.getDoctorDetail("d1") } returns Result.success(twoConvenios)
+        val vm = vm()
+        assertFalse(vm.uiState.value.podeConfirmar)
+        vm.onDiaSelected(target)
+        assertFalse(vm.uiState.value.podeConfirmar)
+        vm.onSlotSelected(vm.uiState.value.slots.first())
+        assertFalse(vm.uiState.value.podeConfirmar)
+        vm.onConvenioSelected(Convenio.AMIL)
+        assertTrue(vm.uiState.value.podeConfirmar)
+    }
+
+    @Test
+    fun `single convenio comes preselected`() = runTest(testDispatcher) {
+        assertEquals(Convenio.UNIMED, vm().uiState.value.selectedConvenio)
+    }
+
+    @Test
+    fun `success exposes the confirmation summary`() = runTest(testDispatcher) {
+        val vm = vm()
+        val start = vm.pickSlot()
+        coEvery { appointments.bookAppointment("d1", start, "Unimed") } returns BookingResult.Success("a1")
+        vm.confirmar()
+        val c = vm.uiState.value.confirmacao
+        assertNotNull(c)
+        assertEquals("Dra. Ana", c!!.doctorName)
+        assertEquals(start, c.start)
+        assertEquals("Unimed", c.convenio)
+        assertFalse(vm.uiState.value.isSubmitting)
+        vm.onConfirmacaoConsumida()
+        assertNull(vm.uiState.value.confirmacao)
+    }
+
+    @Test
+    fun `no double submit while sending`() = runTest(testDispatcher) {
+        val vm = vm()
+        val gate = CompletableDeferred<BookingResult>()
+        coEvery { appointments.bookAppointment(any(), any(), any()) } coAnswers { gate.await() }
+        vm.pickSlot()
+        vm.confirmar()
+        assertTrue(vm.uiState.value.isSubmitting)
+        assertFalse(vm.uiState.value.podeConfirmar)
+        vm.confirmar()
+        gate.complete(BookingResult.Success(null))
+        coVerify(exactly = 1) { appointments.bookAppointment(any(), any(), any()) }
+    }
+
+    @Test
+    fun `conflict shows exact message, marks Ocupado and clears selection`() = runTest(testDispatcher) {
+        val vm = vm()
+        val start = vm.pickSlot()
+        coEvery { appointments.bookAppointment(any(), any(), any()) } returns BookingResult.SlotTaken
+        vm.confirmar()
+        val s = vm.uiState.value
+        assertEquals("Este horário acabou de ser reservado, escolha outro.", s.bookingMessage)
+        assertNull(s.selectedSlot)
+        assertNull(s.confirmacao)
+        assertEquals(SlotMotivo.OCUPADO, s.slots.first { it.start == start }.motivo)
+        // initial load + refetch after the conflict
+        coVerify(atLeast = 2) { repository.getBookedSlots("d1", any(), any()) }
+    }
+
+    @Test
+    fun `lead time shows clear message without technical text`() = runTest(testDispatcher) {
+        val vm = vm()
+        vm.pickSlot()
+        coEvery { appointments.bookAppointment(any(), any(), any()) } returns BookingResult.LeadTime
+        vm.confirmar()
+        assertEquals(MSG_ANTECEDENCIA, vm.uiState.value.bookingMessage)
+        assertNull(vm.uiState.value.selectedSlot)
+    }
+
+    @Test
+    fun `network failure shows generic message and does not navigate`() = runTest(testDispatcher) {
+        val vm = vm()
+        vm.pickSlot()
+        coEvery { appointments.bookAppointment(any(), any(), any()) } returns
+            BookingResult.Failure(AppError.Unexpected("boom"))
+        vm.confirmar()
+        assertEquals("Algo deu errado. Tente novamente.", vm.uiState.value.bookingMessage)
+        assertNull(vm.uiState.value.confirmacao)
+        assertFalse(vm.uiState.value.isSubmitting)
+        assertNotNull(vm.uiState.value.selectedSlot)
+    }
+
+    @Test
+    fun `realtime marks slot Ocupado and clears a selected one with notice`() = runTest(testDispatcher) {
+        val changes = MutableSharedFlow<BookedSlotChange>()
+        every { appointments.observeBookedSlots("d1") } returns changes
+        val vm = vm()
+        vm.startObserving()
+        val start = vm.pickSlot()
+        val other = vm.uiState.value.slots[1].start
+
+        changes.emit(BookedSlotChange.Taken(other))
+        assertEquals(SlotMotivo.OCUPADO, vm.uiState.value.slots[1].motivo)
+        assertEquals(start, vm.uiState.value.selectedSlot)
+
+        changes.emit(BookedSlotChange.Taken(start))
+        assertNull(vm.uiState.value.selectedSlot)
+        assertEquals(MSG_RESERVADO_REALTIME, vm.uiState.value.bookingMessage)
+
+        changes.emit(BookedSlotChange.Freed(other))
+        assertNull(vm.uiState.value.slots[1].motivo)
+        vm.stopObserving()
     }
 }

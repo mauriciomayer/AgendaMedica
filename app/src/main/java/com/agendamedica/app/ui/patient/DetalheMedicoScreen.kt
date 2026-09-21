@@ -27,6 +27,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -45,6 +47,7 @@ import com.agendamedica.app.domain.agenda.AgendaSlot
 import com.agendamedica.app.domain.agenda.diaSemanaDe
 import com.agendamedica.app.ui.components.AccessibleIconButton
 import com.agendamedica.app.ui.components.OutlineButton
+import com.agendamedica.app.ui.components.PrimaryButton
 import com.agendamedica.app.ui.components.TagChip
 import com.agendamedica.app.ui.components.ToggleChip
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
@@ -57,7 +60,7 @@ private const val COLUNAS = 3
 
 /** Detalhe do Médico (FR5, FR6): header, day carousel and the 15-minute slot grid. */
 @Composable
-fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit) {
+fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit, onBooked: (ConfirmacaoData) -> Unit) {
     val viewModel: DetalheMedicoViewModel = viewModel(
         key = "detalhe-$doctorId",
         factory = object : ViewModelProvider.Factory {
@@ -67,6 +70,18 @@ fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit) {
         },
     )
     val state by viewModel.uiState.collectAsState()
+
+    // Realtime lives only while this screen is shown (AD-10).
+    DisposableEffect(viewModel) {
+        viewModel.startObserving()
+        onDispose { viewModel.stopObserving() }
+    }
+    LaunchedEffect(state.confirmacao) {
+        state.confirmacao?.let {
+            viewModel.onConfirmacaoConsumida()
+            onBooked(it)
+        }
+    }
 
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp)) {
@@ -169,6 +184,37 @@ private fun DetalheContent(state: DetalheMedicoUiState, viewModel: DetalheMedico
                 }
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+        Text("Convênio", style = MaterialTheme.typography.labelLarge, color = AgendaMedicaColors.inkPrimary)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = 8.dp),
+        ) {
+            doctor.convenios.forEach { convenio ->
+                ToggleChip(
+                    text = convenio.label,
+                    selected = convenio == state.selectedConvenio,
+                    onClick = { viewModel.onConvenioSelected(convenio) },
+                )
+            }
+        }
+        state.bookingMessage?.let {
+            Text(
+                text = it,
+                style = MaterialTheme.typography.bodyMedium,
+                color = AgendaMedicaColors.dangerInk,
+                modifier = Modifier.padding(top = 12.dp),
+            )
+        }
+        Spacer(Modifier.height(16.dp))
+        PrimaryButton(
+            text = if (state.isSubmitting) "Agendando..." else "Confirmar agendamento",
+            onClick = viewModel::confirmar,
+            enabled = state.podeConfirmar,
+        )
+        Spacer(Modifier.height(24.dp))
     }
 }
 

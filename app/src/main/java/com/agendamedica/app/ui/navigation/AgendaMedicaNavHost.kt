@@ -1,6 +1,7 @@
 package com.agendamedica.app.ui.navigation
 
 import android.content.Intent
+import android.net.Uri
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.navigation.NavType
@@ -20,6 +21,7 @@ import com.agendamedica.app.ui.doctor.CadastroMedicoScreen
 import com.agendamedica.app.ui.doctor.MinhaAgendaScreen
 import com.agendamedica.app.ui.patient.BuscaScreen
 import com.agendamedica.app.ui.patient.CadastroPacienteScreen
+import com.agendamedica.app.ui.patient.ConfirmacaoScreen
 import com.agendamedica.app.ui.patient.DetalheMedicoScreen
 
 /** Route names for this story's screens (Information Architecture, EXPERIENCE.md). */
@@ -36,6 +38,8 @@ private object Routes {
     const val BUSCA = "busca"
     const val DETALHE_MEDICO = "medico"
     const val DETALHE_MEDICO_PATTERN = "medico/{doctorId}"
+    const val CONFIRMACAO = "confirmacao"
+    const val CONFIRMACAO_PATTERN = "confirmacao?medico={medico}&especialidade={especialidade}&inicio={inicio}&convenio={convenio}"
 }
 
 /**
@@ -127,6 +131,37 @@ fun AgendaMedicaNavHost(
             DetalheMedicoScreen(
                 doctorId = entry.arguments?.getString("doctorId").orEmpty(),
                 onBack = { navController.popBackStack() },
+                onBooked = { c ->
+                    val route = "${Routes.CONFIRMACAO}?medico=${Uri.encode(c.doctorName)}" +
+                        "&especialidade=${Uri.encode(c.especialidade)}" +
+                        "&inicio=${c.start.toEpochMilli()}&convenio=${Uri.encode(c.convenio)}"
+                    // Detalhe leaves the back stack so "voltar" from Confirmação never returns to it.
+                    navController.navigate(route) {
+                        popUpTo(Routes.DETALHE_MEDICO_PATTERN) { inclusive = true }
+                    }
+                },
+            )
+        }
+        composable(
+            Routes.CONFIRMACAO_PATTERN,
+            arguments = listOf(
+                navArgument("medico") { type = NavType.StringType; defaultValue = "" },
+                navArgument("especialidade") { type = NavType.StringType; defaultValue = "" },
+                navArgument("inicio") { type = NavType.LongType; defaultValue = 0L },
+                navArgument("convenio") { type = NavType.StringType; defaultValue = "" },
+            ),
+        ) { entry ->
+            val args = entry.arguments
+            ConfirmacaoScreen(
+                doctorName = args?.getString("medico").orEmpty(),
+                especialidade = args?.getString("especialidade").orEmpty(),
+                startMillis = args?.getLong("inicio") ?: 0L,
+                convenio = args?.getString("convenio").orEmpty(),
+                onVoltarBusca = {
+                    navController.navigate(Routes.BUSCA) {
+                        popUpTo(Routes.BUSCA) { inclusive = true }
+                    }
+                },
             )
         }
         composable(Routes.CADASTRO_MEDICO) {

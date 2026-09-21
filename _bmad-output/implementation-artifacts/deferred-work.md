@@ -68,3 +68,11 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-2-paciente-visualiza-horarios.md`
   summary: Sem teste automatizado de `DoctorRepository.getDoctorDetail`/`getBookedSlots` (mapeamento de linhas, filtro de janela, `OffsetDateTime.parse`), da RLS de `booked_slots` e da navegação Busca -> Detalhe.
   evidence: Severidade `medium`, verificada. Cobertos por conferência manual contra o servidor real (formatos `08:00:00` e `2026-09-30T17:30:00+00:00`, janela `gte`/`lt`, escrita como paciente -> 403) e pelo teste manual no aparelho. Fechar exige fake do cliente Postgrest/harness de servidor e UI tests instrumentados; a Story 2.3 (que passa a escrever em `booked_slots` via trigger) é o momento natural para um teste de repositório.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-paciente-agenda-consulta.md`
+  summary: Se a resposta de `book_appointment` se perde (rede) e o paciente reenvia, ele recebe `CONFLICT: slot_taken` para a própria consulta em vez de sucesso.
+  evidence: Severidade `medium`, verificada por leitura do fluxo (sem chave de idempotência). A correção natural é, ao receber `slot_taken`, consultar `appointments` (RLS mostra só as do próprio paciente) e tratar uma linha `confirmed` do mesmo médico/horário como sucesso; não coube nesta história por acrescentar comportamento não previsto na spec.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-3-paciente-agenda-consulta.md`
+  summary: Sem teste automatizado do cliente Kotlin contra o servidor (`bookAppointment`, `observeBookedSlots`, canal Realtime real), das rotas/`popUpTo` da Confirmação e do Realtime ponta a ponta; o RPC em si é provado pelo `supabase/tests/concurrency-test.mjs` (manual, contra o projeto hospedado, fora de CI).
+  evidence: Severidade `medium`, verificada. Fechar exige fake do cliente supabase-kt/Realtime, UI tests instrumentados e um passo de CI que rode o script com credenciais; enquanto isso, a verificação é o teste manual no aparelho (agendar, ver a Confirmação, disputar o mesmo horário e ver o "Ocupado" sem recarregar).
