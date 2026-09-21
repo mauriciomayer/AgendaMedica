@@ -6,6 +6,7 @@ import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.DoctorProfile
 import com.agendamedica.app.domain.model.Especialidade
 import com.agendamedica.app.domain.model.ScheduleBlock
+import com.agendamedica.app.domain.search.DoctorSummary
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.auth.auth
 import io.github.jan.supabase.functions.functions
@@ -36,6 +37,7 @@ data class RegisterDoctorRequest(
     val specialty: String,
     val insurances: List<String>,
     val schedules: List<ScheduleInput>,
+    val location: String,
 )
 
 @Serializable
@@ -46,6 +48,18 @@ private data class DoctorRow(
     val name: String,
     val specialty: String,
     val insurances: List<String>,
+)
+
+@Serializable
+private data class DoctorSearchRow(
+    val id: String,
+    val name: String,
+    val specialty: String,
+    val insurances: List<String>,
+    val city: String,
+    val neighborhood: String,
+    val latitude: Double,
+    val longitude: Double,
 )
 
 @Serializable
@@ -91,6 +105,31 @@ class DoctorRepository(
             }.getOrNull() ?: "UNEXPECTED: register-doctor retornou ${response.status.value}"
             throw IllegalStateException(errorMessage)
         }
+    }
+
+    /**
+     * Lists doctors for Busca, optionally filtered by [especialidade] on the server. Region and
+     * ordering are applied by the caller (domain/search). Readable by any authenticated user
+     * via RLS (`doctors_select_authenticated`).
+     */
+    suspend fun searchDoctors(especialidade: Especialidade?): Result<List<DoctorSummary>> = runCatching {
+        client.postgrest.from("doctors")
+            .select {
+                if (especialidade != null) filter { eq("specialty", especialidade.label) }
+            }
+            .decodeList<DoctorSearchRow>()
+            .mapNotNull { row ->
+                DoctorSummary(
+                    id = row.id,
+                    name = row.name,
+                    especialidade = Especialidade.fromLabel(row.specialty) ?: return@mapNotNull null,
+                    city = row.city,
+                    neighborhood = row.neighborhood,
+                    latitude = row.latitude,
+                    longitude = row.longitude,
+                    convenios = row.insurances.mapNotNull(Convenio::fromLabel),
+                )
+            }
     }
 
     suspend fun getMyProfile(): Result<DoctorProfile> = runCatching {

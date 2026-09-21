@@ -60,3 +60,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-usuario-recupera-senha.md`
   summary: A sessão criada pelo link de recuperação fica salva no aparelho se o app for morto em Nova Senha ou se o `signOut` falhar; hoje o app sempre abre no Login, então nada a usa.
   evidence: Severidade `low` hoje, sobe para `medium` quando alguma história adicionar restauração de sessão/auto-login: aí uma sessão de recuperação abandonada daria acesso sem senha. Nessa história, tratar sessões de recuperação (ex.: detectar `type=recovery` e exigir Nova Senha, ou `signOut(SignOutScope.GLOBAL)`).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-1-paciente-busca-medicos.md`
+  summary: Sem teste automatizado do mapeamento de `DoctorRepository.searchDoctors` (filtro de Especialidade no servidor, descarte de linhas desconhecidas), de `AndroidLocationProvider` (permissão, posição recente, timeout, fallback de provedor) e das validações de localização da Edge Function `register-doctor` e do RPC `complete_registration`.
+  evidence: Severidade `medium`, verificada. Cobertos apenas por chamadas reais ao projeto hospedado (localização válida 201, fora da lista/ausente 400, leitura como paciente) e pelo teste manual no aparelho. Fechar exige Robolectric/UI test, harness pgTAP/Deno ou extrair o mapeamento linha->resumo para função pura; o teste de consistência da lista de localidades já cobre a divergência entre as três cópias.

@@ -5,6 +5,7 @@ import com.agendamedica.app.data.repository.DoctorRepository
 import com.agendamedica.app.domain.model.Convenio
 import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.Especialidade
+import com.agendamedica.app.domain.model.Localizacao
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -61,6 +62,7 @@ class CadastroMedicoViewModelTest {
         viewModel.onEmailChanged("ricardo@example.com")
         viewModel.onPasswordChanged("senha123")
         viewModel.onEspecialidadeSelected(Especialidade.CARDIOLOGIA)
+        viewModel.onLocalizacaoSelected(Localizacao.SP_CENTRO)
         viewModel.onConvenioToggled(Convenio.UNIMED)
         viewModel.onDiaToggled(DiaSemana.SEGUNDA)
         viewModel.onStartTimeSelected("08:00")
@@ -84,6 +86,7 @@ class CadastroMedicoViewModelTest {
         viewModel.onEmailChanged("ricardo@example.com")
         viewModel.onPasswordChanged("senha123")
         viewModel.onEspecialidadeSelected(Especialidade.CARDIOLOGIA)
+        viewModel.onLocalizacaoSelected(Localizacao.SP_CENTRO)
         viewModel.onDiaToggled(DiaSemana.SEGUNDA)
         // No onConvenioToggled call at all.
 
@@ -96,10 +99,29 @@ class CadastroMedicoViewModelTest {
         viewModel.onEmailChanged("ricardo@example.com")
         viewModel.onPasswordChanged("senha123")
         viewModel.onEspecialidadeSelected(Especialidade.CARDIOLOGIA)
+        viewModel.onLocalizacaoSelected(Localizacao.SP_CENTRO)
         viewModel.onConvenioToggled(Convenio.UNIMED)
         // No onDiaToggled call at all.
 
         assertFalse(viewModel.uiState.value.isSubmitEnabled)
+    }
+
+    @Test
+    fun `submit disabled when localizacao not selected`() {
+        fillValidForm()
+        assertFalse(viewModel.uiState.value.copy(localizacao = null).isSubmitEnabled)
+    }
+
+    @Test
+    fun `submit sends the localizacao label and never coordinates`() = runTest(testDispatcher) {
+        fillValidForm()
+        coEvery { doctorRepository.registerDoctor(any()) } returns Result.success(Unit)
+        coEvery { authRepository.signIn(any(), any()) } returns Result.success(Unit)
+
+        viewModel.submit()
+        advanceUntilIdle()
+
+        coVerify { doctorRepository.registerDoctor(match { it.location == "Centro, São Paulo - SP" }) }
     }
 
     @Test

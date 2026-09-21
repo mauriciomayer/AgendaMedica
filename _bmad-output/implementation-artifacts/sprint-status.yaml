@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-17-2026 12:00
-last_updated: 09-21-2026 18:00
+last_updated: 09-21-2026 22:00
 project: AgendaMedica
 project_key: NOKEY
 tracking_system: file-system
@@ -41,8 +41,8 @@ development_status:
   1-3-usuário-recupera-a-senha-esquecida: review
   epic-1-retrospective: optional
 
-  epic-2: backlog
-  2-1-paciente-busca-médicos-por-especialidade-e-localização: backlog
+  epic-2: in-progress
+  2-1-paciente-busca-médicos-por-especialidade-e-localização: review
   2-2-paciente-visualiza-horários-disponíveis-de-um-médico: backlog
   2-3-paciente-agenda-uma-consulta-com-garantia-de-que-não-haverá: backlog
   2-4-paciente-cancela-ou-reagenda-uma-consulta: backlog

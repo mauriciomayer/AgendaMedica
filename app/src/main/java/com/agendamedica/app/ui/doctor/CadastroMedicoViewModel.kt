@@ -11,6 +11,7 @@ import com.agendamedica.app.data.repository.toUserMessage
 import com.agendamedica.app.domain.model.Convenio
 import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.Especialidade
+import com.agendamedica.app.domain.model.Localizacao
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -39,6 +40,7 @@ data class CadastroMedicoUiState(
     val email: String = "",
     val password: String = "",
     val especialidade: Especialidade? = null,
+    val localizacao: Localizacao? = null,
     val conveniosSelecionados: Set<Convenio> = emptySet(),
     val diasSelecionados: Set<DiaSemana> = emptySet(),
     val startTime: String = "08:00",
@@ -57,6 +59,7 @@ data class CadastroMedicoUiState(
             EMAIL_PATTERN.matches(email) &&
             password.length >= 6 &&
             especialidade != null &&
+            localizacao != null &&
             conveniosSelecionados.isNotEmpty() &&
             diasSelecionados.isNotEmpty() &&
             startTime < endTime
@@ -88,6 +91,7 @@ class CadastroMedicoViewModel @JvmOverloads constructor(
     fun onEmailChanged(value: String) = _uiState.update { it.copy(email = value, errorMessage = null) }
     fun onPasswordChanged(value: String) = _uiState.update { it.copy(password = value, errorMessage = null) }
     fun onEspecialidadeSelected(value: Especialidade) = _uiState.update { it.copy(especialidade = value) }
+    fun onLocalizacaoSelected(value: Localizacao) = _uiState.update { it.copy(localizacao = value) }
     fun onStartTimeSelected(value: String) = _uiState.update { it.copy(startTime = value) }
     fun onEndTimeSelected(value: String) = _uiState.update { it.copy(endTime = value) }
 
@@ -106,7 +110,8 @@ class CadastroMedicoViewModel @JvmOverloads constructor(
     fun submit() {
         val state = _uiState.value
         val especialidade = state.especialidade
-        if (!state.isSubmitEnabled || especialidade == null) return
+        val localizacao = state.localizacao
+        if (!state.isSubmitEnabled || especialidade == null || localizacao == null) return
 
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, errorMessage = null) }
@@ -116,6 +121,7 @@ class CadastroMedicoViewModel @JvmOverloads constructor(
                 email = state.email.trim(),
                 password = state.password,
                 specialty = especialidade.label,
+                location = localizacao.label,
                 insurances = state.conveniosSelecionados.map { it.label },
                 schedules = state.diasSelecionados.map { dia ->
                     ScheduleInput(weekday = dia.isoValue, startTime = state.startTime, endTime = state.endTime)

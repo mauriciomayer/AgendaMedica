@@ -36,6 +36,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agendamedica.app.domain.model.Convenio
 import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.Especialidade
+import com.agendamedica.app.domain.model.Localizacao
 import com.agendamedica.app.ui.components.AccessibleIconButton
 import com.agendamedica.app.ui.components.LabeledTextField
 import com.agendamedica.app.ui.components.PrimaryButton
@@ -111,6 +112,13 @@ fun CadastroMedicoScreen(
             EspecialidadeDropdown(
                 selected = uiState.especialidade,
                 onSelected = viewModel::onEspecialidadeSelected,
+            )
+            Spacer(Modifier.height(20.dp))
+
+            SectionLabel("Localização")
+            LocalizacaoDropdown(
+                selected = uiState.localizacao,
+                onSelected = viewModel::onLocalizacaoSelected,
             )
             Spacer(Modifier.height(20.dp))
 
@@ -223,6 +231,39 @@ private fun EspecialidadeDropdown(
                     text = { Text(especialidade.label) },
                     onClick = {
                         onSelected(especialidade)
+                        expanded = false
+                    },
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun LocalizacaoDropdown(
+    selected: Localizacao?,
+    onSelected: (Localizacao) -> Unit,
+) {
+    var expanded by remember { mutableStateOf(false) }
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selected?.label ?: "",
+            onValueChange = {},
+            readOnly = true,
+            label = { Text("Selecione") },
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            shape = ShapeMd,
+            modifier = Modifier
+                .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                .fillMaxWidth(),
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            Localizacao.entries.forEach { localizacao ->
+                DropdownMenuItem(
+                    text = { Text(localizacao.label) },
+                    onClick = {
+                        onSelected(localizacao)
                         expanded = false
                     },
                 )

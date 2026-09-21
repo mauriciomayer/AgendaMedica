@@ -24,6 +24,24 @@ const ESPECIALIDADES = [
 
 const CONVENIOS = ["Unimed", "Amil", "Bradesco", "Particular"] as const;
 
+// Fixed location list — copy of domain/model/Localizacao.kt (and of the list validated in
+// migration 0003). The client only sends the label; coordinates are resolved here (AD-1).
+const LOCALIDADES = [
+  { label: "Centro, São Paulo - SP", city: "São Paulo", neighborhood: "Centro", latitude: -23.5505, longitude: -46.6333 },
+  { label: "Pinheiros, São Paulo - SP", city: "São Paulo", neighborhood: "Pinheiros", latitude: -23.5613, longitude: -46.7008 },
+  { label: "Moema, São Paulo - SP", city: "São Paulo", neighborhood: "Moema", latitude: -23.6001, longitude: -46.6658 },
+  { label: "Vila Mariana, São Paulo - SP", city: "São Paulo", neighborhood: "Vila Mariana", latitude: -23.5893, longitude: -46.6345 },
+  { label: "Itaim Bibi, São Paulo - SP", city: "São Paulo", neighborhood: "Itaim Bibi", latitude: -23.5845, longitude: -46.6784 },
+  { label: "Centro, Campinas - SP", city: "Campinas", neighborhood: "Centro", latitude: -22.9056, longitude: -47.0608 },
+  { label: "Cambuí, Campinas - SP", city: "Campinas", neighborhood: "Cambuí", latitude: -22.8990, longitude: -47.0500 },
+  { label: "Gonzaga, Santos - SP", city: "Santos", neighborhood: "Gonzaga", latitude: -23.9680, longitude: -46.3350 },
+  { label: "Boqueirão, Santos - SP", city: "Santos", neighborhood: "Boqueirão", latitude: -23.9700, longitude: -46.3200 },
+] as const;
+
+function findLocalidade(label: unknown) {
+  return LOCALIDADES.find((localidade) => localidade.label === label);
+}
+
 interface ScheduleInput {
   weekday: number;
   startTime: string;
@@ -37,6 +55,7 @@ interface RegisterDoctorPayload {
   specialty: string;
   insurances: string[];
   schedules: ScheduleInput[];
+  location: string;
 }
 
 function jsonResponse(body: unknown, status: number): Response {
@@ -77,6 +96,9 @@ function validatePayload(payload: Partial<RegisterDoctorPayload>): string | null
   }
   if (new Set(payload.insurances).size !== payload.insurances.length) {
     return "INVALID: convênio duplicado";
+  }
+  if (!findLocalidade(payload.location)) {
+    return "INVALID: localização inválida";
   }
   if (!Array.isArray(payload.schedules) || payload.schedules.length === 0) {
     return "INVALID: selecione ao menos um dia de atendimento";
@@ -146,6 +168,7 @@ Deno.serve(async (req: Request) => {
   }
 
   const userId = createdUser.user.id;
+  const localidade = findLocalidade(payload.location)!;
 
   const { error: rpcError } = await admin.rpc("complete_registration", {
     p_user_id: userId,
@@ -153,6 +176,10 @@ Deno.serve(async (req: Request) => {
     p_name: payload.name,
     p_specialty: payload.specialty,
     p_insurances: payload.insurances,
+    p_city: localidade.city,
+    p_neighborhood: localidade.neighborhood,
+    p_latitude: localidade.latitude,
+    p_longitude: localidade.longitude,
     p_schedules: payload.schedules!.map((schedule) => ({
       weekday: schedule.weekday,
       start_time: schedule.startTime,
