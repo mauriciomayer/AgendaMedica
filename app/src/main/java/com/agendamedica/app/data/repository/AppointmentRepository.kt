@@ -3,6 +3,8 @@ package com.agendamedica.app.data.repository
 import com.agendamedica.app.data.remote.SupabaseClientProvider
 import io.github.jan.supabase.SupabaseClient
 import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.query.Columns
+import io.github.jan.supabase.postgrest.query.Order
 import io.github.jan.supabase.postgrest.query.filter.FilterOperator
 import io.github.jan.supabase.realtime.PostgresAction
 import io.github.jan.supabase.realtime.RealtimeChannel
@@ -16,6 +18,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -47,6 +51,72 @@ fun Throwable.toBookingResult(): BookingResult {
     }
     return BookingResult.Failure(error)
 }
+
+/** Outcome of [AppointmentRepository.cancelAppointment]. */
+sealed interface CancelResult {
+    data object Success : CancelResult
+
+    /** `CONFLICT: cancel_window` — the appointment starts in less than 24h. */
+    data object WindowClosed : CancelResult
+
+    data class Failure(val error: AppError) : CancelResult
+}
+
+/** Maps a throwable from the `cancel_appointment` call onto a [CancelResult]. Never throws. */
+fun Throwable.toCancelResult(): CancelResult {
+    val error = toAppError()
+    if (error is AppError.Conflict && error.rawMessage.contains("cancel_window")) return CancelResult.WindowClosed
+    return CancelResult.Failure(error)
+}
+
+/** Outcome of [AppointmentRepository.rescheduleAppointment]. */
+sealed interface RescheduleResult {
+    data object Success : RescheduleResult
+
+    /** `CONFLICT: slot_taken` — someone else got the new slot first; the appointment is unchanged. */
+    data object SlotTaken : RescheduleResult
+
+    /** `CONFLICT: lead_time` — the new slot starts in less than 48h. */
+    data object LeadTime : RescheduleResult
+
+    /** `CONFLICT: cancel_window` — the current appointment starts in less than 24h. */
+    data object WindowClosed : RescheduleResult
+
+    data class Failure(val error: AppError) : RescheduleResult
+}
+
+/** Maps a throwable from the `reschedule_appointment` call onto a [RescheduleResult]. Never throws. */
+fun Throwable.toRescheduleResult(): RescheduleResult {
+    val error = toAppError()
+    if (error is AppError.Conflict) {
+        if (error.rawMessage.contains("slot_taken")) return RescheduleResult.SlotTaken
+        if (error.rawMessage.contains("lead_time")) return RescheduleResult.LeadTime
+        if (error.rawMessage.contains("cancel_window")) return RescheduleResult.WindowClosed
+    }
+    return RescheduleResult.Failure(error)
+}
+
+/** One upcoming confirmed appointment of the patient, with the doctor's public data. */
+data class MinhaConsulta(
+    val id: String,
+    val doctorId: String,
+    val doctorName: String,
+    val especialidade: String,
+    val start: Instant,
+    val convenio: String,
+)
+
+@Serializable
+private data class AppointmentDoctorRow(val name: String, val specialty: String)
+
+@Serializable
+private data class AppointmentRow(
+    val id: String,
+    @SerialName("doctor_id") val doctorId: String,
+    @SerialName("start_time") val startTime: String,
+    val insurance: String,
+    val doctors: AppointmentDoctorRow,
+)
 
 /** A change of `booked_slots` for one doctor, pushed by Realtime. */
 sealed interface BookedSlotChange {
@@ -87,6 +157,51 @@ class AppointmentRepository(
             throw e
         } catch (e: Throwable) {
             e.toBookingResult()
+        }
+
+    /**
+     * The caller's own upcoming confirmed appointments (RLS scopes the rows), soonest first.
+     * Past and cancelled ones are not shown.
+     */
+    suspend fun getMyUpcomingAppointments(now: Instant): Result<List<MinhaConsulta>> = runCatching {
+        client.postgrest.from("appointments")
+            .select(Columns.raw("id, doctor_id, start_time, insurance, doctors(name, specialty)")) {
+                filter {
+                    eq("status", "confirmed")
+                    gte("start_time", now.toString())
+                }
+                order("start_time", Order.ASCENDING)
+            }
+            .decodeList<AppointmentRow>()
+            .map {
+                MinhaConsulta(it.id, it.doctorId, it.doctors.name, it.doctors.specialty, parseTimestamptz(it.startTime), it.insurance)
+            }
+    }
+
+    suspend fun cancelAppointment(appointmentId: String): CancelResult =
+        try {
+            client.postgrest.rpc("cancel_appointment", buildJsonObject { put("p_appointment_id", appointmentId) })
+            CancelResult.Success
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            e.toCancelResult()
+        }
+
+    suspend fun rescheduleAppointment(appointmentId: String, newStart: Instant): RescheduleResult =
+        try {
+            client.postgrest.rpc(
+                "reschedule_appointment",
+                buildJsonObject {
+                    put("p_appointment_id", appointmentId)
+                    put("p_new_start_time", newStart.toString())
+                },
+            )
+            RescheduleResult.Success
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Throwable) {
+            e.toRescheduleResult()
         }
 
     /**

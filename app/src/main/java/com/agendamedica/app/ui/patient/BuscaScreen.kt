@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -63,7 +65,7 @@ import com.agendamedica.app.ui.theme.ShapeMd
 
 /** Busca de médicos (FR4) — Especialidade filter, region text or GPS, result cards. */
 @Composable
-fun BuscaScreen(onDoctorClick: (String) -> Unit = {}) {
+fun BuscaScreen(onDoctorClick: (String) -> Unit = {}, onMinhasConsultas: () -> Unit = {}) {
     val context = LocalContext.current
     val viewModel: BuscaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -91,11 +93,17 @@ fun BuscaScreen(onDoctorClick: (String) -> Unit = {}) {
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp)) {
             Spacer(Modifier.height(16.dp))
-            Text(
-                text = "Buscar médicos",
-                style = MaterialTheme.typography.titleLarge,
-                color = AgendaMedicaColors.inkPrimary,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = "Buscar médicos",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AgendaMedicaColors.inkPrimary,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = onMinhasConsultas, modifier = Modifier.heightIn(min = 48.dp)) {
+                    Text("Minhas consultas", color = AgendaMedicaColors.accentPrimary)
+                }
+            }
             Spacer(Modifier.height(12.dp))
 
             EspecialidadeFilter(selected = uiState.especialidade, onSelected = viewModel::onEspecialidadeSelected)

@@ -6,9 +6,12 @@ import com.agendamedica.app.data.repository.AppointmentRepository
 import com.agendamedica.app.data.repository.BookedSlotChange
 import com.agendamedica.app.data.repository.BookingResult
 import com.agendamedica.app.data.repository.DoctorRepository
+import com.agendamedica.app.data.repository.RescheduleResult
 import com.agendamedica.app.data.repository.toAppError
 import com.agendamedica.app.data.repository.toUserMessage
+import com.agendamedica.app.domain.agenda.ANTECEDENCIA_MINIMA_HORAS
 import com.agendamedica.app.domain.agenda.AgendaSlot
+import com.agendamedica.app.domain.agenda.JANELA_ALTERACAO_HORAS
 import com.agendamedica.app.domain.agenda.DoctorDetail
 import com.agendamedica.app.domain.agenda.diasCarrossel
 import com.agendamedica.app.domain.agenda.fimJanela
@@ -29,8 +32,9 @@ import java.time.LocalDate
 const val MSG_SEM_DIAS = "Sem atendimento nos próximos dias."
 const val MSG_SEM_HORARIOS = "Sem atendimento neste dia."
 const val MSG_CONFLITO = "Este horário acabou de ser reservado, escolha outro."
-const val MSG_ANTECEDENCIA = "Este horário exige antecedência mínima de 48 horas. Escolha outro."
+const val MSG_ANTECEDENCIA = "Este horário exige antecedência mínima de $ANTECEDENCIA_MINIMA_HORAS horas. Escolha outro."
 const val MSG_RESERVADO_REALTIME = "O horário que você escolheu acabou de ser reservado. Escolha outro."
+const val MSG_JANELA_24H = "Bloqueado: faltam menos de ${JANELA_ALTERACAO_HORAS}h — não é mais possível cancelar ou reagendar."
 
 /** What the Confirmação screen shows after a successful booking. */
 data class ConfirmacaoData(
@@ -55,9 +59,13 @@ data class DetalheMedicoUiState(
     val bookingMessage: String? = null,
     /** Set on success; the screen navigates to Confirmação and calls [DetalheMedicoViewModel.onConfirmacaoConsumida]. */
     val confirmacao: ConfirmacaoData? = null,
+    /** True when reopened from Minhas Consultas to move an existing appointment (no convênio choice). */
+    val reagendando: Boolean = false,
+    /** Set when the appointment was moved; the screen goes back and calls [DetalheMedicoViewModel.onReagendadoConsumido]. */
+    val reagendado: Boolean = false,
 ) {
     val podeConfirmar: Boolean
-        get() = doctor != null && selectedDia != null && selectedSlot != null && selectedConvenio != null && !isSubmitting
+        get() = doctor != null && selectedDia != null && selectedSlot != null && (reagendando || selectedConvenio != null) && !isSubmitting
 }
 
 /** Detalhe do Médico (FR5, FR6, FR7): the doctor's next days, the 15-minute grid and booking. */
@@ -66,9 +74,11 @@ class DetalheMedicoViewModel(
     private val repository: DoctorRepository = DoctorRepository(),
     private val clock: Clock = Clock.systemUTC(),
     private val appointments: AppointmentRepository = AppointmentRepository(),
+    /** Non-null = reschedule mode: [confirmar] moves this appointment instead of booking. */
+    private val appointmentId: String? = null,
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(DetalheMedicoUiState())
+    private val _uiState = MutableStateFlow(DetalheMedicoUiState(reagendando = appointmentId != null))
     val uiState: StateFlow<DetalheMedicoUiState> = _uiState.asStateFlow()
 
     private var loadJob: Job? = null
@@ -92,6 +102,10 @@ class DetalheMedicoViewModel(
 
     fun onConvenioSelected(convenio: Convenio) {
         _uiState.update { it.copy(selectedConvenio = convenio, bookingMessage = null) }
+    }
+
+    fun onReagendadoConsumido() {
+        _uiState.update { it.copy(reagendado = false) }
     }
 
     fun onConfirmacaoConsumida() {
@@ -126,9 +140,13 @@ class DetalheMedicoViewModel(
         val state = _uiState.value
         val doctor = state.doctor ?: return
         val start = state.selectedSlot ?: return
-        val convenio = state.selectedConvenio ?: return
         if (!state.podeConfirmar) return
         _uiState.update { it.copy(isSubmitting = true, bookingMessage = null) }
+        if (appointmentId != null) {
+            reagendar(appointmentId, start)
+            return
+        }
+        val convenio = state.selectedConvenio ?: return
         viewModelScope.launch {
             when (val result = appointments.bookAppointment(doctor.id, start, convenio.label)) {
                 is BookingResult.Success -> _uiState.update {
@@ -144,6 +162,26 @@ class DetalheMedicoViewModel(
                 }
                 BookingResult.LeadTime -> rejeitar(MSG_ANTECEDENCIA)
                 is BookingResult.Failure -> _uiState.update {
+                    it.copy(isSubmitting = false, bookingMessage = result.error.toUserMessage())
+                }
+            }
+        }
+    }
+
+    private fun reagendar(appointmentId: String, start: Instant) {
+        viewModelScope.launch {
+            when (val result = appointments.rescheduleAppointment(appointmentId, start)) {
+                RescheduleResult.Success -> _uiState.update { it.copy(isSubmitting = false, reagendado = true) }
+                RescheduleResult.SlotTaken -> {
+                    ocupados = ocupados + start
+                    rejeitar(MSG_CONFLITO)
+                    refetchOcupados(garantir = start)
+                }
+                RescheduleResult.LeadTime -> rejeitar(MSG_ANTECEDENCIA)
+                RescheduleResult.WindowClosed -> _uiState.update {
+                    it.copy(isSubmitting = false, bookingMessage = MSG_JANELA_24H)
+                }
+                is RescheduleResult.Failure -> _uiState.update {
                     it.copy(isSubmitting = false, bookingMessage = result.error.toUserMessage())
                 }
             }
@@ -205,6 +243,7 @@ class DetalheMedicoViewModel(
                     doctor = detail,
                     dias = diasCarrossel(detail.schedule, clock),
                     selectedConvenio = detail.convenios.singleOrNull(),
+                    reagendando = appointmentId != null,
                 )
             }
         }

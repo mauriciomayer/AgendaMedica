@@ -76,3 +76,11 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-3-paciente-agenda-consulta.md`
   summary: Sem teste automatizado do cliente Kotlin contra o servidor (`bookAppointment`, `observeBookedSlots`, canal Realtime real), das rotas/`popUpTo` da Confirmação e do Realtime ponta a ponta; o RPC em si é provado pelo `supabase/tests/concurrency-test.mjs` (manual, contra o projeto hospedado, fora de CI).
   evidence: Severidade `medium`, verificada. Fechar exige fake do cliente supabase-kt/Realtime, UI tests instrumentados e um passo de CI que rode o script com credenciais; enquanto isso, a verificação é o teste manual no aparelho (agendar, ver a Confirmação, disputar o mesmo horário e ver o "Ocupado" sem recarregar).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-paciente-cancela-reagenda.md`
+  summary: Sem teste automatizado do contrato entre o cliente Kotlin e os RPCs `cancel_appointment`/`reschedule_appointment` (nome da função e chaves JSON), da rota com `consultaId` (Reagendar) e do retorno com atualização da lista; os scripts contra o banco chamam os RPCs por `fetch` puro.
+  evidence: Severidade `medium`, verificada. Se um nome de parâmetro divergir no Kotlin, os testes unitários seguem verdes e o app mostra sempre "Algo deu errado"; se o argumento `consultaId` se perder no NavHost, "Reagendar" abriria o fluxo de agendar. Cobertura hoje: teste manual no aparelho. Fechar exige fake do cliente supabase-kt ou UI tests instrumentados.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-2-4-paciente-cancela-reagenda.md`
+  summary: O trigger `sync_booked_slots` (Story 2.3) só reage a INSERT e UPDATE de `appointments`; quando uma consulta é apagada em cascata (excluir o paciente ou o médico), a linha de `booked_slots` fica órfã e o horário continua "Ocupado" para sempre.
+  evidence: Severidade `low` hoje e pré-existente (não causada pela 2.4), verificada: apaguei um paciente de teste com consulta confirmada e sobrou 1 linha em `booked_slots` (removida à mão). Não há funcionalidade de excluir conta no MVP; se surgir, incluir `AFTER DELETE` no trigger (ou `ON DELETE` que remova o horário) numa nova migração.

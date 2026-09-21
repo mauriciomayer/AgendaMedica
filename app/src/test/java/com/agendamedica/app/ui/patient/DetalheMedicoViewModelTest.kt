@@ -5,6 +5,7 @@ import com.agendamedica.app.data.repository.AppointmentRepository
 import com.agendamedica.app.data.repository.BookedSlotChange
 import com.agendamedica.app.data.repository.BookingResult
 import com.agendamedica.app.data.repository.DoctorRepository
+import com.agendamedica.app.data.repository.RescheduleResult
 import com.agendamedica.app.domain.agenda.DoctorDetail
 import com.agendamedica.app.domain.agenda.MOTIVO_ANTECEDENCIA
 import com.agendamedica.app.domain.agenda.SlotMotivo
@@ -276,5 +277,75 @@ class DetalheMedicoViewModelTest {
         changes.emit(BookedSlotChange.Freed(other))
         assertNull(vm.uiState.value.slots[1].motivo)
         vm.stopObserving()
+    }
+
+    // ---- Story 2.4: reschedule mode ----
+
+    private fun reschedulingVm() = DetalheMedicoViewModel("d1", repository, clock, appointments, "a1")
+
+    private fun DetalheMedicoViewModel.pickFreeSlot(): Instant = pickSlot()
+
+    @Test
+    fun `reschedule mode needs no convenio and never books`() = runTest(testDispatcher) {
+        coEvery { repository.getDoctorDetail("d1") } returns Result.success(twoConvenios)
+        val vm = reschedulingVm()
+        assertTrue(vm.uiState.value.reagendando)
+        val start = vm.pickFreeSlot()
+        assertNull(vm.uiState.value.selectedConvenio)
+        assertTrue(vm.uiState.value.podeConfirmar)
+        coEvery { appointments.rescheduleAppointment("a1", start) } returns RescheduleResult.Success
+        vm.confirmar()
+        assertTrue(vm.uiState.value.reagendado)
+        assertNull(vm.uiState.value.confirmacao)
+        assertFalse(vm.uiState.value.isSubmitting)
+        coVerify(exactly = 0) { appointments.bookAppointment(any(), any(), any()) }
+        vm.onReagendadoConsumido()
+        assertFalse(vm.uiState.value.reagendado)
+    }
+
+    @Test
+    fun `reschedule conflict shows exact message and marks Ocupado`() = runTest(testDispatcher) {
+        val vm = reschedulingVm()
+        val start = vm.pickFreeSlot()
+        coEvery { appointments.rescheduleAppointment(any(), any()) } returns RescheduleResult.SlotTaken
+        vm.confirmar()
+        val s = vm.uiState.value
+        assertEquals("Este horário acabou de ser reservado, escolha outro.", s.bookingMessage)
+        assertNull(s.selectedSlot)
+        assertFalse(s.reagendado)
+        assertEquals(SlotMotivo.OCUPADO, s.slots.first { it.start == start }.motivo)
+    }
+
+    @Test
+    fun `reschedule lead time, closed window and failure show clear messages`() = runTest(testDispatcher) {
+        val vm = reschedulingVm()
+        vm.pickFreeSlot()
+        coEvery { appointments.rescheduleAppointment(any(), any()) } returns RescheduleResult.LeadTime
+        vm.confirmar()
+        assertEquals(MSG_ANTECEDENCIA, vm.uiState.value.bookingMessage)
+
+        vm.pickFreeSlot()
+        coEvery { appointments.rescheduleAppointment(any(), any()) } returns RescheduleResult.WindowClosed
+        vm.confirmar()
+        assertEquals(MSG_JANELA_24H, vm.uiState.value.bookingMessage)
+
+        vm.pickFreeSlot()
+        coEvery { appointments.rescheduleAppointment(any(), any()) } returns
+            RescheduleResult.Failure(AppError.Unexpected("boom"))
+        vm.confirmar()
+        assertEquals("Algo deu errado. Tente novamente.", vm.uiState.value.bookingMessage)
+        assertFalse(vm.uiState.value.isSubmitting)
+    }
+
+    @Test
+    fun `no double submit while rescheduling`() = runTest(testDispatcher) {
+        val vm = reschedulingVm()
+        val gate = CompletableDeferred<RescheduleResult>()
+        coEvery { appointments.rescheduleAppointment(any(), any()) } coAnswers { gate.await() }
+        vm.pickFreeSlot()
+        vm.confirmar()
+        vm.confirmar()
+        gate.complete(RescheduleResult.Success)
+        coVerify(exactly = 1) { appointments.rescheduleAppointment(any(), any()) }
     }
 }

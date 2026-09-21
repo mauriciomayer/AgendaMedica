@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.agendamedica.app.domain.agenda.FUSO_AGENDA
+import com.agendamedica.app.ui.components.OutlineButton
 import com.agendamedica.app.ui.components.PrimaryButton
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 import java.time.Instant
@@ -32,6 +33,7 @@ fun ConfirmacaoScreen(
     startMillis: Long,
     convenio: String,
     onVoltarBusca: () -> Unit,
+    onVerConsultas: () -> Unit = {},
 ) {
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(
@@ -49,7 +51,9 @@ fun ConfirmacaoScreen(
             Linha("Data e horário", formatarDataHora(Instant.ofEpochMilli(startMillis)))
             Linha("Convênio", convenio)
             Spacer(Modifier.height(16.dp))
-            PrimaryButton(text = "Voltar à Busca", onClick = onVoltarBusca)
+            PrimaryButton(text = "Ver minhas consultas", onClick = onVerConsultas)
+            Spacer(Modifier.height(8.dp))
+            OutlineButton(text = "Voltar à Busca", onClick = onVoltarBusca)
         }
     }
 }

@@ -39,11 +39,17 @@ function check(cond, label) {
 }
 
 function sql(query) {
-  const r = spawnSync("npx", ["supabase", "db", "query", "--linked", `"${query.replace(/"/g, '\\"')}"`], {
-    cwd: root,
-    encoding: "utf8",
-    shell: true,
-  });
+  // The CLI occasionally fails to connect; retry a few times before giving up.
+  let r;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    r = spawnSync("npx", ["supabase", "db", "query", "--linked", `"${query.replace(/"/g, '\\"')}"`], {
+      cwd: root,
+      encoding: "utf8",
+      shell: true,
+    });
+    if (r.status === 0) break;
+    Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1500);
+  }
   if (r.status !== 0) throw new Error(`db query failed: ${r.stderr || r.stdout}`);
   const out = r.stdout;
   const json = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));

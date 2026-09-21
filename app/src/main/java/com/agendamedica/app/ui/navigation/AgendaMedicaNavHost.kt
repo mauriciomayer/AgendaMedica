@@ -23,6 +23,7 @@ import com.agendamedica.app.ui.patient.BuscaScreen
 import com.agendamedica.app.ui.patient.CadastroPacienteScreen
 import com.agendamedica.app.ui.patient.ConfirmacaoScreen
 import com.agendamedica.app.ui.patient.DetalheMedicoScreen
+import com.agendamedica.app.ui.patient.MinhasConsultasScreen
 
 /** Route names for this story's screens (Information Architecture, EXPERIENCE.md). */
 private object Routes {
@@ -37,7 +38,8 @@ private object Routes {
     const val CADASTRO_PACIENTE = "cadastro_paciente"
     const val BUSCA = "busca"
     const val DETALHE_MEDICO = "medico"
-    const val DETALHE_MEDICO_PATTERN = "medico/{doctorId}"
+    const val DETALHE_MEDICO_PATTERN = "medico/{doctorId}?consultaId={consultaId}"
+    const val MINHAS_CONSULTAS = "minhas_consultas"
     const val CONFIRMACAO = "confirmacao"
     const val CONFIRMACAO_PATTERN = "confirmacao?medico={medico}&especialidade={especialidade}&inicio={inicio}&convenio={convenio}"
 }
@@ -122,14 +124,22 @@ fun AgendaMedicaNavHost(
             )
         }
         composable(Routes.BUSCA) {
-            BuscaScreen(onDoctorClick = { id -> navController.navigate("${Routes.DETALHE_MEDICO}/$id") })
+            BuscaScreen(
+                onDoctorClick = { id -> navController.navigate("${Routes.DETALHE_MEDICO}/$id") },
+                onMinhasConsultas = { navController.navigate(Routes.MINHAS_CONSULTAS) },
+            )
         }
         composable(
             Routes.DETALHE_MEDICO_PATTERN,
-            arguments = listOf(navArgument("doctorId") { type = NavType.StringType }),
+            arguments = listOf(
+                navArgument("doctorId") { type = NavType.StringType },
+                navArgument("consultaId") { type = NavType.StringType; nullable = true; defaultValue = null },
+            ),
         ) { entry ->
             DetalheMedicoScreen(
                 doctorId = entry.arguments?.getString("doctorId").orEmpty(),
+                appointmentId = entry.arguments?.getString("consultaId"),
+                onRescheduled = { navController.popBackStack() },
                 onBack = { navController.popBackStack() },
                 onBooked = { c ->
                     val route = "${Routes.CONFIRMACAO}?medico=${Uri.encode(c.doctorName)}" +
@@ -157,10 +167,25 @@ fun AgendaMedicaNavHost(
                 especialidade = args?.getString("especialidade").orEmpty(),
                 startMillis = args?.getLong("inicio") ?: 0L,
                 convenio = args?.getString("convenio").orEmpty(),
+                onVerConsultas = { navController.navigate(Routes.MINHAS_CONSULTAS) },
                 onVoltarBusca = {
                     navController.navigate(Routes.BUSCA) {
                         popUpTo(Routes.BUSCA) { inclusive = true }
                     }
+                },
+            )
+        }
+        composable(Routes.MINHAS_CONSULTAS) { entry ->
+            MinhasConsultasScreen(
+                lifecycleOwner = entry,
+                onBack = { navController.popBackStack() },
+                onNovaConsulta = {
+                    navController.navigate(Routes.BUSCA) {
+                        popUpTo(Routes.BUSCA) { inclusive = true }
+                    }
+                },
+                onReagendar = { doctorId, consultaId ->
+                    navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId")
                 },
             )
         }

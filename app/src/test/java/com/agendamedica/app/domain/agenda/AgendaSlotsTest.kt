@@ -101,4 +101,13 @@ class AgendaSlotsTest {
     fun `antecedencia constant is 48`() {
         assertEquals(48L, ANTECEDENCIA_MINIMA_HORAS)
     }
+
+    @Test
+    fun `change window is 24h with exactly 24h allowed`() {
+        val now = Instant.parse("2026-09-21T13:00:00Z")
+        assertEquals(24L, JANELA_ALTERACAO_HORAS)
+        assertTrue(podeAlterarConsulta(now.plusSeconds(24 * 3600), now))
+        assertTrue(podeAlterarConsulta(now.plusSeconds(24 * 3600 + 1), now))
+        assertFalse(podeAlterarConsulta(now.plusSeconds(24 * 3600 - 1), now))
+    }
 }

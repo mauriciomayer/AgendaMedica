@@ -15,6 +15,17 @@ import java.time.ZonedDateTime
 /** Minimum notice between "now" and a bookable slot. The single definition in the domain. */
 const val ANTECEDENCIA_MINIMA_HORAS = 48L
 
+/** An appointment can only be cancelled/rescheduled while it starts at least this far ahead. */
+const val JANELA_ALTERACAO_HORAS = 24L
+
+/**
+ * Whether an appointment starting at [start] can still be cancelled or rescheduled: it must start
+ * 24h or more after [now] (exactly 24h is allowed). Mirrors the database rule, which is the
+ * authority; the app only uses it to disable buttons.
+ */
+fun podeAlterarConsulta(start: Instant, now: Instant): Boolean =
+    !start.isBefore(now.plus(Duration.ofHours(JANELA_ALTERACAO_HORAS)))
+
 const val SLOT_MINUTOS = 15L
 const val JANELA_DIAS = 10
 const val MAX_DIAS_CARROSSEL = 6

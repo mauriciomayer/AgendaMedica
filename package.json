@@ -3,6 +3,7 @@
     "supabase": "^2.117.0"
   },
   "scripts": {
-    "test:concurrency": "node supabase/tests/concurrency-test.mjs"
+    "test:concurrency": "node supabase/tests/concurrency-test.mjs",
+    "test:cancel-reschedule": "node supabase/tests/cancel-reschedule-test.mjs"
   }
 }

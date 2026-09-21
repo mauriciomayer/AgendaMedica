@@ -60,13 +60,19 @@ private const val COLUNAS = 3
 
 /** Detalhe do Médico (FR5, FR6): header, day carousel and the 15-minute slot grid. */
 @Composable
-fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit, onBooked: (ConfirmacaoData) -> Unit) {
+fun DetalheMedicoScreen(
+    doctorId: String,
+    onBack: () -> Unit,
+    onBooked: (ConfirmacaoData) -> Unit,
+    appointmentId: String? = null,
+    onRescheduled: () -> Unit = {},
+) {
     val viewModel: DetalheMedicoViewModel = viewModel(
-        key = "detalhe-$doctorId",
+        key = "detalhe-$doctorId-${appointmentId.orEmpty()}",
         factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T =
-                DetalheMedicoViewModel(doctorId) as T
+                DetalheMedicoViewModel(doctorId, appointmentId = appointmentId) as T
         },
     )
     val state by viewModel.uiState.collectAsState()
@@ -83,6 +89,13 @@ fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit, onBooked: (Confirm
         }
     }
 
+    LaunchedEffect(state.reagendado) {
+        if (state.reagendado) {
+            viewModel.onReagendadoConsumido()
+            onRescheduled()
+        }
+    }
+
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp)) {
             AccessibleIconButton(
@@ -90,6 +103,14 @@ fun DetalheMedicoScreen(doctorId: String, onBack: () -> Unit, onBooked: (Confirm
                 contentDescription = "Voltar",
                 onClick = onBack,
             )
+            if (state.reagendando) {
+                Text(
+                    "Reagendar consulta",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AgendaMedicaColors.inkPrimary,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             val errorMessage = state.errorMessage
             val doctor = state.doctor
             when {
@@ -186,18 +207,20 @@ private fun DetalheContent(state: DetalheMedicoUiState, viewModel: DetalheMedico
         }
 
         Spacer(Modifier.height(16.dp))
-        Text("Convênio", style = MaterialTheme.typography.labelLarge, color = AgendaMedicaColors.inkPrimary)
-        FlowRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier.padding(top = 8.dp),
-        ) {
-            doctor.convenios.forEach { convenio ->
-                ToggleChip(
-                    text = convenio.label,
-                    selected = convenio == state.selectedConvenio,
-                    onClick = { viewModel.onConvenioSelected(convenio) },
-                )
+        if (!state.reagendando) {
+            Text("Convênio", style = MaterialTheme.typography.labelLarge, color = AgendaMedicaColors.inkPrimary)
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.padding(top = 8.dp),
+            ) {
+                doctor.convenios.forEach { convenio ->
+                    ToggleChip(
+                        text = convenio.label,
+                        selected = convenio == state.selectedConvenio,
+                        onClick = { viewModel.onConvenioSelected(convenio) },
+                    )
+                }
             }
         }
         state.bookingMessage?.let {
@@ -210,7 +233,11 @@ private fun DetalheContent(state: DetalheMedicoUiState, viewModel: DetalheMedico
         }
         Spacer(Modifier.height(16.dp))
         PrimaryButton(
-            text = if (state.isSubmitting) "Agendando..." else "Confirmar agendamento",
+            text = when {
+                state.reagendando -> if (state.isSubmitting) "Reagendando..." else "Confirmar novo horário"
+                state.isSubmitting -> "Agendando..."
+                else -> "Confirmar agendamento"
+            },
             onClick = viewModel::confirmar,
             enabled = state.podeConfirmar,
         )
