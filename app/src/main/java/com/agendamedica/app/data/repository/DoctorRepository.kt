@@ -1,6 +1,7 @@
 package com.agendamedica.app.data.repository
 
 import com.agendamedica.app.data.remote.SupabaseClientProvider
+import com.agendamedica.app.domain.agenda.DoctorDetail
 import com.agendamedica.app.domain.model.Convenio
 import com.agendamedica.app.domain.model.DiaSemana
 import com.agendamedica.app.domain.model.DoctorProfile
@@ -21,6 +22,8 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
+import java.time.Instant
+import java.time.OffsetDateTime
 
 @Serializable
 data class ScheduleInput(
@@ -67,6 +70,11 @@ private data class DoctorScheduleRow(
     val weekday: Int,
     @SerialName("start_time") val startTime: String,
     @SerialName("end_time") val endTime: String,
+)
+
+@Serializable
+private data class BookedSlotRow(
+    @SerialName("start_time") val startTime: String,
 )
 
 @Serializable
@@ -130,6 +138,47 @@ class DoctorRepository(
                     convenios = row.insurances.mapNotNull(Convenio::fromLabel),
                 )
             }
+    }
+
+    /** Public profile + weekly schedule of one doctor, for Detalhe do Medico. */
+    suspend fun getDoctorDetail(id: String): Result<DoctorDetail> = runCatching {
+        val row = client.postgrest.from("doctors")
+            .select { filter { eq("id", id) } }
+            .decodeSingle<DoctorSearchRow>()
+        val scheduleRows = client.postgrest.from("doctor_schedules")
+            .select { filter { eq("doctor_id", id) } }
+            .decodeList<DoctorScheduleRow>()
+        DoctorDetail(
+            id = row.id,
+            name = row.name,
+            especialidade = Especialidade.fromLabel(row.specialty)
+                ?: throw IllegalStateException("UNEXPECTED: especialidade desconhecida"),
+            city = row.city,
+            neighborhood = row.neighborhood,
+            convenios = row.insurances.mapNotNull(Convenio::fromLabel),
+            schedule = scheduleRows.mapNotNull { r ->
+                ScheduleBlock(
+                    dia = DiaSemana.entries.firstOrNull { it.isoValue == r.weekday } ?: return@mapNotNull null,
+                    startTime = r.startTime,
+                    endTime = r.endTime,
+                )
+            },
+        )
+    }
+
+    /** Occupied slot start times of [doctorId] in [de, ate). `booked_slots` carries no patient data. */
+    suspend fun getBookedSlots(doctorId: String, de: Instant, ate: Instant): Result<Set<Instant>> = runCatching {
+        client.postgrest.from("booked_slots")
+            .select {
+                filter {
+                    eq("doctor_id", doctorId)
+                    gte("start_time", de.toString())
+                    lt("start_time", ate.toString())
+                }
+            }
+            .decodeList<BookedSlotRow>()
+            .map { OffsetDateTime.parse(it.startTime).toInstant() }
+            .toSet()
     }
 
     suspend fun getMyProfile(): Result<DoctorProfile> = runCatching {

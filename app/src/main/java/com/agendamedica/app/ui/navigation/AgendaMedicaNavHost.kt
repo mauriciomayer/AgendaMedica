@@ -20,6 +20,7 @@ import com.agendamedica.app.ui.doctor.CadastroMedicoScreen
 import com.agendamedica.app.ui.doctor.MinhaAgendaScreen
 import com.agendamedica.app.ui.patient.BuscaScreen
 import com.agendamedica.app.ui.patient.CadastroPacienteScreen
+import com.agendamedica.app.ui.patient.DetalheMedicoScreen
 
 /** Route names for this story's screens (Information Architecture, EXPERIENCE.md). */
 private object Routes {
@@ -33,6 +34,8 @@ private object Routes {
     const val MINHA_AGENDA = "minha_agenda"
     const val CADASTRO_PACIENTE = "cadastro_paciente"
     const val BUSCA = "busca"
+    const val DETALHE_MEDICO = "medico"
+    const val DETALHE_MEDICO_PATTERN = "medico/{doctorId}"
 }
 
 /**
@@ -115,7 +118,16 @@ fun AgendaMedicaNavHost(
             )
         }
         composable(Routes.BUSCA) {
-            BuscaScreen()
+            BuscaScreen(onDoctorClick = { id -> navController.navigate("${Routes.DETALHE_MEDICO}/$id") })
+        }
+        composable(
+            Routes.DETALHE_MEDICO_PATTERN,
+            arguments = listOf(navArgument("doctorId") { type = NavType.StringType }),
+        ) { entry ->
+            DetalheMedicoScreen(
+                doctorId = entry.arguments?.getString("doctorId").orEmpty(),
+                onBack = { navController.popBackStack() },
+            )
         }
         composable(Routes.CADASTRO_MEDICO) {
             CadastroMedicoScreen(

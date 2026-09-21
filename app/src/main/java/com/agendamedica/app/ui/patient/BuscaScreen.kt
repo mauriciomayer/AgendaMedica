@@ -63,7 +63,7 @@ import com.agendamedica.app.ui.theme.ShapeMd
 
 /** Busca de médicos (FR4) — Especialidade filter, region text or GPS, result cards. */
 @Composable
-fun BuscaScreen() {
+fun BuscaScreen(onDoctorClick: (String) -> Unit = {}) {
     val context = LocalContext.current
     val viewModel: BuscaViewModel = viewModel(
         factory = object : ViewModelProvider.Factory {
@@ -132,13 +132,13 @@ fun BuscaScreen() {
             }
             Spacer(Modifier.height(12.dp))
 
-            BuscaContent(uiState = uiState, onRetry = viewModel::retry)
+            BuscaContent(uiState = uiState, onRetry = viewModel::retry, onDoctorClick = onDoctorClick)
         }
     }
 }
 
 @Composable
-private fun BuscaContent(uiState: BuscaUiState, onRetry: () -> Unit) {
+private fun BuscaContent(uiState: BuscaUiState, onRetry: () -> Unit, onDoctorClick: (String) -> Unit) {
     val errorMessage = uiState.errorMessage
     when {
         uiState.isLoading -> Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -169,7 +169,7 @@ private fun BuscaContent(uiState: BuscaUiState, onRetry: () -> Unit) {
                 )
             } else {
                 LazyColumn(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxSize()) {
-                    items(results, key = { it.id }) { doctor -> DoctorCard(doctor) }
+                    items(results, key = { it.id }) { doctor -> DoctorCard(doctor, onClick = { onDoctorClick(doctor.id) }) }
                 }
             }
         }
@@ -178,8 +178,9 @@ private fun BuscaContent(uiState: BuscaUiState, onRetry: () -> Unit) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun DoctorCard(doctor: DoctorSummary) {
+private fun DoctorCard(doctor: DoctorSummary, onClick: () -> Unit) {
     Card(
+        onClick = onClick,
         shape = ShapeMd,
         colors = CardDefaults.cardColors(containerColor = AgendaMedicaColors.surfaceCard),
         border = BorderStroke(1.dp, AgendaMedicaColors.borderHairline),
