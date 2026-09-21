@@ -27,7 +27,7 @@ enabled = false
 [auth]
 enabled = true
 site_url = "http://127.0.0.1:3000"
-additional_redirect_urls = []
+additional_redirect_urls = ["agendamedica://reset-password"]
 jwt_expiry = 3600
 enable_signup = true
 
@@ -36,6 +36,10 @@ enable_signup = true
 # Doctors are auto-confirmed by the register-doctor Edge Function (createUser with
 # email_confirm: true) — no confirmation email flow is part of this story's scope.
 enable_confirmations = false
+
+[auth.email.template.recovery]
+subject = "Redefinição de senha - Agenda Médica"
+content_path = "./supabase/templates/recovery.html"
 
 [edge_runtime]
 enabled = true

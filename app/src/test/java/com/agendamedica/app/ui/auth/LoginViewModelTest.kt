@@ -14,6 +14,7 @@ import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -84,6 +85,21 @@ class LoginViewModelTest {
         assertTrue("expected navigation to Minha Agenda after a correct login", navigated)
         assertNull(viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.isLoading)
+    }
+
+    @Test
+    fun `password reset notice is shown and cleared on the next submit`() = runTest(testDispatcher) {
+        viewModel.showPasswordResetNotice()
+        assertEquals(MSG_SENHA_REDEFINIDA, viewModel.uiState.value.infoMessage)
+
+        viewModel.onEmailChanged("medico@example.com")
+        viewModel.onPasswordChanged("nova-senha")
+        coEvery { authRepository.signIn(any(), any()) } returns Result.success(Unit)
+        coEvery { doctorRepository.isCurrentUserDoctor() } returns Result.success(true)
+        viewModel.submit()
+        advanceUntilIdle()
+
+        assertNull(viewModel.uiState.value.infoMessage)
     }
 
     @Test

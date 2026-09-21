@@ -29,17 +29,22 @@ import com.agendamedica.app.ui.theme.AgendaMedicaColors
 /**
  * Login — the base screen reused by every future story (Code Map). This story only wires
  * up a real submit for the "Médico" tab's happy/unhappy paths; "Criar conta" leads to
- * Escolha, and "Esqueci minha senha" exists but isn't functional yet (Story 1.3 — allowed
- * by spec's Boundaries: "o link pode existir ... sem estar funcional ainda").
+ * Escolha, and "Esqueci minha senha" leads to Recuperar Senha (Story 1.3).
  */
 @Composable
 fun LoginScreen(
     onNavigateToMinhaAgenda: () -> Unit,
     onNavigateToBusca: () -> Unit,
     onNavigateToEscolha: () -> Unit,
+    onNavigateToRecuperarSenha: () -> Unit,
+    passwordResetNotice: Boolean = false,
     viewModel: LoginViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    LaunchedEffect(passwordResetNotice) {
+        if (passwordResetNotice) viewModel.showPasswordResetNotice()
+    }
 
     LaunchedEffect(Unit) {
         viewModel.navigateToMinhaAgenda.collect { onNavigateToMinhaAgenda() }
@@ -92,8 +97,17 @@ fun LoginScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            TextButton(onClick = { /* Story 1.3 — Esqueci minha senha */ }) {
+            TextButton(onClick = onNavigateToRecuperarSenha) {
                 Text("Esqueci minha senha", color = AgendaMedicaColors.accentPrimary)
+            }
+
+            uiState.infoMessage?.let { message ->
+                Text(
+                    text = message,
+                    color = AgendaMedicaColors.inkPrimary,
+                    style = MaterialTheme.typography.bodyMedium,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
             }
 
             uiState.errorMessage?.let { message ->

@@ -15,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+const val MSG_SENHA_REDEFINIDA = "Senha redefinida. Entre com a nova senha."
+
 /** Which login form is currently shown — "tabs Paciente/Médico" (Code Map). */
 enum class LoginRole { PACIENTE, MEDICO }
 
@@ -26,6 +28,7 @@ data class LoginUiState(
     val medicoFields: LoginFieldsState = LoginFieldsState(),
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
+    val infoMessage: String? = null,
 ) {
     val activeFields: LoginFieldsState
         get() = if (selectedRole == LoginRole.PACIENTE) pacienteFields else medicoFields
@@ -56,6 +59,10 @@ class LoginViewModel @JvmOverloads constructor(
     private val _navigateToBusca = MutableSharedFlow<Unit>()
     val navigateToBusca: SharedFlow<Unit> = _navigateToBusca.asSharedFlow()
 
+    fun showPasswordResetNotice() {
+        _uiState.update { it.copy(infoMessage = MSG_SENHA_REDEFINIDA) }
+    }
+
     fun onRoleSelected(role: LoginRole) {
         _uiState.update { it.copy(selectedRole = role, errorMessage = null) }
     }
@@ -80,7 +87,7 @@ class LoginViewModel @JvmOverloads constructor(
         val fields = state.activeFields
 
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, errorMessage = null) }
+            _uiState.update { it.copy(isLoading = true, errorMessage = null, infoMessage = null) }
 
             // I/O matrix: wrong credentials show a generic, non-technical message — Supabase
             // Auth itself doesn't distinguish "wrong password" from "no such account", so

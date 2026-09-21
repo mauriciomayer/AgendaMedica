@@ -22,7 +22,11 @@ object SupabaseClientProvider {
             supabaseUrl = BuildConfig.SUPABASE_URL,
             supabaseKey = BuildConfig.SUPABASE_ANON_KEY,
         ) {
-            install(Auth)
+            install(Auth) {
+                // Deep link for the password-recovery e-mail (implicit flow, the default).
+                scheme = "agendamedica"
+                host = "reset-password"
+            }
             install(Postgrest)
             install(Realtime)
             install(Functions)

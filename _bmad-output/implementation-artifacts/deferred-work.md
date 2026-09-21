@@ -52,3 +52,11 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
   summary: O cadastro (médico e paciente) cria conta com `email_confirm: true`, sem verificar que o cadastrante é dono do e-mail; `patients.email` alimenta lembretes da Story 3.1.
   evidence: Severidade `medium` não verificada, vem de decisão de design da 1.1 (sem etapa de validação). Antes de enviar e-mails na 3.1, decidir se basta o risco (projeto de portfólio) ou se cabe confirmação de e-mail / opção de descadastro.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-3-usuario-recupera-senha.md`
+  summary: Sem teste automatizado da importação real da sessão de recuperação (`importAuthToken`), de `requestPasswordReset`/`updatePassword` contra o cliente Auth, do roteamento do deep link no NavHost e do `MainActivity`; apenas a lógica pura (classificação do link, mapeamento de erros) e os ViewModels são testados.
+  evidence: Severidade `medium`, verificada. Exige mockar o cliente Auth do supabase-kt (propriedade de extensão) ou UI tests instrumentados, que o projeto não tem (decisão registrada com Winston). O fluxo ponta a ponta fica coberto só pelo teste manual no aparelho (e-mail real, link, Nova Senha).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-1-3-usuario-recupera-senha.md`
+  summary: A sessão criada pelo link de recuperação fica salva no aparelho se o app for morto em Nova Senha ou se o `signOut` falhar; hoje o app sempre abre no Login, então nada a usa.
+  evidence: Severidade `low` hoje, sobe para `medium` quando alguma história adicionar restauração de sessão/auto-login: aí uma sessão de recuperação abandonada daria acesso sem senha. Nessa história, tratar sessões de recuperação (ex.: detectar `type=recovery` e exigir Nova Senha, ou `signOut(SignOutScope.GLOBAL)`).
