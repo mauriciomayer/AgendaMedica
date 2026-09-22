@@ -53,3 +53,7 @@ development_status:
   3-1-paciente-recebe-lembrete-de-consulta-por-e-mail-24h-antes: review
   3-2-sistema-registra-eventos-de-notificação-para-entrega-futura: review
   epic-3-retrospective: optional
+
+  epic-4: in-progress
+  4-1-app-exibe-splash-screen-e-icone-proprios-com-o-novo-logo: review
+  epic-4-retrospective: optional

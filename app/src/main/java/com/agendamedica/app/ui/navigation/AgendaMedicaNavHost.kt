@@ -24,9 +24,11 @@ import com.agendamedica.app.ui.patient.CadastroPacienteScreen
 import com.agendamedica.app.ui.patient.ConfirmacaoScreen
 import com.agendamedica.app.ui.patient.DetalheMedicoScreen
 import com.agendamedica.app.ui.patient.MinhasConsultasScreen
+import com.agendamedica.app.ui.splash.SplashScreen
 
 /** Route names for this story's screens (Information Architecture, EXPERIENCE.md). */
 private object Routes {
+    const val SPLASH = "splash"
     const val LOGIN = "login"
     const val LOGIN_PATTERN = "login?senhaRedefinida={senhaRedefinida}"
     const val RECUPERAR_SENHA = "recuperar_senha"
@@ -50,6 +52,10 @@ private object Routes {
  * is purely action-driven. Reaching Minha Agenda (from either login or a fresh registration)
  * clears the back stack up to Login, since there is no "back" affordance from Minha Agenda in
  * this story (only future stories add a way out of it, e.g. logout).
+ *
+ * The graph's actual `startDestination` is the splash screen (spec-4-1-splash-icone.md), which
+ * pops itself off the stack as soon as it hands off to Login, so the existing routing above is
+ * otherwise unchanged: it's exactly what ran before the splash existed.
  */
 @Composable
 fun AgendaMedicaNavHost(
@@ -73,7 +79,10 @@ fun AgendaMedicaNavHost(
         }
     }
 
-    NavHost(navController = navController, startDestination = Routes.LOGIN_PATTERN) {
+    NavHost(navController = navController, startDestination = Routes.SPLASH) {
+        composable(Routes.SPLASH) {
+            SplashScreen(onFinished = { navController.goToLogin(passwordChanged = false) })
+        }
         composable(
             Routes.LOGIN_PATTERN,
             arguments = listOf(navArgument("senhaRedefinida") { type = NavType.BoolType; defaultValue = false }),

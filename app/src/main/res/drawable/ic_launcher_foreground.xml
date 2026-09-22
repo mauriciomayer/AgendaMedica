@@ -1,11 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Simple calendar glyph in white, centered in the adaptive icon's safe zone. -->
+<!--
+  Logo (document + medical-cross seal), matching AgendaMedicaLogo (ui/theme/Logo.kt) and the
+  prototype's SVG (viewBox 72x72; see spec-4-1-splash-icone.md's Design Notes for the exact
+  source markup). The artwork's own bounding box within that 72x72 viewBox is NOT centered in it
+  (document spans x=14..48/y=10..56, seal spans x=34..68/y=26..60 -> union bbox x=14..68/y=10..60,
+  center (41,35), half-diagonal sqrt(27^2+25^2)=36.797) — scaling/centering the full 0..72 box
+  (as a naive 66/72 transform would) leaves the artwork off-center and its seal corner outside the
+  66dp safe-zone circle. The group below instead scales by 33/36.797=0.8968 (so the bbox's
+  half-diagonal exactly matches the 33dp safe-zone radius, putting all 4 bbox corners exactly on
+  the boundary circle) and translates the bbox's own center (41,35) to the 108x108 canvas's center
+  (54,54): translateX = 54 - 0.8968*41 = 17.23, translateY = 54 - 0.8968*35 = 22.61.
+-->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp"
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M34,30 h40 a6,6 0 0 1 6,6 v40 a6,6 0 0 1 -6,6 h-40 a6,6 0 0 1 -6,-6 v-40 a6,6 0 0 1 6,-6 z M34,44 h40 M42,24 v12 M66,24 v12" />
+    <group
+        android:scaleX="0.8968"
+        android:scaleY="0.8968"
+        android:translateX="17.23"
+        android:translateY="22.61">
+        <!-- Document: white rounded rect, light-gray stroke, 3 horizontal "text" lines. -->
+        <path
+            android:pathData="M20,10 H42 A6,6 0 0 1 48,16 V50 A6,6 0 0 1 42,56 H20 A6,6 0 0 1 14,50 V16 A6,6 0 0 1 20,10 Z"
+            android:fillColor="@color/white"
+            android:strokeColor="#FFD3CFC8"
+            android:strokeWidth="2" />
+        <path
+            android:pathData="M21,22 L41,22 M21,29 L41,29 M21,36 L34,36"
+            android:strokeColor="#FFD3CFC8"
+            android:strokeWidth="2" />
+        <!-- Seal: red rounded square with a white medical cross, overlapping the document's bottom-right. -->
+        <path
+            android:pathData="M42,26 H60 A8,8 0 0 1 68,34 V52 A8,8 0 0 1 60,60 H42 A8,8 0 0 1 34,52 V34 A8,8 0 0 1 42,26 Z"
+            android:fillColor="#FFD6362E" />
+        <path
+            android:pathData="M47.5,34 H54.5 V52 H47.5 Z M42,39.5 H60 V46.5 H42 Z"
+            android:fillColor="@color/white" />
+    </group>
 </vector>

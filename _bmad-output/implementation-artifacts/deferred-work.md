@@ -104,3 +104,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-3-2-eventos-notificacao.md`
   summary: `supabase/tests/{concurrency,cancel-reschedule,reminders,notification-events}-test.mjs` duplicam quase verbatim os mesmos helpers (`sql()` via `npx supabase db query --linked` com retry, `fn()`, `login()`, `rpc()`, `saoPauloSlot()`, `check()`, o parser de `local.properties`) — 4 cópias e crescendo, cada mudança (ex.: um bug de retry ou de header) precisa ser replicada manualmente nas outras.
   evidence: Apontado no code-review da 3.2. A correção (extrair um módulo `supabase/tests/_helpers.mjs` compartilhado) não é simples o bastante para entrar no escopo desta história de verificação: exigiria tocar nos 3 scripts já commitados de histórias anteriores. Fazer na próxima história que precisar de um novo script de teste contra o projeto hospedado.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-4-1-splash-icone.md`
+  summary: Sem teste automatizado de `SplashScreen` (nenhuma cobertura de que ela navega ao Login após o tempo, nem do cálculo de tempo restante em `rememberSaveable` após recriação da Activity).
+  evidence: Severidade baixa, justificada em Implementation Notes — o projeto não tem infraestrutura de teste de UI Compose (sem `androidx.compose.ui.test`/Robolectric), e a única lógica além do delay fixo (cálculo de tempo restante) só é observável renderizando Compose. Verificação hoje é só manual no aparelho (abrir o app, girar durante a splash).

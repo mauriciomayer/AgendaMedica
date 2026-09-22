@@ -392,3 +392,29 @@ Para que eu receba notificações push assim que esse canal for decidido, sem pe
 **Given** que o provedor de push ainda não está implementado
 **When** um evento é criado
 **Then** nenhuma tentativa de envio real é feita — o registro é o único efeito colateral nesta fase, sem erros ou travamentos
+
+## Epic 4: Identidade Visual do App
+
+Adição pós-MVP, fora do escopo original do PRD: o app ganha um logo próprio (documento/prancheta com selo de cruz médica vermelha), usado na splash screen e como ícone do app no launcher do Android, substituindo o ícone padrão gerado pelo template.
+
+### Story 4.1: App exibe splash screen e ícone próprios com o novo logo
+
+Como usuário (Paciente ou Médico),
+Eu quero ver a identidade visual do app (logo) ao abrir e no launcher do celular,
+Para reconhecer o app e ter uma primeira impressão profissional, em vez do ícone/tela padrão do Android.
+
+**Especificação de origem:** protótipo interativo em `https://claude.ai/artifact/4522fNaJd6sBqsL9cBwV1A` (mockup do Android, telas "splash" e "Login"), com o desenho exato do logo (SVG) e as cores.
+
+**Acceptance Criteria:**
+
+**Given** o app é aberto do zero (cold start)
+**When** a splash screen aparece
+**Then** ela mostra o logo (documento branco com 3 linhas e selo de cruz vermelha) centralizado sobre o fundo `oklch(0.97 0.015 150)` (mesmo tom de `surface-canvas` do DESIGN.md), com o nome do app abaixo, por cerca de 1,6s, e então segue para a tela normal (Login ou a tela do usuário já autenticado)
+
+**Given** o app está instalado no celular
+**When** o usuário olha a tela de apps/launcher
+**Then** o ícone do app é gerado a partir do mesmo logo (documento + selo de cruz vermelha), não mais o ícone padrão do Android Studio, com uma versão adaptável (adaptive icon) para os formatos de máscara do Android moderno
+
+**Given** o logo aparece em mais de um lugar (splash e cabeçalho do Login, como já ocorre no protótipo)
+**When** for desenhado
+**Then** usa exatamente o mesmo desenho SVG do protótipo (mesmas proporções e cores), só variando o tamanho
