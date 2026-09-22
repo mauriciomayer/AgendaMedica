@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 4.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 5.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -25,6 +25,7 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 
 - [ ] **Cadastro válido**: abrir o app → "Sou médico" → preencher nome, e-mail, senha (≥6), especialidade, ao menos 1 convênio, ao menos 1 dia de agenda → "Criar perfil". Esperado: conta criada, login automático, cai em "Minha Agenda" vazia.
 - [ ] **Botão desabilitado sem especialidade** (ou sem convênio, ou sem dia de agenda): o botão "Criar perfil" deve continuar desabilitado até tudo estar preenchido.
+- [ ] **Horário de atendimento limitado à clínica (Story 5.1)**: nos seletores "Início"/"Fim" do cadastro, confira que só aparecem horários entre 08:00 e 18:00 (não mais 06:00-22:00) — o médico continua escolhendo livremente dentro desse intervalo (ex.: 08:00-12:00, ou 14:00-18:00).
 - [ ] **Login correto**: sair e logar de novo com o mesmo e-mail/senha → volta a Minha Agenda.
 - [ ] **Login errado**: senha errada → mensagem de erro visível, sem termos técnicos.
 - [ ] **Falha de rede**: ativar modo avião e tentar cadastrar/logar → mensagem genérica ("tente novamente"), sem crash.
@@ -170,6 +171,17 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 - [ ] **Voltar depois da splash**: deixe a splash passar até o Login, aperte o botão voltar do sistema. Esperado: sai do app (a splash não fica "presa" na pilha de navegação para onde voltar retornaria).
 - [ ] **Ícone do app no launcher**: com o app instalado, veja o ícone na tela de apps/launcher do celular. Esperado: mostra o mesmo logo (documento + selo de cruz vermelha) sobre um fundo claro, não mais o ícone padrão azul com calendário.
 - [ ] **Formato do ícone** (se o seu launcher permitir trocar a forma do ícone, em Configurações → Ícones/Launcher, ou comparando com outro launcher instalado): confira que o logo continua legível e bem centralizado tanto em máscara redonda quanto quadrada/squircle, sem cortar o selo vermelho.
+
+---
+
+## Épico 5 — Grade de Horários (consulta de 30min + intervalo de 15min)
+
+### Story 5.1 — Sistema usa consultas de 30 minutos com intervalo de 15, dentro do horário da clínica (08h-18h)
+
+> Correção de um requisito usado desde os Épicos 1 e 2: a consulta não dura mais 15 minutos, e sim 30, com 15 minutos de intervalo até a próxima (grade efetiva de 45 em 45 min). O item "Horário de atendimento limitado à clínica" já está na seção da Story 1.1, acima.
+
+- [ ] **Grade de 45 em 45 minutos**: cadastre (ou reaproveite) um médico com horário 08:00-18:00; abra o Detalhe desse médico num dia de atendimento. Esperado: os horários mostrados são 08:00, 08:45, 09:30, 10:15, 11:00, 11:45, 12:30, 13:15, 14:00, 14:45, 15:30, 16:15, 17:00 (13 horários) — nunca mais de 15 em 15 minutos, e nada depois das 17:00 (a próxima consulta, às 17:45, terminaria às 18:15, depois do fim do expediente).
+- [ ] **Duas consultas seguidas sem conflito**: agende às 08:00 com um paciente e às 08:45 com outro (mesmo médico). Esperado: as duas são aceitas normalmente — o intervalo de 45 minutos já é suficiente, sem "brigar" pelo mesmo horário.
 
 ---
 
