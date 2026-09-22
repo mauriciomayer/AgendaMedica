@@ -108,6 +108,8 @@ Três revisores; achados verificados contra o código, o SQL e o banco real. Nen
 
 ## Design Notes
 
+**Nota de correção (Story 5.1, 2026-09-22):** a premissa de "Slots de 15 minutos" usada nesta spec foi substituída — consulta de 30 min com 15 min de intervalo (grade de 45 em 45 min). O Médico continua escolhendo seu próprio horário de início/fim (nada mudou nisso), mas agora dentro do horário fixo da clínica, 08h-18h (antes 06h-22h). Ver `spec-5-1-grade-horarios-30min.md` e `sprint-change-proposal-2026-09-22.md`.
+
 A alternativa de abrir `patients` ao médico por RLS foi descartada porque a linha traz o e-mail; a função devolve só o nome. As funções de cancelar/reagendar já provaram o médico como chamador na 2.4, então esta história é leitura + UI. Consultas passadas e canceladas não são exibidas, como para o paciente.
 
 ## Verification

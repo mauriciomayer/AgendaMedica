@@ -115,6 +115,8 @@ Três revisores; achados verificados contra o código, o SQL e a API do Realtime
 
 ## Design Notes
 
+**Nota de correção (Story 5.1, 2026-09-22):** a premissa de "Slots de 15 minutos" usada nesta spec foi substituída — consulta de 30 min com 15 min de intervalo (grade de 45 em 45 min). O Médico continua escolhendo seu próprio horário de início/fim (nada mudou nisso), mas agora dentro do horário fixo da clínica, 08h-18h (antes 06h-22h). Ver `spec-5-1-grade-horarios-30min.md` e `sprint-change-proposal-2026-09-22.md`.
+
 O índice único, não a função, é a garantia final: a função só traduz a violação em `CONFLICT: slot_taken`. O script de concorrência roda contra o projeto hospedado (sem Docker); `notification_events` nasce aqui porque o critério de aceite exige registrar o evento, e a Story 3.2 só completa `cancellation`/`reschedule`. Uma linha de teste em `booked_slots` (Dra. Busca Pinheiros, 2026-09-29 10:00) foi deixada pela Story 2.2 e pode ser apagada.
 
 ## Verification

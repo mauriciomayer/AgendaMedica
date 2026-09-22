@@ -110,6 +110,8 @@ Três revisores; achados verificados contra o código real. Nenhum `intent_gap`/
 
 ## Design Notes
 
+**Nota de correção (Story 5.1, 2026-09-22):** a premissa de "Slots de 15 minutos" usada nesta spec foi substituída — consulta de 30 min com 15 min de intervalo (grade de 45 em 45 min). O Médico continua escolhendo seu próprio horário de início/fim (nada mudou nisso), mas agora dentro do horário fixo da clínica, 08h-18h (antes 06h-22h). Ver `spec-5-1-grade-horarios-30min.md` e `sprint-change-proposal-2026-09-22.md`.
+
 A ocupação só passa a existir de verdade na Story 2.3 (agendar + trigger `sync_booked_slots`). Nesta história `booked_slots` nasce vazia e o "Ocupado" é validado por testes unitários e por uma linha inserida à mão só para conferir. Slot selecionado apenas destaca; confirmar é da 2.3.
 
 ## Verification

@@ -19,10 +19,10 @@ This document provides the complete epic and story breakdown for Agenda Médica,
 ### Functional Requirements
 
 FR1: Um Médico pode se autocadastrar informando seus dados e ficar visível na busca imediatamente, sem etapa de aprovação humana ou validação de documento (ex.: CRM).
-FR2: Um Médico define exatamente uma Especialidade (lista fixa de 6), um ou mais Convênios (lista fixa de 4, incluindo "Particular") e os dias/horários em que atende. Especialidade e Convênios são imutáveis após a criação do perfil; dias/horários são editáveis a qualquer momento.
+FR2: Um Médico define exatamente uma Especialidade (lista fixa de 6), um ou mais Convênios (lista fixa de 4, incluindo "Particular") e os dias/horários em que atende, dentro do horário da clínica (8h às 18h). Especialidade e Convênios são imutáveis após a criação do perfil; dias/horários são editáveis a qualquer momento, sempre dentro dessa janela.
 FR3: Um usuário pode se cadastrar como Paciente informando os dados definidos no design (nome, e-mail, senha), sem exigência de vínculo com Convênio no cadastro.
 FR4: Um Paciente pode buscar Médicos filtrando por Especialidade e localização (GPS automático, com fallback de busca manual por cidade/bairro).
-FR5: Um Paciente pode visualizar a Agenda de um Médico específico, vendo apenas Slots de 15 minutos livres e respeitando a Antecedência mínima de 48h.
+FR5: Um Paciente pode visualizar a Agenda de um Médico específico, vendo apenas Slots de 30 minutos (com 15 minutos de intervalo entre eles) livres e respeitando a Antecedência mínima de 48h.
 FR6: Um Paciente pode agendar uma Consulta em qualquer Slot disponível com 48h ou mais de antecedência da hora atual.
 FR7: O sistema deve garantir que nunca dois agendamentos coexistam para o mesmo Slot do mesmo Médico, mesmo sob requisições concorrentes simultâneas — a regra de negócio central do produto.
 FR8: Paciente ou Médico podem cancelar ou reagendar uma Consulta enquanto faltarem 24h ou mais para o horário marcado. Reagendar é um fluxo dedicado que atualiza a Consulta existente (não cria uma nova).
@@ -37,7 +37,7 @@ NFR2: Falha em um canal de notificação (push ou e-mail) não deve impedir o ou
 NFR3: O app não deve perder ou duplicar uma Consulta já confirmada em nenhuma circunstância, mesmo sem exigência formal de alta disponibilidade/SLA no volume inicial (20 usuários/semana).
 NFR4: Buscas e visualização de agenda devem responder de forma percebida como instantânea para o volume-alvo, sem exigência de otimização para escala maior em v1.
 NFR5: Dados de Paciente e histórico de Consultas só podem ser lidos pelo próprio Paciente e pelo Médico das Consultas em questão — nenhum outro Paciente ou Médico tem acesso. Autenticação obrigatória em toda operação que leia ou grave Consulta.
-NFR6: Todas as regras de tempo (Slots de 15min, antecedência mínima de 48h, janela de cancelamento de 24h) usam um fuso horário único e fixo (`America/Sao_Paulo`) — sem suporte a médico e paciente em fusos diferentes.
+NFR6: Todas as regras de tempo (Slots de 30min com 15min de intervalo, antecedência mínima de 48h, janela de cancelamento de 24h) usam um fuso horário único e fixo (`America/Sao_Paulo`) — sem suporte a médico e paciente em fusos diferentes.
 NFR7: Nenhum custo recorrente é aceitável no volume inicial — notificações usam apenas camadas gratuitas (Resend para e-mail); SMS está fora de escopo.
 NFR8: Sem exigência formal de conformidade com a LGPD em v1, mas com boas práticas mínimas de proteção de dados (ver NFR5).
 NFR9: Plataforma única Android nativo (v1); instalação direta no dispositivo é suficiente, sem exigência de publicação em loja.
@@ -99,6 +99,14 @@ Paciente busca médicos, vê horários realmente livres, agenda com antecedênci
 Paciente recebe lembrete automático (push + e-mail) 24h antes; Médico recebe notificação quando uma consulta é marcada ou cancelada. Push fica com o canal preparado; o provedor de push em si é decisão futura (deferida).
 **FRs covered:** FR10
 
+### Epic 4: Identidade Visual do App
+Adição pós-MVP, fora do escopo original do PRD: o app ganha um logo próprio, usado na splash screen e como ícone do app.
+**FRs covered:** nenhum (identidade visual, fora do PRD)
+
+### Epic 5: Grade de Horários — Consulta de 30 Minutos com Intervalo de 15
+Correção de requisito (Sprint Change Proposal, 2026-09-22): a Consulta dura 30 minutos, com 15 minutos de intervalo obrigatório até a próxima (grade efetiva de 45 em 45 min), dentro do horário fixo da clínica (8h-18h) que todo Médico precisa respeitar ao configurar seu próprio horário.
+**FRs covered:** FR2, FR5 (correção)
+
 ## Epic 1: Cadastro, Perfil e Autenticação
 
 Médico e Paciente criam conta; o Médico configura especialidade, convênios e agenda semanal e já aparece na busca; qualquer um recupera a senha se esquecer. Inclui a base técnica (setup do projeto Android + Supabase, schema inicial, tema visual).
@@ -128,7 +136,7 @@ Para que meu perfil fique visível na busca imediatamente, sem validação de ni
 
 **Given** que defini dias de atendimento e horário de início/fim
 **When** confirmo a criação do perfil
-**Then** minha agenda semanal é salva em `doctor_schedules`
+**Then** minha agenda semanal é salva em `doctor_schedules`, respeitando o horário da clínica (8h-18h)
 **And** "Minha Agenda" aparece vazia, sem consultas (FR2)
 
 **Given** que já criei meu perfil com Especialidade e Convênios definidos
@@ -251,7 +259,7 @@ Para escolher um horário que respeite a antecedência mínima.
 
 **Given** que selecionei um dia
 **When** a grade de horários carrega
-**Then** vejo blocos de 15 minutos, com os horários a menos de 48h de antecedência desabilitados e com o motivo "Antecedência mín. 48h" (FR5, FR6)
+**Then** vejo horários de 30 minutos com 15 min de intervalo entre eles, com os horários a menos de 48h de antecedência desabilitados e com o motivo "Antecedência mín. 48h" (FR5, FR6)
 
 **Given** horários já ocupados por outra consulta confirmada
 **When** vejo a grade
@@ -418,3 +426,31 @@ Para reconhecer o app e ter uma primeira impressão profissional, em vez do íco
 **Given** o logo aparece em mais de um lugar (splash e cabeçalho do Login, como já ocorre no protótipo)
 **When** for desenhado
 **Then** usa exatamente o mesmo desenho SVG do protótipo (mesmas proporções e cores), só variando o tamanho
+
+## Epic 5: Grade de Horários — Consulta de 30 Minutos com Intervalo de 15
+
+Correção de requisito (Sprint Change Proposal, 2026-09-22): a Consulta dura 30 minutos, com 15 minutos de intervalo obrigatório até a próxima (grade efetiva de 45 em 45 min). O Médico continua escolhendo livremente seu horário de início/fim por dia, mas agora dentro de uma janela fixa da clínica, 08h às 18h (antes era 06h-22h). Substitui a premissa de "Slots de 15 minutos" usada nas Stories 1.1 e 2.2-2.5.
+
+### Story 5.1: Sistema usa consultas de 30 minutos com intervalo de 15, dentro do horário da clínica (08h-18h)
+
+Como usuário do sistema (paciente ou médico),
+Eu quero que a agenda reflita a duração real de uma consulta (30min) com um intervalo de descanso (15min) entre uma e outra, e que o horário de cada Médico não ultrapasse o funcionamento da clínica,
+Para que a grade de horários mostrada ao Paciente corresponda à forma real de atendimento, e nenhum Médico configure um horário fora do que a clínica sustenta.
+
+**Acceptance Criteria:**
+
+**Given** que um Médico está se cadastrando ou editando sua agenda
+**When** escolhe o horário de início/fim de um dia de atendimento
+**Then** as opções vão de 08:00 a 18:00 (mesmo passo de 30 min de hoje); um horário fora dessa janela é rejeitado tanto pela Edge Function quanto por uma `CHECK constraint` no banco
+
+**Given** o Detalhe de um Médico com um dia selecionado, cujo horário configurado é, por exemplo, 08:00-12:00
+**When** a grade de horários é exibida
+**Then** os horários possíveis começam às 08:00 e seguem de 45 em 45 minutos (08:00, 08:45, 09:30, 10:15, 11:00) até o último horário cuja consulta de 30 minutos termine até o fim do bloco daquele Médico
+
+**Given** um horário de início válido na grade
+**When** o Paciente agenda esse horário
+**Then** a consulta ocupa 30 minutos e o próximo horário agendável para aquele Médico está pelo menos 45 minutos à frente
+
+**Given** uma chamada direta às funções de agendar/reagendar (fora da grade do app) com um horário que não está alinhado à grade de 45 min do bloco daquele Médico, ou cuja consulta de 30 min ultrapassaria o fim do bloco
+**When** a chamada ocorre
+**Then** é rejeitada com `INVALID:`, sem exceção — a validação vive no banco, não só na UI

@@ -122,7 +122,7 @@ Falha: se outro Paciente reservar o mesmo horário um instante antes, a confirma
 
 1. Ricardo abre o app, não autenticado, escolhe papel "Médico" no Login e toca "Criar conta".
 2. Tela **Escolha**: toca "Sou médico".
-3. **Cadastro de Médico**: preenche nome/e-mail/senha, escolhe Especialidade "Cardiologia" (lista fechada), marca convênios (chips), marca dias de atendimento (chips) e horário início/fim.
+3. **Cadastro de Médico**: preenche nome/e-mail/senha, escolhe Especialidade "Cardiologia" (lista fechada), marca convênios (chips), marca dias de atendimento (chips) e horário início/fim (dentro do horário da clínica, 8h-18h).
 4. Botão "Criar perfil e começar a atender" habilita só quando todos os campos obrigatórios estão preenchidos.
 5. **Clímax:** ao confirmar, cai direto em **Minha Agenda** já autenticado — sem etapa de aprovação, perfil já buscável.
 6. Resolução: vê o card do próprio perfil + lista de próximas consultas (inicialmente vazia até pacientes agendarem).

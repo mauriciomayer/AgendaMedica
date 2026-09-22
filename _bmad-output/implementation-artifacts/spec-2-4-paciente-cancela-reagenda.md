@@ -118,6 +118,8 @@ Três revisores; achados verificados contra o código, o SQL e o banco real. Nen
 
 ## Design Notes
 
+**Nota de correção (Story 5.1, 2026-09-22):** a premissa de "Slots de 15 minutos" usada nesta spec foi substituída — consulta de 30 min com 15 min de intervalo (grade de 45 em 45 min). O Médico continua escolhendo seu próprio horário de início/fim (nada mudou nisso), mas agora dentro do horário fixo da clínica, 08h-18h (antes 06h-22h). Ver `spec-5-1-grade-horarios-30min.md` e `sprint-change-proposal-2026-09-22.md`.
+
 As funções já aceitam o médico como chamador para que a Story 2.5 só precise da UI; o script prova isso. Consultas passadas e canceladas não são exibidas (o cancelamento "remove" a consulta da lista, como no protótipo). O bloqueio de 24h usa `now()` do servidor; o app calcula o mesmo limite só para desabilitar botões e, se a fronteira for cruzada com a tela aberta, o servidor responde `cancel_window` e a lista é recarregada.
 
 ## Verification

@@ -53,15 +53,15 @@ O levantamento de escopo original classificou o projeto como Complexidade Média
 - **JU-1. Fernanda agenda uma consulta com uma dermatologista perto de casa.**
   - **Persona + contexto:** Fernanda, 34 anos, autônoma, sente uma alergia recorrente e quer resolver antes do fim de semana.
   - **Estado inicial:** autenticada no app como paciente, na tela inicial de busca.
-  - **Caminho:** (1) busca por especialidade "Dermatologia" com localização ativada por GPS; (2) vê lista de médicas ordenada por distância, com convênios aceitos e badge de especialidade; (3) abre o perfil da Dra. Ana e vê a grade de horários livres em blocos de 15 minutos, apenas a partir de 48h à frente; (4) toca em um horário de quinta-feira às 14h30 e confirma o agendamento.
-  - **Clímax:** a tela de confirmação mostra "Consulta agendada com Dra. Ana — quinta, 14h30" e o horário desaparece imediatamente da grade de outros pacientes. Realiza RF-4, RF-5, RF-6, RF-7.
+  - **Caminho:** (1) busca por especialidade "Dermatologia" com localização ativada por GPS; (2) vê lista de médicas ordenada por distância, com convênios aceitos e badge de especialidade; (3) abre o perfil da Dra. Ana e vê a grade de horários livres em Slots de 30 minutos, apenas a partir de 48h à frente; (4) toca em um horário de quinta-feira às 14h e confirma o agendamento.
+  - **Clímax:** a tela de confirmação mostra "Consulta agendada com Dra. Ana — quinta, 14h" e o horário desaparece imediatamente da grade de outros pacientes. Realiza RF-4, RF-5, RF-6, RF-7.
   - **Resolução:** Fernanda recebe confirmação por push e sabe que receberá um lembrete 24h antes.
   - **Caso extremo:** se, entre ela abrir a grade e confirmar, outro paciente já tiver reservado o mesmo horário, o app rejeita a ação com "Este horário acabou de ser reservado, escolha outro" e atualiza a grade automaticamente (realiza RF-7).
 
 - **JU-2. Dr. Ricardo se cadastra e monta sua agenda no primeiro acesso.**
   - **Persona + contexto:** Ricardo, cardiologista recém-formado, decide oferecer consultas particulares e via convênio pelo app, sem depender de uma clínica.
   - **Estado inicial:** não autenticado, tela inicial "Sou médico".
-  - **Caminho:** (1) preenche o cadastro (campos exatos a definir pelo design visual em elaboração externa; sem exigência de CRM ou documento, conforme autocadastro sem validação); (2) escolhe sua única especialidade, "Cardiologia", em lista pré-definida; (3) marca os convênios que atende dentre Unimed, Amil, Bradesco e Particular; (4) define dias da semana e faixas de horário em que atende, que o sistema converte em slots de 15 minutos.
+  - **Caminho:** (1) preenche o cadastro (campos exatos a definir pelo design visual em elaboração externa; sem exigência de CRM ou documento, conforme autocadastro sem validação); (2) escolhe sua única especialidade, "Cardiologia", em lista pré-definida; (3) marca os convênios que atende dentre Unimed, Amil, Bradesco e Particular; (4) define dias da semana e faixas de horário em que atende, dentro do horário da clínica (8h-18h), que o sistema converte em Slots de 30 minutos com 15 minutos de intervalo entre consultas.
   - **Clímax:** ao salvar, seu perfil já aparece imediatamente nas buscas por "Cardiologia" na região dele — sem etapa de aprovação. Realiza RF-1, RF-2.
   - **Resolução:** Ricardo vê sua agenda vazia populada com os slots corretos e pode editar dias/horários a qualquer momento (convênios e especialidade, uma vez definidos, seguem as mesmas regras de edição — ver RF-2).
   - **Caso extremo:** se Ricardo tentar se cadastrar em duas especialidades, o sistema bloqueia e exige escolher uma.
@@ -75,7 +75,7 @@ O levantamento de escopo original classificou o projeto como Complexidade Média
   - **Caso extremo:** se Fernanda tentasse cancelar essa mesma consulta faltando 10h, o botão "Cancelar" aparece desabilitado com a mensagem "Cancelamento não é mais permitido para esta consulta" — sem exceção manual possível por ninguém, nem pelo médico (realiza RF-9).
 
 - **JU-4. Conflito de agenda é evitado sob concorrência.**
-  - **Persona + contexto:** dois pacientes, Fernanda e Bruno, abrem a mesma grade de horários da Dra. Ana ao mesmo tempo, ambos mirando o slot das 14h30 de quinta-feira.
+  - **Persona + contexto:** dois pacientes, Fernanda e Bruno, abrem a mesma grade de horários da Dra. Ana ao mesmo tempo, ambos mirando o slot das 14h de quinta-feira.
   - **Estado inicial:** ambos autenticados, ambos com a grade de horários carregada no app.
   - **Caminho:** (1) Fernanda toca em "Confirmar" primeiro; (2) o backend aplica um lock/transação atômica sobre o slot; (3) Bruno toca em "Confirmar" um segundo depois, para o mesmo slot.
   - **Clímax:** o pedido de Fernanda é aceito; o pedido de Bruno é rejeitado com mensagem clara e a grade dele é atualizada em tempo real, mostrando o slot como ocupado. Realiza RF-7.
@@ -93,7 +93,8 @@ O levantamento de escopo original classificou o projeto como Complexidade Média
 - **Especialidade** — área de atuação médica; um Médico tem exatamente uma. Lista fixa do sistema (mesmo padrão do Convênio): Cardiologia, Dermatologia, Pediatria, Ortopedia, Clínico Geral, Ginecologia.
 - **Convênio** — plano de saúde (ou atendimento "Particular", sem convênio) aceito por um Médico. Lista fixa do sistema: Unimed, Amil, Bradesco, Particular. Não editável nem removível pelo Médico após seleção inicial, mesmo com Consultas já agendadas naquele Convênio.
 - **Consulta** — um agendamento entre um Paciente e um Médico em um Slot específico.
-- **Slot** — intervalo de 15 minutos na Agenda de um Médico, disponível ou ocupado.
+- **Slot** — intervalo de 30 minutos (duração de uma Consulta) na Agenda de um Médico, disponível ou ocupado, sempre seguido de 15 minutos de intervalo até o próximo Slot possível.
+- **Horário da clínica** — janela fixa das 8h às 18h dentro da qual todo Médico define seu próprio horário de início/fim de atendimento; nenhum Médico pode configurar um horário que comece antes das 8h ou termine depois das 18h.
 - **Agenda** — conjunto de Slots de um Médico, derivado dos dias/horários de atendimento que ele define.
 - **Antecedência mínima** — regra de 48 horas: uma Consulta só pode ser agendada para um Slot cujo horário esteja a 48h ou mais no futuro, contadas a partir do instante do agendamento. Um Slot a menos de 48h (inclusive exatamente 48h menos um segundo) não é agendável.
 - **Janela de cancelamento** — período em que Cancelamento/reagendamento é permitido: enquanto faltarem 24h ou mais para o horário da Consulta (o instante exato de 24h ainda está dentro da Janela).
@@ -105,7 +106,7 @@ O levantamento de escopo original classificou o projeto como Complexidade Média
 
 ### 4.1 Cadastro e Perfil de Médico
 
-**Descrição:** Um Médico se autocadastra informando seus dados, escolhe sua Especialidade (única), seleciona os Convênios que atende dentre a lista fixa e define os dias/horários em que atende — que o sistema converte automaticamente em Slots de 15 minutos. Não há etapa de validação (ex.: verificação de CRM): ao salvar, o perfil já aparece na busca. Realiza JU-2. [NOTE FOR PM: campos exatos do formulário a definir a partir do design visual — ver §9, "Dependências pendentes do design visual".]
+**Descrição:** Um Médico se autocadastra informando seus dados, escolhe sua Especialidade (única), seleciona os Convênios que atende dentre a lista fixa e define os dias/horários em que atende, dentro do horário da clínica (8h às 18h) — que o sistema converte automaticamente em Slots de 30 minutos com 15 minutos de intervalo entre um e outro. Não há etapa de validação (ex.: verificação de CRM): ao salvar, o perfil já aparece na busca. Realiza JU-2. [NOTE FOR PM: campos exatos do formulário a definir a partir do design visual — ver §9, "Dependências pendentes do design visual".]
 
 **Requisitos Funcionais:**
 
@@ -119,13 +120,14 @@ Um Médico pode se cadastrar informando dados básicos e ficar visível na busca
 
 #### RF-2: Definição de perfil profissional do médico
 
-Um Médico define exatamente uma Especialidade (dentre a lista fixa — ver Glossário, §3), um ou mais Convênios (dentre Unimed, Amil, Bradesco, Particular) e os dias/horários em que atende. Realiza JU-2.
+Um Médico define exatamente uma Especialidade (dentre a lista fixa — ver Glossário, §3), um ou mais Convênios (dentre Unimed, Amil, Bradesco, Particular) e os dias/horários em que atende, dentro do horário da clínica (8h às 18h — ver Glossário). Realiza JU-2.
 
 **Consequências (testáveis):**
 - O sistema rejeita a seleção de mais de uma Especialidade por Médico, e rejeita qualquer Especialidade fora da lista fixa.
 - Convênios que não fazem parte da lista fixa (Unimed, Amil, Bradesco, Particular) não podem ser selecionados.
 - Uma vez que um Convênio é selecionado e salvo, o Médico não tem opção de removê-lo ou editá-lo pela interface — inclusive se já houver Consultas agendadas sob aquele Convênio.
-- Dias/horários definidos geram automaticamente os Slots de 15 minutos correspondentes na Agenda do Médico.
+- Dias/horários definidos (sempre dentro de 8h-18h) geram automaticamente os Slots de 30 minutos, com 15 min de intervalo entre eles, correspondentes na Agenda do Médico.
+- O horário de início/fim escolhido pelo Médico precisa caber inteiramente dentro do horário da clínica (8h às 18h); o sistema rejeita qualquer configuração fora dessa janela.
 - O Médico pode editar dias/horários de atendimento a qualquer momento. Se um Slot com Consulta já confirmada deixar de existir na nova agenda, a Consulta permanece válida e deve ser honrada pelo Médico — o sistema não a cancela retroativamente nem avisa o Paciente de qualquer mudança (decisão confirmada, para evitar cancelamento-surpresa ao Paciente).
 
 **Fora de Escopo:**
@@ -168,7 +170,7 @@ Um Paciente pode visualizar a Agenda de um Médico específico, vendo apenas Slo
 **Consequências (testáveis):**
 - Slots a menos de 48h da hora atual não aparecem como selecionáveis.
 - Slots já ocupados por outra Consulta não aparecem como disponíveis.
-- A grade é organizada em blocos de 15 minutos, refletindo os dias/horários definidos pelo Médico (RF-2).
+- A grade é organizada em Slots de 30 minutos com 15 minutos de intervalo entre eles (grade efetiva de 45 em 45 min), refletindo os dias/horários definidos pelo Médico dentro do horário da clínica (RF-2).
 
 ### 4.4 Agendamento de Consulta
 
@@ -329,7 +331,7 @@ Nenhuma pendente. A questão sobre os controles de cancelar/reagendar do Médico
 - **Disponibilidade:** dado o volume inicial (20 usuários/semana), não há exigência de alta disponibilidade formal (sem SLA), mas o app não deve perder ou duplicar uma Consulta já confirmada em nenhuma circunstância.
 - **Desempenho:** buscas e visualização de agenda devem responder de forma percebida como instantânea para o volume-alvo (20 usuários/semana) — sem exigência de otimização para escala maior em v1.
 - **Proteção de dados:** apesar de não haver exigência formal de LGPD (ver §Restrições e Salvaguardas → Privacidade), dados de Paciente e histórico de Consultas só podem ser lidos pelo próprio Paciente e pelo Médico das Consultas em questão — nenhum outro Paciente ou Médico tem acesso a esses dados. Autenticação obrigatória em toda operação que leia ou grave Consulta.
-- **Fuso horário:** todas as regras de tempo (Slots de 15min, antecedência mínima de 48h, janela de cancelamento de 24h) são calculadas no fuso horário local do dispositivo do usuário. [ASSUMPTION: sem suporte a médico e paciente em fusos horários diferentes — cenário improvável dado o volume e escopo do projeto.]
+- **Fuso horário:** todas as regras de tempo (Slots de 30min com 15min de intervalo, antecedência mínima de 48h, janela de cancelamento de 24h) são calculadas no fuso horário local do dispositivo do usuário. [ASSUMPTION: sem suporte a médico e paciente em fusos horários diferentes — cenário improvável dado o volume e escopo do projeto.]
 
 ## Restrições e Salvaguardas
 

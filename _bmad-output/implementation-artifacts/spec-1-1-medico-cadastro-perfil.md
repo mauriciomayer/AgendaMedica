@@ -166,6 +166,8 @@ Reviewed 2026-09-18 against the diff since `baseline_commit`. Three layers (blin
 
 ## Design Notes
 
+**Nota de correção (Story 5.1, 2026-09-22):** a premissa de "Slots de 15 minutos" usada nesta spec foi substituída — consulta de 30 min com 15 min de intervalo (grade de 45 em 45 min). O Médico continua escolhendo seu próprio horário de início/fim (nada mudou nisso), mas agora dentro do horário fixo da clínica, 08h-18h (antes 06h-22h). Ver `spec-5-1-grade-horarios-30min.md` e `sprint-change-proposal-2026-09-22.md`.
+
 Tokens de `DESIGN.md` a aplicar no tema Compose (não redefinir aqui — só apontar):
 - Cores: `surface-canvas` `oklch(0.97 0.015 150)`, `accent-primary` `#3B6FE0`, famílias `success`/`warning`/`danger`.
 - Tipografia: Inter, pesos 400-700, escala 11-19px.
