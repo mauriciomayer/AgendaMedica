@@ -4,6 +4,7 @@
   },
   "scripts": {
     "test:concurrency": "node supabase/tests/concurrency-test.mjs",
-    "test:cancel-reschedule": "node supabase/tests/cancel-reschedule-test.mjs"
+    "test:cancel-reschedule": "node supabase/tests/cancel-reschedule-test.mjs",
+    "test:reminders": "node supabase/tests/reminders-test.mjs"
   }
 }

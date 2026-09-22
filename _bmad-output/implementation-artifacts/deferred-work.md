@@ -51,7 +51,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-2-paciente-se-cadastra.md`
   summary: O cadastro (médico e paciente) cria conta com `email_confirm: true`, sem verificar que o cadastrante é dono do e-mail; `patients.email` alimenta lembretes da Story 3.1.
-  evidence: Severidade `medium` não verificada, vem de decisão de design da 1.1 (sem etapa de validação). Antes de enviar e-mails na 3.1, decidir se basta o risco (projeto de portfólio) ou se cabe confirmação de e-mail / opção de descadastro.
+  evidence: **Resolvido na Story 3.1:** decisão tomada de aceitar o risco tal como está (projeto de portfólio, sem etapa de confirmação de e-mail nem opção de descadastro). Registrado nas Design Notes de `spec-3-1-lembrete-email-24h.md`. Reabrir se o projeto deixar de ser só portfólio.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-1-3-usuario-recupera-senha.md`
   summary: Sem teste automatizado da importação real da sessão de recuperação (`importAuthToken`), de `requestPasswordReset`/`updatePassword` contra o cliente Auth, do roteamento do deep link no NavHost e do `MainActivity`; apenas a lógica pura (classificação do link, mapeamento de erros) e os ViewModels são testados.
@@ -88,3 +88,15 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-2-5-medico-cancela-reagenda.md`
   summary: Sem teste automatizado do contrato entre o cliente Kotlin e o RPC `list_doctor_appointments` (nome da função e formato das linhas contra o servidor), da entrada Reagendar da Minha Agenda (rota `medico/{doctorId}?consultaId=`) e do `doctorIdProvider`; o RPC é provado por `fetch` puro em `supabase/tests/cancel-reschedule-test.mjs`.
   evidence: Severidade `medium`, verificada. Se o nome do RPC divergir no Kotlin, os testes unitários seguem verdes e a lista do médico mostra sempre o erro genérico; se o `consultaId` se perder, Reagendar abriria o fluxo de agendar. Cobertura hoje: teste manual no aparelho. Mesma causa da pendência da Story 2.4 (sem fake do cliente supabase-kt nem UI tests instrumentados).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-lembrete-email-24h.md`
+  summary: `supabase/tests/reminders-test.mjs` usa os modos `simulate-success`/`simulate-failure` de `send-reminders`, que reivindicam QUALQUER consulta devida do projeto (não só as do teste) e a marcam como lembrada sem enviar e-mail; o script agora aborta (`assertNoForeignDueAppointments`) se encontrar uma consulta devida real antes de cada chamada que reivindica, mas isso ainda depende de rodar o teste num instante sem consultas reais pendentes — não há como o `sendMode` de teste restringir a reivindicação só às linhas do próprio teste.
+  evidence: Apontado no code-review da 3.1 (major). Mitigado com uma guarda que interrompe o teste em vez de consumir silenciosamente um lembrete real; endurecimento futuro possível seria `claim_due_reminders` aceitar um filtro opcional por e-mail (só para teste) para eliminar o risco por completo.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-lembrete-email-24h.md`
+  summary: Se o envio a um paciente falha (Resend indisponível/recusa/sem chave) E a chamada seguinte a `release_reminder` também falhar/lançar (ex.: instabilidade de rede/DB simultânea), a consulta fica presa com `reminder_sent_at` preenchido e nunca mais é tentada — a falha fica só no log (`console.error`), sem recuperação automática.
+  evidence: Apontado no code-review da 3.1 (minor). Cenário de falha dupla, fora da matriz de IO congelada da spec; recuperação hoje é manual (zerar `reminder_sent_at` por SQL). Reabrir se o volume real de consultas tornar esse duplo-fault plausível.
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-3-1-lembrete-email-24h.md`
+  summary: `reminders-test.mjs` só prova o e-mail via os modos simulados (que nunca chamam `buildEmail`/Resend); a formatação real do assunto/corpo (pt-BR, fuso `America/Sao_Paulo`, `escapeHtml`) não tem cobertura automatizada, só a checagem manual documentada na spec (Verification → Manual checks).
+  evidence: Apontado no code-review da 3.1 (minor). Fechar exigiria um modo de teste que monte o e-mail sem enviá-lo (ex.: retornar o corpo montado em vez de chamar o Resend) ou testar `buildEmail` isoladamente se for extraída para módulo compartilhado.

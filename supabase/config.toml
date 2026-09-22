@@ -46,3 +46,6 @@ enabled = true
 
 [functions.register-doctor]
 verify_jwt = false
+
+[functions.send-reminders]
+verify_jwt = false
