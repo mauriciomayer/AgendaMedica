@@ -104,6 +104,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-3-2-eventos-notificacao.md`
   summary: `supabase/tests/{concurrency,cancel-reschedule,reminders,notification-events}-test.mjs` duplicam quase verbatim os mesmos helpers (`sql()` via `npx supabase db query --linked` com retry, `fn()`, `login()`, `rpc()`, `saoPauloSlot()`, `check()`, o parser de `local.properties`) — 4 cópias e crescendo, cada mudança (ex.: um bug de retry ou de header) precisa ser replicada manualmente nas outras.
   evidence: Apontado no code-review da 3.2. A correção (extrair um módulo `supabase/tests/_helpers.mjs` compartilhado) não é simples o bastante para entrar no escopo desta história de verificação: exigiria tocar nos 3 scripts já commitados de histórias anteriores. Fazer na próxima história que precisar de um novo script de teste contra o projeto hospedado.
+  update (Story 5.1, 2026-09-22): mais uma duplicação idêntica se somou às anteriores — `GRID_SLOTS` (as 13 posições válidas da grade de 45 min para um médico 08h-18h) e `underLeadTimeSlot()` agora existem, verbatim, em `cancel-reschedule-test.mjs` e `concurrency-test.mjs`. Reforça o valor de extrair `_helpers.mjs` na próxima oportunidade.
 
 - source_spec: `_bmad-output/implementation-artifacts/spec-4-1-splash-icone.md`
   summary: Sem teste automatizado de `SplashScreen` (nenhuma cobertura de que ela navega ao Login após o tempo, nem do cálculo de tempo restante em `rememberSaveable` após recriação da Activity).

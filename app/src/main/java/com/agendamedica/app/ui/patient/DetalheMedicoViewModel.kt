@@ -68,7 +68,7 @@ data class DetalheMedicoUiState(
         get() = doctor != null && selectedDia != null && selectedSlot != null && (reagendando || selectedConvenio != null) && !isSubmitting
 }
 
-/** Detalhe do Médico (FR5, FR6, FR7): the doctor's next days, the 15-minute grid and booking. */
+/** Detalhe do Médico (FR5, FR6, FR7): the doctor's next days, the 45-minute grid and booking. */
 class DetalheMedicoViewModel(
     private val doctorId: String,
     private val repository: DoctorRepository = DoctorRepository(),

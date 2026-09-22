@@ -111,12 +111,18 @@ function validatePayload(payload: Partial<RegisterDoctorPayload>): string | null
   }
   for (const schedule of payload.schedules) {
     const validWeekday = typeof schedule?.weekday === "number" && schedule.weekday >= 0 && schedule.weekday <= 6;
+    // Clinic operating window is fixed at 08:00-18:00 (Story 5.1) — string comparison works
+    // because the format is always zero-padded HH:mm, the same pattern already used for
+    // startTime < endTime. Also enforced by a CHECK constraint on doctor_schedules (NFR1),
+    // so a direct INSERT bypassing this Edge Function is still rejected.
     const validTimes =
       typeof schedule?.startTime === "string" &&
       typeof schedule?.endTime === "string" &&
       TIME_PATTERN.test(schedule.startTime) &&
       TIME_PATTERN.test(schedule.endTime) &&
-      schedule.startTime < schedule.endTime;
+      schedule.startTime < schedule.endTime &&
+      schedule.startTime >= "08:00" &&
+      schedule.endTime <= "18:00";
     if (!validWeekday || !validTimes) {
       return "INVALID: horário de atendimento inválido";
     }

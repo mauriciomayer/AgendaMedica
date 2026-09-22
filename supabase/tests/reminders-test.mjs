@@ -128,7 +128,7 @@ async function main() {
     specialty: "Clínico Geral",
     insurances: ["Unimed"],
     location: "Centro, São Paulo - SP",
-    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "08:00", endTime: "18:00" })),
   });
   const okEmail = `${PREFIX}-p0@example.com`;
   const failEmail = `fail-${PREFIX}-p1@example.com`;

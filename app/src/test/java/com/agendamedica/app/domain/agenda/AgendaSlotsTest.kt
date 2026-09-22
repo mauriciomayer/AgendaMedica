@@ -21,23 +21,24 @@ class AgendaSlotsTest {
         ZonedDateTime.of(y, m, d, h, min, 0, 0, FUSO_AGENDA)
 
     // 2026-09-21 is a Monday.
-    private val block = listOf(ScheduleBlock(DiaSemana.SEGUNDA, "08:00:00", "09:00"))
+    private val block = listOf(ScheduleBlock(DiaSemana.SEGUNDA, "08:00:00", "10:00"))
 
     @Test
-    fun `block end is exclusive and start inclusive`() {
+    fun `appointment must fully fit before block end, spaced 45min apart`() {
         val dia = LocalDate.of(2026, 10, 12) // Monday
         val sched = listOf(ScheduleBlock(DiaSemana.SEGUNDA, "08:00", "12:00"))
         val slots = slotsDoDia(dia, sched, emptySet(), clockAt(sp(2026, 9, 21)))
-        assertEquals(16, slots.size)
-        assertEquals(LocalTime.of(8, 0), slots.first().hora)
-        assertEquals(LocalTime.of(11, 45), slots.last().hora)
+        assertEquals(
+            listOf(8 to 0, 8 to 45, 9 to 30, 10 to 15, 11 to 0).map { LocalTime.of(it.first, it.second) },
+            slots.map { it.hora },
+        )
     }
 
     @Test
     fun `exactly 48h is enabled and one second less is not`() {
         val slotStart = sp(2026, 9, 23, 8, 0)
         val dia = LocalDate.of(2026, 9, 23) // Wednesday
-        val sched = listOf(ScheduleBlock(DiaSemana.QUARTA, "08:00", "08:15"))
+        val sched = listOf(ScheduleBlock(DiaSemana.QUARTA, "08:00", "08:30"))
         val exact = slotsDoDia(dia, sched, emptySet(), clockAt(slotStart.minusHours(48))).single()
         assertNull(exact.motivo)
         val late = slotsDoDia(dia, sched, emptySet(), clockAt(slotStart.minusHours(48).plusSeconds(1))).single()

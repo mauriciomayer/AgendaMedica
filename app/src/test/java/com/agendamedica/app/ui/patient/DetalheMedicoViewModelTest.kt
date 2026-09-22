@@ -54,8 +54,9 @@ class DetalheMedicoViewModelTest {
         "d1", "Dra. Ana", Especialidade.CARDIOLOGIA, "São Paulo", "Centro", listOf(Convenio.UNIMED), schedule,
     )
 
+    // 08:00-10:00 gives 3 grid positions (08:00, 08:45, 09:30) under the 45-min grid (Story 5.1).
     private val monWedFri = listOf(DiaSemana.SEGUNDA, DiaSemana.QUARTA, DiaSemana.SEXTA)
-        .map { ScheduleBlock(it, "08:00", "09:00") }
+        .map { ScheduleBlock(it, "08:00", "10:00") }
 
     @Before
     fun setUp() {
@@ -89,11 +90,11 @@ class DetalheMedicoViewModelTest {
     }
 
     @Test
-    fun `selecting a day shows 15 minute slots with reasons`() = runTest(testDispatcher) {
+    fun `selecting a day shows 45 minute grid slots with reasons`() = runTest(testDispatcher) {
         val vm = vm()
         vm.onDiaSelected(LocalDate.of(2026, 9, 21)) // today: under 48h
         val slots = vm.uiState.value.slots
-        assertEquals(4, slots.size)
+        assertEquals(3, slots.size)
         assertTrue(slots.all { it.motivo == SlotMotivo.ANTECEDENCIA })
         assertEquals(MOTIVO_ANTECEDENCIA, slots.first().motivo?.texto)
         vm.onDiaSelected(LocalDate.of(2026, 9, 30))

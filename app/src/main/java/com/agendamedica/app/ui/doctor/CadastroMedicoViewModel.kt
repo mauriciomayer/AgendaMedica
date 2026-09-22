@@ -26,13 +26,16 @@ import kotlinx.coroutines.launch
  * "não foi possível criar a conta" from deep inside the Auth Admin API call. */
 private val EMAIL_PATTERN = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
 
-/** 30-minute options for the início/fim "select nativo (dropdown)" (DESIGN.md). */
+/**
+ * 30-minute options for the início/fim "select nativo (dropdown)" (DESIGN.md), limited to the
+ * clinic's fixed operating window, 08:00-18:00 (Story 5.1).
+ */
 val HORARIOS_DISPONIVEIS: List<String> = buildList {
-    for (hour in 6..21) {
+    for (hour in 8..17) {
         add("%02d:00".format(hour))
         add("%02d:30".format(hour))
     }
-    add("22:00")
+    add("18:00")
 }
 
 data class CadastroMedicoUiState(

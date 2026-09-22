@@ -59,7 +59,10 @@ function sql(query) {
     if (r.status === 0) break;
     Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, 1500);
   }
-  if (r.status !== 0) throw new Error(`db query failed: ${r.stderr || r.stdout}`);
+  // Concatenate both streams (not `stderr || stdout`): the CLI often prints only harmless notices
+  // (e.g. "npm notice run ...") to stderr while the actual Postgres error body lands in stdout —
+  // picking just one at random can silently discard the real error text a caller wants to inspect.
+  if (r.status !== 0) throw new Error(`db query failed: ${r.stdout}\n${r.stderr}`);
   const out = r.stdout;
   const json = JSON.parse(out.slice(out.indexOf("{"), out.lastIndexOf("}") + 1));
   return json.rows ?? [];
@@ -72,6 +75,23 @@ async function fn(name, body) {
     body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`${name} failed: ${res.status} ${await res.text()}`);
+}
+
+/** Like `fn`, but never throws — returns { ok, status, message } so a rejected call can be asserted. */
+async function tryFn(name, body) {
+  const res = await fetch(`${URL_BASE}/functions/v1/${name}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: ANON, Authorization: `Bearer ${ANON}` },
+    body: JSON.stringify(body),
+  });
+  const text = await res.text();
+  let message = text;
+  try {
+    message = JSON.parse(text).error ?? text;
+  } catch {
+    // scalar / empty body
+  }
+  return { ok: res.ok, status: res.status, message };
 }
 
 async function login(email) {
@@ -112,6 +132,18 @@ function saoPauloSlot(daysAhead, hh, mm) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(hh)}:${pad(mm)}:00-03:00`;
 }
 
+// Valid start positions for a doctor working 08:00-18:00 (Story 5.1): 30min consultation + 15min
+// gap = 45min grid from 08:00 (spec Design Notes).
+const GRID_SLOTS = [
+  [8, 0], [8, 45], [9, 30], [10, 15], [11, 0], [11, 45], [12, 30],
+  [13, 15], [14, 0], [14, 45], [15, 30], [16, 15], [17, 0],
+];
+
+/** A grid-aligned slot comfortably under 48h from now (tomorrow's first block position, 08:00). */
+function underLeadTimeSlot() {
+  return saoPauloSlot(1, 8, 0);
+}
+
 const instant = (iso) => new Date(iso).getTime();
 const apptRow = (id) =>
   sql(`select id, patient_id, doctor_id, start_time, status, insurance from appointments where id = '${id}'`)[0];
@@ -130,7 +162,7 @@ async function main() {
     specialty: "Clínico Geral",
     insurances: ["Unimed", "Amil"],
     location: "Centro, São Paulo - SP",
-    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "08:00", endTime: "18:00" })),
   });
   const emails = [0, 1, 2, 3].map((i) => `${PREFIX}-p${i}@example.com`);
   for (const [i, email] of emails.entries()) await fn("register-patient", { name: `Paciente ${i}`, email, password: PASSWORD });
@@ -140,10 +172,118 @@ async function main() {
   const tDoctor = await login(doctorEmail);
 
   // ---------------------------------------------------------------------------------------------
+  console.log("\nGrade de 45 min e horário da clínica (Story 5.1)");
+
+  let r;
+  let reg = await tryFn("register-doctor", {
+    name: "Dr. Fora do Horário",
+    email: `${PREFIX}-fora-horario@example.com`,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [{ weekday: 1, startTime: "07:45", endTime: "12:00" }],
+  });
+  check(!reg.ok && String(reg.message).startsWith("INVALID:"), `startTime antes de 08:00 -> INVALID (got ${reg.message})`);
+
+  reg = await tryFn("register-doctor", {
+    name: "Dr. Fora do Horário 2",
+    email: `${PREFIX}-fora-horario2@example.com`,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [{ weekday: 1, startTime: "14:00", endTime: "18:15" }],
+  });
+  check(!reg.ok && String(reg.message).startsWith("INVALID:"), `endTime depois de 18:00 -> INVALID (got ${reg.message})`);
+
+  reg = await tryFn("register-doctor", {
+    name: "Dr. Padrão Antigo",
+    email: `${PREFIX}-padrao-antigo@example.com`,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [{ weekday: 1, startTime: "00:00", endTime: "23:59" }],
+  });
+  check(!reg.ok && String(reg.message).startsWith("INVALID:"), `padrão antigo 00:00-23:59 -> INVALID (got ${reg.message})`);
+
+  const exactEmail = `${PREFIX}-exato@example.com`;
+  reg = await tryFn("register-doctor", {
+    name: "Dr. Exato",
+    email: exactEmail,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [{ weekday: 1, startTime: "08:00", endTime: "18:00" }],
+  });
+  check(reg.ok, `exatamente 08:00-18:00 -> aceito (got ${reg.status} ${reg.message})`);
+  const exactDoctorId = sql(`select id from auth.users where email = '${exactEmail}'`)[0].id;
+
+  console.log("\nBypass da Edge Function: INSERT direto em doctor_schedules fora de 08h-18h");
+  let sqlError = "";
+  try {
+    sql(`insert into doctor_schedules (doctor_id, weekday, start_time, end_time) values ('${exactDoctorId}', 2, '07:00', '12:00')`);
+  } catch (e) {
+    sqlError = e.message;
+  }
+  check(
+    sqlError.includes("doctor_schedules_within_clinic_hours"),
+    `INSERT direto com start_time < 08:00 é rejeitado pela CHECK constraint (got ${sqlError.slice(0, 120)})`,
+  );
+  sqlError = "";
+  try {
+    sql(`insert into doctor_schedules (doctor_id, weekday, start_time, end_time) values ('${exactDoctorId}', 3, '14:00', '19:00')`);
+  } catch (e) {
+    sqlError = e.message;
+  }
+  check(
+    sqlError.includes("doctor_schedules_within_clinic_hours"),
+    `INSERT direto com end_time > 18:00 é rejeitado pela CHECK constraint (got ${sqlError.slice(0, 120)})`,
+  );
+
+  const insideEmail = `${PREFIX}-dentro@example.com`;
+  reg = await tryFn("register-doctor", {
+    name: "Dr. Faixa Interna",
+    email: insideEmail,
+    password: PASSWORD,
+    specialty: "Clínico Geral",
+    insurances: ["Unimed"],
+    location: "Centro, São Paulo - SP",
+    schedules: [{ weekday: 1, startTime: "09:00", endTime: "15:00" }],
+  });
+  check(reg.ok, `faixa estritamente dentro de 08h-18h (09:00-15:00) -> aceita (got ${reg.status} ${reg.message})`);
+
+  console.log("\nGrade de 45 min: consulta alinhada, desalinhada e cabendo no bloco (bloco 08:00-18:00)");
+  const grid1 = saoPauloSlot(26, 9, 30); // 08:00 + 45min*2 -> aligned
+  r = await book(t0, doctorId, grid1, "Unimed");
+  check(r.ok, `consulta alinhada à grade de 45 min (09:30) -> aceita (got ${r.status} ${r.message})`);
+  r = await book(t1, doctorId, saoPauloSlot(26, 9, 15), "Unimed");
+  check(!r.ok && r.message.startsWith("INVALID:"), `09:15 não está na grade (08:00+45min*N) -> INVALID (got ${r.message})`);
+  r = await book(t1, doctorId, saoPauloSlot(26, 17, 45), "Unimed");
+  check(!r.ok && r.message.startsWith("INVALID:"), `17:45 está alinhado mas terminaria às 18:15, fora do bloco -> INVALID (got ${r.message})`);
+
+  console.log("\nMeia-noite não deve enganar a checagem de fim do bloco (wraparound de `time + interval`)");
+  r = await book(t1, doctorId, saoPauloSlot(26, 23, 45), "Unimed");
+  check(
+    !r.ok && r.message.startsWith("INVALID:"),
+    `23:45 (perto da virada do dia, fora do bloco 08h-18h) -> INVALID (got ${r.message})`,
+  );
+
+  console.log("\nDuas consultas consecutivas (45 min de distância) ambas aceitas");
+  const consecA = saoPauloSlot(27, 8, 0);
+  const consecB = saoPauloSlot(27, 8, 45);
+  r = await book(t2, doctorId, consecA, "Unimed");
+  check(r.ok, `primeira consulta às 08:00 -> aceita (got ${r.message})`);
+  r = await book(t3, doctorId, consecB, "Unimed");
+  check(r.ok, `segunda consulta às 08:45 (45 min depois) -> aceita, sem conflito (got ${r.message})`);
+
+  // ---------------------------------------------------------------------------------------------
   console.log("\nReschedule (valid): same appointment, new slot");
-  const s1 = saoPauloSlot(5, 10, 0);
-  const s2 = saoPauloSlot(6, 10, 0);
-  let r = await book(t0, doctorId, s1, "Amil");
+  const s1 = saoPauloSlot(5, 10, 15);
+  const s2 = saoPauloSlot(6, 11, 0);
+  r = await book(t0, doctorId, s1, "Amil");
   check(r.ok, `patient books ${s1}`);
   const A = r.message.replace(/"/g, "");
   r = await reschedule(t0, A, s2);
@@ -159,8 +299,8 @@ async function main() {
   r = await reschedule(t0, A, s2);
   check(!r.ok && r.message.startsWith("INVALID:"), `same slot -> INVALID (got ${r.message})`);
   r = await reschedule(t0, A, saoPauloSlot(6, 10, 7));
-  check(!r.ok && r.message.startsWith("INVALID:"), `not aligned to 15 min -> INVALID (got ${r.message})`);
-  r = await reschedule(t0, A, new Date(Math.floor((Date.now() + 40 * 3600000) / 900000) * 900000).toISOString());
+  check(!r.ok && r.message.startsWith("INVALID:"), `not aligned to 45 min -> INVALID (got ${r.message})`);
+  r = await reschedule(t0, A, underLeadTimeSlot());
   check(!r.ok && r.message === "CONFLICT: lead_time", `new slot under 48h -> CONFLICT: lead_time (got ${r.message})`);
   check(instant(apptRow(A).start_time) === instant(s2), "appointment still at the last valid slot");
 
@@ -173,7 +313,7 @@ async function main() {
   check(ev.length === 1 && ev[0].recipient_id === doctorId, "cancellation event for the doctor");
   r = await cancel(t0, A);
   check(!r.ok && r.message.startsWith("INVALID:"), `cancel again -> INVALID (got ${r.message})`);
-  r = await reschedule(t0, A, saoPauloSlot(7, 10, 0));
+  r = await reschedule(t0, A, saoPauloSlot(7, 10, 15));
   check(!r.ok && r.message.startsWith("INVALID:"), `reschedule a cancelled one -> INVALID (got ${r.message})`);
   r = await book(t1, doctorId, s2, "Unimed");
   check(r.ok, `released slot can be booked by someone else (got ${r.message})`);
@@ -188,7 +328,7 @@ async function main() {
   const nearStart = apptRow(near).start_time;
   r = await cancel(t0, near);
   check(!r.ok && r.message === "CONFLICT: cancel_window", `cancel under 24h -> CONFLICT: cancel_window (got ${r.message})`);
-  r = await reschedule(t0, near, saoPauloSlot(9, 10, 0));
+  r = await reschedule(t0, near, saoPauloSlot(9, 10, 15));
   check(!r.ok && r.message === "CONFLICT: cancel_window", `reschedule under 24h -> CONFLICT: cancel_window (got ${r.message})`);
   r = await cancel(tDoctor, near);
   check(!r.ok && r.message === "CONFLICT: cancel_window", `the doctor cannot bypass the window (got ${r.message})`);
@@ -204,11 +344,11 @@ async function main() {
 
   // ---------------------------------------------------------------------------------------------
   console.log("\nCallers");
-  r = await book(t0, doctorId, saoPauloSlot(10, 9, 0), "Unimed");
+  r = await book(t0, doctorId, saoPauloSlot(10, 9, 30), "Unimed");
   const B = r.message.replace(/"/g, "");
   r = await cancel(t1, B);
   check(!r.ok && r.message.startsWith("FORBIDDEN:"), `other patient cancel -> FORBIDDEN (got ${r.message})`);
-  r = await reschedule(t1, B, saoPauloSlot(10, 9, 15));
+  r = await reschedule(t1, B, saoPauloSlot(10, 10, 15));
   check(!r.ok && r.message.startsWith("FORBIDDEN:"), `other patient reschedule -> FORBIDDEN (got ${r.message})`);
   r = await cancel(t0, "00000000-0000-0000-0000-000000000000");
   check(!r.ok && r.message.startsWith("FORBIDDEN:"), `unknown id -> FORBIDDEN (got ${r.message})`);
@@ -216,7 +356,7 @@ async function main() {
   check(!r.ok, `no session (anon) -> rejected (got ${r.status} ${r.message})`);
   check(apptRow(B).status === "confirmed", "appointment untouched by rejected callers");
 
-  r = await reschedule(tDoctor, B, saoPauloSlot(10, 9, 30));
+  r = await reschedule(tDoctor, B, saoPauloSlot(10, 11, 0));
   check(r.ok, `the appointment's doctor can reschedule (got ${r.message})`);
   ev = events(B, "reschedule");
   check(ev.length === 1 && ev[0].recipient_id === ids[0], "doctor reschedule -> event for the PATIENT");
@@ -227,7 +367,7 @@ async function main() {
 
   // ---------------------------------------------------------------------------------------------
   console.log("\nDirect writes are denied");
-  r = await book(t0, doctorId, saoPauloSlot(11, 9, 0), "Unimed");
+  r = await book(t0, doctorId, saoPauloSlot(11, 9, 30), "Unimed");
   const C = r.message.replace(/"/g, "");
   const patch = await fetch(`${URL_BASE}/rest/v1/appointments?id=eq.${C}`, {
     method: "PATCH",
@@ -245,9 +385,9 @@ async function main() {
   // ---------------------------------------------------------------------------------------------
   console.log(`\nRace: two patients reschedule to the same slot (${RACE_ROUNDS} rounds)`);
   for (let round = 0; round < RACE_ROUNDS; round++) {
-    const a = (await book(t2, doctorId, saoPauloSlot(12, 8, round * 15))).message.replace(/"/g, "");
-    const b = (await book(t3, doctorId, saoPauloSlot(13, 8, round * 15))).message.replace(/"/g, "");
-    const target = saoPauloSlot(14, 8, round * 15);
+    const a = (await book(t2, doctorId, saoPauloSlot(12, ...GRID_SLOTS[round]))).message.replace(/"/g, "");
+    const b = (await book(t3, doctorId, saoPauloSlot(13, ...GRID_SLOTS[round]))).message.replace(/"/g, "");
+    const target = saoPauloSlot(14, ...GRID_SLOTS[round]);
     const results = await Promise.all([reschedule(t2, a, target), reschedule(t3, b, target)]);
     const wins = results.filter((x) => x.ok).length;
     const taken = results.filter((x) => !x.ok && x.message === "CONFLICT: slot_taken").length;
@@ -257,20 +397,20 @@ async function main() {
     )[0].n;
     check(atTarget === 1, `round ${round + 1}: one confirmed appointment at the target slot`);
     const loserId = results[0].ok ? b : a;
-    const loserOrig = results[0].ok ? saoPauloSlot(13, 8, round * 15) : saoPauloSlot(12, 8, round * 15);
+    const loserOrig = results[0].ok ? saoPauloSlot(13, ...GRID_SLOTS[round]) : saoPauloSlot(12, ...GRID_SLOTS[round]);
     check(instant(apptRow(loserId).start_time) === instant(loserOrig), `round ${round + 1}: loser stays at the original slot`);
     check(bookedCount(doctorId, loserOrig) === 1, `round ${round + 1}: loser's original slot still in booked_slots`);
   }
 
   // ---------------------------------------------------------------------------------------------
   console.log("\nbook_appointment unchanged (Story 2.3 rules)");
-  r = await book(t0, doctorId, new Date(Math.floor((Date.now() + 40 * 3600000) / 900000) * 900000).toISOString());
+  r = await book(t0, doctorId, underLeadTimeSlot());
   check(!r.ok && r.message === "CONFLICT: lead_time", `under 48h -> CONFLICT: lead_time (got ${r.message})`);
-  r = await book(t0, doctorId, saoPauloSlot(15, 10, 0), "Bradesco");
+  r = await book(t0, doctorId, saoPauloSlot(15, 10, 15), "Bradesco");
   check(!r.ok && r.message.startsWith("INVALID:"), `insurance not accepted -> INVALID (got ${r.message})`);
   r = await book(t0, doctorId, saoPauloSlot(15, 10, 7));
   check(!r.ok && r.message.startsWith("INVALID:"), `not aligned -> INVALID (got ${r.message})`);
-  r = await book(tDoctor, doctorId, saoPauloSlot(15, 10, 0));
+  r = await book(tDoctor, doctorId, saoPauloSlot(15, 10, 15));
   check(!r.ok && r.message.startsWith("FORBIDDEN:"), `doctor caller -> FORBIDDEN (got ${r.message})`);
   r = await book(t0, doctorId, s2);
   check(!r.ok && r.message === "CONFLICT: slot_taken", `taken slot -> CONFLICT: slot_taken (got ${r.message})`);
@@ -307,12 +447,12 @@ async function main() {
     specialty: "Clínico Geral",
     insurances: ["Unimed"],
     location: "Centro, São Paulo - SP",
-    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "08:00", endTime: "18:00" })),
   });
   const otherId = sql(`select id from auth.users where email = '${other}'`)[0].id;
   const tOther = await login(other);
-  const own = (await book(t0, doctorId, saoPauloSlot(22, 9, 0), "Unimed")).message.replace(/"/g, "");
-  const foreign = (await book(t1, otherId, saoPauloSlot(22, 9, 0), "Unimed")).message.replace(/"/g, "");
+  const own = (await book(t0, doctorId, saoPauloSlot(22, 9, 30), "Unimed")).message.replace(/"/g, "");
+  const foreign = (await book(t1, otherId, saoPauloSlot(22, 9, 30), "Unimed")).message.replace(/"/g, "");
   const nearMine = insertAppt(ids[1], "23 hours 30 minutes");
   const cancelledMine = insertAppt(ids[2], "10 days");
   sql(`update appointments set status = 'cancelled' where id = '${cancelledMine}'`);
@@ -350,7 +490,7 @@ async function main() {
   check(leak.ok && (await leak.json()).length === 0, "the doctor still cannot read the patients table");
 
   console.log("\nDoctor flow: cancel and reschedule with event to the patient, 24h window");
-  const R1 = saoPauloSlot(23, 9, 0);
+  const R1 = saoPauloSlot(23, 9, 30);
   r = await reschedule(tDoctor, own, R1);
   check(r.ok, `doctor reschedules within their own schedule (got ${r.message})`);
   check(apptRow(own).id === own && instant(apptRow(own).start_time) === instant(R1), "same appointment id at the new slot");
@@ -358,9 +498,9 @@ async function main() {
   check(ev.length === 1 && ev[0].recipient_id === ids[0], "reschedule event goes to the PATIENT");
   r = await reschedule(tDoctor, own, R1);
   check(!r.ok && r.message.startsWith("INVALID:"), `same slot -> INVALID (got ${r.message})`);
-  r = await reschedule(tDoctor, own, new Date(Math.floor((Date.now() + 40 * 3600000) / 900000) * 900000).toISOString());
+  r = await reschedule(tDoctor, own, underLeadTimeSlot());
   check(!r.ok && r.message === "CONFLICT: lead_time", `new slot under 48h -> lead_time (got ${r.message})`);
-  r = await reschedule(tDoctor, nearMine, saoPauloSlot(24, 9, 0));
+  r = await reschedule(tDoctor, nearMine, saoPauloSlot(24, 9, 30));
   check(!r.ok && r.message === "CONFLICT: cancel_window", `doctor reschedule under 24h -> cancel_window (got ${r.message})`);
   r = await cancel(tDoctor, nearMine);
   check(!r.ok && r.message === "CONFLICT: cancel_window", `doctor cancel under 24h -> cancel_window (got ${r.message})`);
@@ -377,13 +517,14 @@ async function main() {
   check(!r.ok && r.message.startsWith("INVALID:"), `cancelling again -> INVALID (got ${r.message})`);
 
   console.log("\nOutside the doctor's schedule (last: removes one weekday's block)");
-  const far = saoPauloSlot(21, 10, 0);
+  const far = saoPauloSlot(21, 10, 15);
   const weekday = new Date(new Date(far).getTime() - 3 * 3600000).getUTCDay();
-  const D = (await book(t0, doctorId, saoPauloSlot(16, 10, 0))).message.replace(/"/g, "");
+  const dSlot = saoPauloSlot(16, 10, 15);
+  const D = (await book(t0, doctorId, dSlot)).message.replace(/"/g, "");
   sql(`delete from doctor_schedules where doctor_id = '${doctorId}' and weekday = ${weekday}`);
   r = await reschedule(t0, D, far);
   check(!r.ok && r.message.startsWith("INVALID:"), `slot outside the schedule -> INVALID (got ${r.message})`);
-  check(instant(apptRow(D).start_time) === instant(saoPauloSlot(16, 10, 0)), "appointment unchanged");
+  check(instant(apptRow(D).start_time) === instant(dSlot), "appointment unchanged");
 }
 
 let exitCode = 0;

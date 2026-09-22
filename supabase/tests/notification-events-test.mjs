@@ -130,7 +130,7 @@ async function main() {
     specialty: "Clínico Geral",
     insurances: ["Unimed"],
     location: "Centro, São Paulo - SP",
-    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "08:00", endTime: "18:00" })),
   });
   await fn("register-patient", { name: "Paciente Eventos", email: patientEmail, password: PASSWORD });
   const doctorId = sql(`select id from auth.users where email = '${doctorEmail}'`)[0].id;
@@ -138,7 +138,7 @@ async function main() {
   const tDoctor = await login(doctorEmail);
 
   console.log("\nSetup: book an appointment to generate a real notification_events row");
-  const r = await book(tPatient, doctorId, saoPauloSlot(5, 10, 0), "Unimed");
+  const r = await book(tPatient, doctorId, saoPauloSlot(5, 10, 15), "Unimed"); // 10:15 is on the 45-min grid from 08:00
   check(r.ok, `patient books an appointment (got ${r.status} ${r.message})`);
   const apptId = r.message.replace(/"/g, "");
   const before = sql(

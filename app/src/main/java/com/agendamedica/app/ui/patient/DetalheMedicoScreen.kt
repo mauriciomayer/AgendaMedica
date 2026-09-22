@@ -58,7 +58,7 @@ import java.time.format.DateTimeFormatter
 private val HORA_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
 private const val COLUNAS = 3
 
-/** Detalhe do Médico (FR5, FR6): header, day carousel and the 15-minute slot grid. */
+/** Detalhe do Médico (FR5, FR6): header, day carousel and the 45-minute slot grid. */
 @Composable
 fun DetalheMedicoScreen(
     doctorId: String,

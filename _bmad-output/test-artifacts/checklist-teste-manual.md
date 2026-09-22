@@ -71,7 +71,7 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 
 - [ ] **Abrir o Detalhe**: tocar num card da Busca → abre o Detalhe do Médico com nome, especialidade, cidade, convênios e um carrossel de dias.
 - [ ] **Carrossel**: só aparecem os dias em que o médico atende (conforme a agenda cadastrada), no máximo 6 dias, nenhum selecionado ao abrir.
-- [ ] **Selecionar um dia**: a grade de horários aparece em 3 colunas, de 15 em 15 minutos.
+- [ ] **Selecionar um dia**: a grade de horários aparece em 3 colunas, com horários de 30 minutos e 15 minutos de intervalo entre eles (de 45 em 45 minutos).
 - [ ] **Slot a menos de 48h desabilitado**: horários de hoje e de amanhã (dentro de 48h) aparecem desabilitados com o motivo "Antecedência mín. 48h".
 - [ ] **Slot com 48h ou mais**: aparece habilitado e selecionável (fica destacado ao tocar).
 - [ ] **Trocar de dia limpa a seleção**: selecionar um horário, trocar de dia no carrossel → a seleção de horário some.

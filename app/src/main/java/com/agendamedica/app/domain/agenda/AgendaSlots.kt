@@ -26,7 +26,15 @@ const val JANELA_ALTERACAO_HORAS = 24L
 fun podeAlterarConsulta(start: Instant, now: Instant): Boolean =
     !start.isBefore(now.plus(Duration.ofHours(JANELA_ALTERACAO_HORAS)))
 
-const val SLOT_MINUTOS = 15L
+/** Duration of a single appointment. */
+const val DURACAO_CONSULTA_MINUTOS = 30L
+
+/** Mandatory rest between the end of one appointment and the start of the next. */
+const val INTERVALO_ENTRE_CONSULTAS_MINUTOS = 15L
+
+/** Spacing between consecutive bookable start positions (30 + 15). */
+const val ESPACAMENTO_SLOTS_MINUTOS = DURACAO_CONSULTA_MINUTOS + INTERVALO_ENTRE_CONSULTAS_MINUTOS
+
 const val JANELA_DIAS = 10
 const val MAX_DIAS_CARROSSEL = 6
 
@@ -52,7 +60,7 @@ enum class SlotMotivo(val texto: String) {
     ANTECEDENCIA(MOTIVO_ANTECEDENCIA),
 }
 
-/** One 15-minute slot; [motivo] is null when the slot can be selected. */
+/** One 30-minute appointment slot; [motivo] is null when the slot can be selected. */
 data class AgendaSlot(val start: Instant, val hora: LocalTime, val motivo: SlotMotivo?) {
     val habilitado: Boolean get() = motivo == null
 }
@@ -81,9 +89,11 @@ fun diasCarrossel(schedule: List<ScheduleBlock>, clock: Clock): List<LocalDate> 
 }
 
 /**
- * Derives the 15-minute grid of [dia] from the weekly [schedule] (AD-4, never stored). Block start
- * is inclusive and end exclusive. "Ocupado" wins over the notice rule; all comparisons are
- * instant against instant (AD-8).
+ * Derives the 45-minute grid of [dia] from the weekly [schedule] (AD-4, never stored): each
+ * position is a 30-minute appointment, spaced 45 minutes apart (30 + 15 min mandatory rest),
+ * starting from the block's `start_time`. A position is only offered if the whole 30-minute
+ * appointment fits before the block's `end_time`. "Ocupado" wins over the notice rule; all
+ * comparisons are instant against instant (AD-8).
  */
 fun slotsDoDia(
     dia: LocalDate,
@@ -97,9 +107,9 @@ fun slotsDoDia(
     schedule.filter { it.dia == diaSemana }.forEach { block ->
         val fim = LocalTime.parse(block.endTime)
         var t = LocalTime.parse(block.startTime)
-        while (t < fim) {
+        while (!t.plusMinutes(DURACAO_CONSULTA_MINUTOS).isAfter(fim)) {
             horas.add(t)
-            val next = t.plusMinutes(SLOT_MINUTOS)
+            val next = t.plusMinutes(ESPACAMENTO_SLOTS_MINUTOS)
             if (next <= t) break // wrapped past midnight
             t = next
         }

@@ -58,6 +58,6 @@ development_status:
   4-1-app-exibe-splash-screen-e-icone-proprios-com-o-novo-logo: review
   epic-4-retrospective: optional
 
-  epic-5: backlog
-  5-1-sistema-usa-consultas-de-30min-com-intervalo-de-15-horario-clinica: backlog
+  epic-5: in-progress
+  5-1-sistema-usa-consultas-de-30min-com-intervalo-de-15-horario-clinica: review
   epic-5-retrospective: optional

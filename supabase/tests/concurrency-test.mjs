@@ -98,6 +98,18 @@ function saoPauloSlot(daysAhead, hh, mm) {
   return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}T${pad(hh)}:${pad(mm)}:00-03:00`;
 }
 
+// Valid start positions for a doctor working 08:00-18:00 (Story 5.1): 30min consultation + 15min
+// gap = 45min grid from 08:00 (spec Design Notes).
+const GRID_SLOTS = [
+  [8, 0], [8, 45], [9, 30], [10, 15], [11, 0], [11, 45], [12, 30],
+  [13, 15], [14, 0], [14, 45], [15, 30], [16, 15], [17, 0],
+];
+
+/** A grid-aligned slot comfortably under 48h from now (tomorrow's first block position, 08:00). */
+function underLeadTimeSlot() {
+  return saoPauloSlot(1, 8, 0);
+}
+
 async function main() {
   console.log(`Test prefix: ${PREFIX}`);
   const doctorEmail = `${PREFIX}-doctor@example.com`;
@@ -108,7 +120,7 @@ async function main() {
     specialty: "Clínico Geral",
     insurances: ["Unimed", "Amil"],
     location: "Centro, São Paulo - SP",
-    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "00:00", endTime: "23:59" })),
+    schedules: [0, 1, 2, 3, 4, 5, 6].map((weekday) => ({ weekday, startTime: "08:00", endTime: "18:00" })),
   });
   const patientEmails = [];
   for (let i = 0; i < PATIENTS; i++) {
@@ -123,7 +135,7 @@ async function main() {
   console.log(`\nConcurrency: ${PATIENTS} simultaneous requests x ${ROUNDS} rounds`);
   const slots = [];
   for (let round = 0; round < ROUNDS; round++) {
-    const start = saoPauloSlot(5, 10 + Math.floor(round / 4), (round % 4) * 15);
+    const start = saoPauloSlot(5, ...GRID_SLOTS[round]);
     slots.push(start);
     const results = await Promise.all(tokens.map((t) => book(t, doctorId, start, "Unimed")));
     const wins = results.filter((r) => r.ok).length;
@@ -145,23 +157,23 @@ async function main() {
   check(events === ROUNDS, `${ROUNDS} new_appointment events for the doctor, undelivered (got ${events})`);
 
   console.log("\nDirect-call rules");
-  let r = await book(tokens[0], doctorId, new Date(Math.floor((Date.now() + 40 * 3600000) / 900000) * 900000).toISOString(), "Unimed");
+  let r = await book(tokens[0], doctorId, underLeadTimeSlot(), "Unimed");
   check(!r.ok && r.message === "CONFLICT: lead_time", `under 48h -> CONFLICT: lead_time (got ${r.message})`);
-  r = await book(tokens[0], doctorId, saoPauloSlot(6, 10, 0), "Bradesco");
+  r = await book(tokens[0], doctorId, saoPauloSlot(6, 10, 15), "Bradesco");
   check(!r.ok && r.message.startsWith("INVALID:"), `insurance not accepted -> INVALID (got ${r.message})`);
   r = await book(tokens[0], doctorId, saoPauloSlot(6, 10, 7), "Unimed");
-  check(!r.ok && r.message.startsWith("INVALID:"), `not aligned to 15 min -> INVALID (got ${r.message})`);
-  r = await book(tokens[0], "00000000-0000-0000-0000-000000000000", saoPauloSlot(6, 10, 0), "Unimed");
+  check(!r.ok && r.message.startsWith("INVALID:"), `not aligned to 45 min -> INVALID (got ${r.message})`);
+  r = await book(tokens[0], "00000000-0000-0000-0000-000000000000", saoPauloSlot(6, 10, 15), "Unimed");
   check(!r.ok && r.message.startsWith("INVALID:"), `unknown doctor -> INVALID (got ${r.message})`);
-  r = await book(doctorToken, doctorId, saoPauloSlot(6, 10, 0), "Unimed");
+  r = await book(doctorToken, doctorId, saoPauloSlot(6, 10, 15), "Unimed");
   check(!r.ok && r.message.startsWith("FORBIDDEN:"), `doctor caller -> FORBIDDEN (got ${r.message})`);
-  r = await book(null, doctorId, saoPauloSlot(6, 10, 0), "Unimed");
+  r = await book(null, doctorId, saoPauloSlot(6, 10, 15), "Unimed");
   check(!r.ok, `no session (anon) -> rejected (got ${r.status} ${r.message})`);
 
   const direct = await fetch(`${URL_BASE}/rest/v1/appointments`, {
     method: "POST",
     headers: { "Content-Type": "application/json", apikey: ANON, Authorization: `Bearer ${tokens[0]}` },
-    body: JSON.stringify({ patient_id: "00000000-0000-0000-0000-000000000000", doctor_id: doctorId, start_time: saoPauloSlot(7, 9, 0), insurance: "Unimed" }),
+    body: JSON.stringify({ patient_id: "00000000-0000-0000-0000-000000000000", doctor_id: doctorId, start_time: saoPauloSlot(7, 9, 30), insurance: "Unimed" }),
   });
   check(!direct.ok, `direct INSERT into appointments denied (status ${direct.status})`);
 
