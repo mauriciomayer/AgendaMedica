@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 3.2, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 4.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -158,6 +158,18 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
   npx supabase db query --linked "select event_type, recipient_id, appointment_id, delivered_at from notification_events order by created_at desc limit 5"
   ```
   Esperado: uma linha `new_appointment` com `recipient_id` = id do médico e `delivered_at` nulo. Cancele ou reagende essa mesma consulta pelo app e rode de novo → aparece uma nova linha `cancellation`/`reschedule` com `recipient_id` = a outra parte (quem não fez a ação).
+
+---
+
+## Épico 4 — Identidade Visual do App
+
+### Story 4.1 — App exibe splash screen e ícone próprios com o novo logo
+
+- [ ] **Splash ao abrir do zero**: force-feche o app (não só minimize) e abra de novo pelo ícone. Esperado: por ~1,6 segundo aparece uma tela com o logo (documento branco com selo de cruz vermelha) centralizado e o texto "Agenda Médica" abaixo, sobre um fundo claro — depois segue sozinha para o Login, sem você tocar em nada.
+- [ ] **Girar o aparelho durante a splash**: force-feche e abra de novo; assim que a splash aparecer, gire o celular rapidamente. Esperado: a splash não reinicia a contagem do zero — o tempo total até chegar ao Login continua sendo por volta de 1,6s (contado desde a primeira abertura), não ~3,2s.
+- [ ] **Voltar depois da splash**: deixe a splash passar até o Login, aperte o botão voltar do sistema. Esperado: sai do app (a splash não fica "presa" na pilha de navegação para onde voltar retornaria).
+- [ ] **Ícone do app no launcher**: com o app instalado, veja o ícone na tela de apps/launcher do celular. Esperado: mostra o mesmo logo (documento + selo de cruz vermelha) sobre um fundo claro, não mais o ícone padrão azul com calendário.
+- [ ] **Formato do ícone** (se o seu launcher permitir trocar a forma do ícone, em Configurações → Ícones/Launcher, ou comparando com outro launcher instalado): confira que o logo continua legível e bem centralizado tanto em máscara redonda quanto quadrada/squircle, sem cortar o selo vermelho.
 
 ---
 
