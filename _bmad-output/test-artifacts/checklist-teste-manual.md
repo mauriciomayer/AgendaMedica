@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 5.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -36,7 +36,7 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 - [ ] **Cadastro válido**: "Sou paciente" → nome, e-mail, senha → "Criar conta" (repare que não há campo de Convênio). Esperado: autenticado, cai na tela de Busca.
 - [ ] **Campo obrigatório vazio ou e-mail inválido**: botão "Criar conta" continua desabilitado.
 - [ ] **E-mail já cadastrado**: tentar cadastrar de novo com um e-mail já usado (de médico ou paciente) → mensagem "Já existe uma conta com este e-mail.", nenhuma conta nova criada.
-- [ ] **Login por papel**: logar com a conta do paciente → cai em Busca; logar com a conta do médico → continua caindo em Minha Agenda.
+- [ ] **Login por papel** *(atualizado pela Story 6.1)*: com a aba **Paciente** selecionada, logar com a conta do paciente → cai em Busca; com a aba **Médico**, logar com a conta do médico → Minha Agenda. Usar a aba errada agora é **negado** (ver Story 6.1).
 - [ ] **Falha de rede**: modo avião ao cadastrar → mensagem genérica, sem crash.
 
 ### Story 1.3 — Usuário recupera a senha esquecida
@@ -104,7 +104,7 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 - [ ] **Acesso a Minhas Consultas**: pela Busca (ação "Minhas consultas") e pela tela de Confirmação ("Ver minhas consultas") — as duas devem levar à mesma lista.
 - [ ] **Listagem**: consultas futuras confirmadas aparecem por data crescente, cada card com médico, especialidade, data/hora, convênio e selo "Confirmada".
 - [ ] **Lista vazia**: sem nenhuma consulta agendada → "Você ainda não tem consultas agendadas." + botão "+ Nova consulta" (deve levar de volta à Busca).
-- [ ] **Cancelar com confirmação**: tocar "Cancelar" no card → aparece a confirmação inline no próprio card (Sim/Não), **não** um pop-up separado. Tocar "Não" → fecha, nada muda. Tocar "Sim" → o card some da lista.
+- [ ] **Cancelar com confirmação** *(atualizado pela Story 6.4)*: tocar "Cancelar" no card → abre uma **janela modal** "Cancelar esta consulta?" com o nome do médico e a data (a confirmação inline no card **não existe mais**). Tocar "Não" → fecha, nada muda. Tocar "Sim" → mostra "Cancelando..." e o card some da lista. Os testes específicos do modal estão na Story 6.4, mais abaixo.
 - [ ] **Horário libera após cancelar**: depois de cancelar, volte à Busca/Detalhe daquele médico (pode ser com outro paciente) e confirme que o horário está livre de novo.
 - [ ] **Reagendar**: tocar "Reagendar" num card → abre o Detalhe do médico em modo "Reagendar consulta" (sem escolha de convênio), escolher novo dia/horário → "Confirmar novo horário". Esperado: volta a Minhas Consultas já atualizada, com a **mesma consulta** (não uma nova) no novo horário.
 - [ ] **Reagendar com conflito**: se possível, provoque o mesmo horário sendo ocupado por outro paciente enquanto reagenda → "Este horário acabou de ser reservado, escolha outro.", a consulta original permanece como estava.
@@ -119,7 +119,7 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 
 - [ ] **Minha Agenda mostra as consultas**: logado como médico, a tela "Minha Agenda" (além do cartão de perfil) lista "Próximas consultas" com paciente, data/hora, convênio e selo — use o paciente de teste para agendar algo com esse médico primeiro, se ainda não houver nada agendado.
 - [ ] **Sem consultas**: médico sem nenhuma consulta futura → "Nenhuma consulta agendada ainda." (perfil continua visível).
-- [ ] **Cancelar pelo médico**: "Cancelar" → confirmação inline → "Sim" → card some; o horário libera (confirme na Busca do paciente).
+- [ ] **Cancelar pelo médico** *(atualizado pela Story 6.4)*: "Cancelar" → janela modal com o nome do paciente e a data → "Sim" → card some; o horário libera (confirme na Busca do paciente).
 - [ ] **Evento para o paciente**: depois do médico cancelar/reagendar, não há UI de notificação ainda (Épico 3.2 só registra o evento no banco) — não espere nada visível no app do paciente aqui, é esperado.
 - [ ] **Reagendar pelo médico**: "Reagendar" → abre o Detalhe da própria agenda do médico em modo Reagendar → escolher novo horário → volta a Minha Agenda com a mesma consulta atualizada.
 - [ ] **Consulta a menos de 24h bloqueada** (reaproveite o passo avançado da 2.4, mas coloque o médico como `doctor_id` da consulta de teste): botões desabilitados com a nota, igual ao lado do paciente.
@@ -182,6 +182,87 @@ Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, 
 
 - [ ] **Grade de 45 em 45 minutos**: cadastre (ou reaproveite) um médico com horário 08:00-18:00; abra o Detalhe desse médico num dia de atendimento. Esperado: os horários mostrados são 08:00, 08:45, 09:30, 10:15, 11:00, 11:45, 12:30, 13:15, 14:00, 14:45, 15:30, 16:15, 17:00 (13 horários) — nunca mais de 15 em 15 minutos, e nada depois das 17:00 (a próxima consulta, às 17:45, terminaria às 18:15, depois do fim do expediente).
 - [ ] **Duas consultas seguidas sem conflito**: agende às 08:00 com um paciente e às 08:45 com outro (mesmo médico). Esperado: as duas são aceitas normalmente — o intervalo de 45 minutos já é suficiente, sem "brigar" pelo mesmo horário.
+
+---
+
+## Épico 6 — Ajustes de Login, Sessão e Cancelamento
+
+### Story 6.1 — Login valida o e-mail, mostra a senha e bloqueia por papel selecionado
+
+- [ ] **E-mail mal formado desabilita "Entrar"**: no Login, digite `joao@x` (sem ponto no domínio) e uma senha → "Entrar" fica desabilitado; corrigindo para `joao@x.com` → habilita.
+- [ ] **Olho na senha**: no campo de senha, toque no ícone de olho → a senha aparece; tocar de novo → volta a ficar oculta. O texto digitado não se perde ao alternar. Repita no Cadastro de Médico, no Cadastro de Paciente e na Nova Senha (o olho está em todo campo de senha).
+- [ ] **Aba errada é negada (médico na aba Paciente)**: selecione a aba **Paciente** e entre com e-mail/senha de **médico** → mensagem "Este e-mail é de uma conta de médico. Selecione a aba "Médico"." e você **continua no Login**, sem sessão aberta.
+- [ ] **Aba errada é negada (paciente na aba Médico)**: o inverso, com mensagem citando "paciente" e a aba "Paciente".
+- [ ] **Aba certa entra normalmente**: os dois casos certos continuam funcionando (médico → Minha Agenda, paciente → Busca).
+
+### Story 6.2 — Usuário sai da própria conta (logout)
+
+- [ ] **Sair como médico**: em Minha Agenda, toque em "Sair" (canto superior direito do cabeçalho) → volta ao Login. Aperte o botão voltar do sistema → **sai do app** (não volta para Minha Agenda).
+- [ ] **Sair como paciente**: em Minhas Consultas, "Sair" no cabeçalho → mesmo resultado.
+- [ ] **Trocar de conta**: depois de sair, entre com **outro** usuário e confirme que aparecem os dados dele, não os do anterior.
+- [ ] **Sair com a lista carregando ou com erro**: em modo avião, abra Minha Agenda/Minhas Consultas → o botão "Sair" continua visível e funciona.
+
+### Story 6.3 — Minha Agenda mostra o horário sem os segundos
+
+- [ ] **Horário sem segundos**: em Minha Agenda (médico), o cartão de perfil mostra cada dia como `Segunda: 08:00 - 18:00` — **nunca** `08:00:00`.
+
+### Story 6.4 — Cancelamento de consulta usa uma janela de confirmação
+
+Vale para o **paciente** (Minhas Consultas) e para o **médico** (Minha Agenda).
+
+- [ ] **A janela abre por cima da tela**: tocar "Cancelar" numa consulta com mais de 24h → janela "Cancelar esta consulta?" com nome e data, e dois botões **do mesmo tamanho**, "Sim" e "Não".
+- [ ] **Tocar fora não fecha**: com a janela aberta, toque na área escura fora dela → nada acontece. *(Único comportamento do modal sem teste automatizado.)*
+- [ ] **Voltar não fecha**: aperte o botão/gesto de voltar do sistema → nada acontece (nem sai da tela por trás).
+- [ ] **"Não" fecha sem mudar nada** e **"Sim" cancela** (o botão vira "Cancelando..." por instantes, depois o card some).
+- [ ] **TalkBack** (se quiser conferir acessibilidade): os botões são lidos como "Sim, cancelar a consulta com <nome>, <data>" e "Não cancelar a consulta com <nome>, <data>".
+
+### Story 6.5 — Campos de e-mail aceitam só caracteres válidos
+
+Repita nos **4 campos de e-mail**: Login, Cadastro de Médico, Cadastro de Paciente e Recuperar Senha.
+
+- [ ] **Teclado de e-mail**: ao tocar no campo aparece o teclado com o `@` à mão, sem maiúscula automática e sem sublinhado de autocorreção.
+- [ ] **Espaço e acento não entram**: digite espaço, `ç`, `é` → nada aparece, sem mensagem de erro.
+- [ ] **Segundo `@` não entra**: com `a@b` já digitado, tente digitar outro `@` (no fim e também no início do texto) → o campo continua `a@b`.
+- [ ] **Colar limpa**: copie ` joao silva@gmail.com ` (com espaços) e cole → o campo fica `joaosilva@gmail.com`.
+- [ ] **Caracteres permitidos**: `Joao.Silva+x_y-z%1@Mail.com` entra inteiro, mantendo maiúsculas.
+- [ ] **Editar no meio do texto**: digite `joao@x.com`, toque para colocar o cursor depois do `jo` e digite um espaço → o texto não muda **e o cursor fica onde estava** (não pula para frente). Depois digite uma letra ali no meio → entra e o cursor avança uma posição.
+- [ ] **Trocar de aba no Login**: digite um e-mail na aba Médico, troque para Paciente e volte → cada aba mantém o seu e-mail.
+
+---
+
+## Épico 7 — Dívida Técnica e Arquitetura
+
+Nenhuma dessas histórias muda o comportamento visível; os testes abaixo confirmam que **nada quebrou**. O `LabeledTextField` (usado por todo campo de texto) foi mexido na 7.3, então vale passar por todos.
+
+### Story 7.1 — Horário de atendimento tipado como hora
+
+- [ ] **Minha Agenda**: horário continua `08:00 - 18:00` (sem segundos).
+- [ ] **Horários do Detalhe do médico**: a grade continua igual à da Story 5.1 (08:00, 08:45, 09:30 ...), com o mesmo número de horários por dia.
+
+### Story 7.2 — Componentes de consulta em `ui/components`
+
+- [ ] **Cards idênticos nas duas telas**: Minhas Consultas e Minha Agenda mostram os cards (selo Confirmada/Bloqueada, botões Cancelar e Reagendar) e a janela de cancelamento exatamente como antes.
+
+### Story 7.3 — Spike de teste de UI Compose (mexeu no `LabeledTextField`)
+
+- [ ] **Campos de senha**: olho mostra/oculta; digitar, apagar e colar funcionam; o cursor não pula.
+- [ ] **Campos de nome e busca**: digitar acentos e espaços continua normal (Nome, Localização/Busca) — só o campo de e-mail tem máscara.
+- [ ] **Nova Senha e Recuperar Senha**: continuam funcionando ponta a ponta.
+
+### Story 7.4 — Splash com teste de UI
+
+- [ ] **Splash**: os passos da Story 4.1 (seção acima) continuam valendo; agora o tempo de 1,6 s e a recriação também têm teste automatizado, mas o **visual** (logo e nome) segue só conferível a olho.
+
+---
+
+## Massa de demonstração (base hospedada populada em 2026-09-23)
+
+A base foi limpa e populada com dados fictícios para demonstração e prints (sem nada com nome de teste). A **senha de todas as contas** foi combinada na conversa (não está neste arquivo). Todos os e-mails terminam em `@example.com`.
+
+- **Médicos:** `ricardo.alves` (Clínico Geral, tem 4 consultas), `helena.duarte` (Cardiologia), `marina.fontes` (Dermatologia), `paulo.menezes` (Ortopedia), `beatriz.nogueira` (Pediatria), `camila.rezende` (Ginecologia), `fernando.castro` (Cardiologia), `larissa.prado` (Dermatologia).
+- **Pacientes:** `ana.lima` (4 consultas, uma **bloqueada** a menos de 24h até 24/09 10:30), `mariana.costa` (3), `joao.martins`, `carlos.souza`, `fernanda.ribeiro`, `rafael.teixeira` (2 cada).
+- As consultas ficam entre 26/09 e 30/09/2026 (a de Ana com a Dra. Marina, amanhã, é a "Bloqueada"). Passada essa data, peça para repopular.
+- Todas as consultas estão marcadas como "lembrete já enviado" para não disparar e-mail para endereços que não existem.
 
 ---
 
