@@ -74,4 +74,5 @@ development_status:
   7-1-horario-de-atendimento-tipado-como-hora: review
   7-2-componentes-de-consulta-em-ui-components: review
   7-3-spike-teste-de-ui-compose-robolectric: review
+  7-4-splash-screen-tem-teste-de-ui: backlog
   epic-7-retrospective: optional

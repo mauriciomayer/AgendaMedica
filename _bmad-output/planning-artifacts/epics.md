@@ -112,7 +112,7 @@ Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Log
 **FRs covered:** FR1, FR3 (robustez do login), FR8 (fluxo de cancelamento)
 
 ### Epic 7: Dívida Técnica e Arquitetura
-Refatorações estruturais levantadas pelo arquiteto (Winston) ao fechar o Épico 6, sem mudança de comportamento visível: horário do médico tipado como `LocalTime`, componentes de consulta movidos para `ui/components/` (dependência doctor -> patient desfeita) e um spike de teste de UI Compose (Robolectric) para fechar pendências do `deferred-work.md`.
+Refatorações estruturais levantadas pelo arquiteto (Winston) ao fechar o Épico 6, sem mudança de comportamento visível: horário do médico tipado como `LocalTime`, componentes de consulta movidos para `ui/components/` (dependência doctor -> patient desfeita), um spike de teste de UI Compose (Robolectric) e o teste de UI da Splash, para fechar pendências do `deferred-work.md`.
 **FRs covered:** nenhum (qualidade interna)
 
 ## Epic 1: Cadastro, Perfil e Autenticação
@@ -616,4 +616,24 @@ Para decidir com evidência se vale fechar as pendências de teste de UI registr
 **Given** o spike concluído
 **When** o resultado é avaliado
 **Then** fica registrado (na spec) se a infraestrutura é viável; se sim, os demais testes pendentes (ligação de `isEmail` nas 4 telas, Splash) entram nesta mesma história ou em uma seguinte; se não, o motivo fica documentado e a história termina sem a infra
+
+### Story 7.4: Splash Screen tem teste de UI
+
+Como desenvolvedor,
+Eu quero testes de UI da `SplashScreen` usando a infraestrutura Robolectric criada na Story 7.3,
+Para fechar a pendência de cobertura registrada na Story 4.1 (navegação ao Login após o tempo fixo e cálculo do tempo restante após recriação da Activity).
+
+**Acceptance Criteria:**
+
+**Given** a Splash exibida
+**When** passam menos de 1600 ms
+**Then** o nome do app aparece e `onFinished` ainda não foi chamado; tocar na tela não a encerra antes do tempo
+
+**Given** a Splash exibida
+**When** passam 1600 ms
+**Then** `onFinished` é chamado exatamente uma vez
+
+**Given** uma recriação da Activity (ex.: rotação) depois de parte do tempo já ter passado
+**When** a Splash é recriada
+**Then** ela conta só o tempo restante, não reinicia os 1600 ms do zero
 
