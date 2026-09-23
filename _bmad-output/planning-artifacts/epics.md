@@ -108,7 +108,7 @@ Correção de requisito (Sprint Change Proposal, 2026-09-22): a Consulta dura 30
 **FRs covered:** FR2, FR5 (correção)
 
 ### Epic 6: Ajustes de Login, Sessão e Cancelamento
-Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Login mais robusto (e-mail validado, senha visível, bloqueio por papel — reverte a Story 1.2), botão de logout, horário sem segundos na Minha Agenda, e cancelamento de consulta por modal em vez de confirmação inline (reverte UX-DR5 / Stories 2.4-2.5).
+Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Login mais robusto (e-mail validado, senha visível, bloqueio por papel — reverte a Story 1.2), botão de logout, horário sem segundos na Minha Agenda, cancelamento de consulta por modal em vez de confirmação inline (reverte UX-DR5 / Stories 2.4-2.5), e máscara de digitação nos campos de e-mail (corrige o entendimento da 6.1).
 **FRs covered:** FR1, FR3 (robustez do login), FR8 (fluxo de cancelamento)
 
 ## Epic 1: Cadastro, Perfil e Autenticação
@@ -530,3 +530,29 @@ Para não cancelar por engano tocando perto do botão ou fora da área de confir
 **Given** a janela de confirmação aberta
 **When** escolho "Sim"
 **Then** a consulta é cancelada como hoje (mesma regra de 24h, mesmo evento para a outra parte); escolhendo "Não", a janela fecha sem nenhuma alteração
+
+### Story 6.5: Campos de e-mail aceitam só caracteres válidos, como no login do Google
+
+Como usuário (Paciente ou Médico),
+Eu quero que todo campo de e-mail do app só me deixe digitar caracteres que existem num e-mail, com o teclado de e-mail do Android,
+Para não errar por engano (espaço, acento, dois "@") nem colar um e-mail com espaço sobrando.
+
+**Correção da Story 6.1:** a 6.1 tratou "o campo aceita qualquer caractere" como validação de formato (botão desabilitado se o e-mail não bate com `algo@algo.algo`). O usuário esclareceu que queria uma **máscara de digitação**, no estilo do campo de e-mail das telas de login de conta Google no Android: a tecla inválida simplesmente não entra. A validação de formato da 6.1 continua valendo; esta história acrescenta a máscara por cima.
+
+**Acceptance Criteria:**
+
+**Given** qualquer campo de e-mail do app (Login, Cadastro de Médico, Cadastro de Paciente, Recuperar Senha)
+**When** o campo recebe foco
+**Then** o teclado é o de e-mail (com `@` à mão), sem maiúscula automática e sem autocorreção
+
+**Given** um desses campos
+**When** o usuário digita espaço, letra com acento, emoji ou qualquer caractere fora de letras sem acento, números, `@`, `.`, `_`, `-`, `+` e `%`
+**Then** o caractere não entra no campo, sem mensagem de erro
+
+**Given** um desses campos que já contém um `@`
+**When** o usuário tenta digitar um segundo `@`
+**Then** o segundo `@` não entra
+
+**Given** um desses campos
+**When** o usuário cola um texto com caracteres inválidos ou espaços nas pontas (ex.: `" joao silva@gmail.com "`)
+**Then** o texto é limpo pelo mesmo filtro em vez de rejeitado por inteiro (resultado: `joaosilva@gmail.com`); maiúsculas e minúsculas são preservadas como digitadas

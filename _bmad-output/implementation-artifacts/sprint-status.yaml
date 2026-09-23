@@ -67,4 +67,5 @@ development_status:
   6-2-usuario-sai-da-propria-conta-logout: review
   6-3-minha-agenda-mostra-horario-sem-segundos: review
   6-4-cancelamento-de-consulta-usa-modal: review
+  6-5-campos-de-email-aceitam-so-caracteres-validos: backlog
   epic-6-retrospective: optional
