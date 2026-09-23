@@ -11,7 +11,7 @@ import com.agendamedica.app.data.repository.ConsultaDoMedico
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import com.agendamedica.app.ui.patient.MSG_JANELA_24H
+import com.agendamedica.app.ui.components.MSG_JANELA_24H
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

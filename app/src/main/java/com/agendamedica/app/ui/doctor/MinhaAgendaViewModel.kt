@@ -11,7 +11,7 @@ import com.agendamedica.app.data.repository.toAppError
 import com.agendamedica.app.data.repository.toUserMessage
 import com.agendamedica.app.domain.agenda.podeAlterarConsulta
 import com.agendamedica.app.domain.model.DoctorProfile
-import com.agendamedica.app.ui.patient.MSG_JANELA_24H
+import com.agendamedica.app.ui.components.MSG_JANELA_24H
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow

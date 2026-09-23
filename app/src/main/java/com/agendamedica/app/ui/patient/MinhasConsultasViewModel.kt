@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.Clock
+import com.agendamedica.app.ui.components.MSG_JANELA_24H
 
 const val MSG_SEM_CONSULTAS = "Você ainda não tem consultas agendadas."
 

@@ -35,9 +35,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.agendamedica.app.ui.components.OutlineButton
-import com.agendamedica.app.ui.patient.CancelConfirmDialog
-import com.agendamedica.app.ui.patient.ConsultaCard
-import com.agendamedica.app.ui.patient.formatarDataHora
+import com.agendamedica.app.ui.components.CancelConfirmDialog
+import com.agendamedica.app.ui.components.ConsultaCard
+import com.agendamedica.app.ui.components.formatarDataHora
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agendamedica.app.domain.model.DoctorProfile

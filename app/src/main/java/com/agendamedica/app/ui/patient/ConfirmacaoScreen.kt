@@ -12,18 +12,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import com.agendamedica.app.domain.agenda.FUSO_AGENDA
 import com.agendamedica.app.ui.components.OutlineButton
 import com.agendamedica.app.ui.components.PrimaryButton
+import com.agendamedica.app.ui.components.formatarDataHora
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 import java.time.Instant
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-
-private val DATA_HORA_FORMAT = DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm", Locale("pt", "BR"))
-
-/** Formats [start] as São Paulo date and time (AD-8). */
-fun formatarDataHora(start: Instant): String = DATA_HORA_FORMAT.format(start.atZone(FUSO_AGENDA))
 
 /** Confirmação (FR6): summary of the booked appointment. The "!" appears only in the title. */
 @Composable

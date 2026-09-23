@@ -11,7 +11,6 @@ import com.agendamedica.app.data.repository.toAppError
 import com.agendamedica.app.data.repository.toUserMessage
 import com.agendamedica.app.domain.agenda.ANTECEDENCIA_MINIMA_HORAS
 import com.agendamedica.app.domain.agenda.AgendaSlot
-import com.agendamedica.app.domain.agenda.JANELA_ALTERACAO_HORAS
 import com.agendamedica.app.domain.agenda.DoctorDetail
 import com.agendamedica.app.domain.agenda.diasCarrossel
 import com.agendamedica.app.domain.agenda.fimJanela
@@ -28,13 +27,13 @@ import kotlinx.coroutines.launch
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import com.agendamedica.app.ui.components.MSG_JANELA_24H
 
 const val MSG_SEM_DIAS = "Sem atendimento nos próximos dias."
 const val MSG_SEM_HORARIOS = "Sem atendimento neste dia."
 const val MSG_CONFLITO = "Este horário acabou de ser reservado, escolha outro."
 const val MSG_ANTECEDENCIA = "Este horário exige antecedência mínima de $ANTECEDENCIA_MINIMA_HORAS horas. Escolha outro."
 const val MSG_RESERVADO_REALTIME = "O horário que você escolheu acabou de ser reservado. Escolha outro."
-const val MSG_JANELA_24H = "Bloqueado: faltam menos de ${JANELA_ALTERACAO_HORAS}h — não é mais possível cancelar ou reagendar."
 
 /** What the Confirmação screen shows after a successful booking. */
 data class ConfirmacaoData(

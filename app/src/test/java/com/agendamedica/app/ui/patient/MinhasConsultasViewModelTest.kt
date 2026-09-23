@@ -29,6 +29,7 @@ import java.io.IOException
 import java.time.Clock
 import java.time.Instant
 import java.time.ZoneId
+import com.agendamedica.app.ui.components.MSG_JANELA_24H
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class MinhasConsultasViewModelTest {
