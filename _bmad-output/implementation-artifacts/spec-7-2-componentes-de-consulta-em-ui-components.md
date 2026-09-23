@@ -2,7 +2,7 @@
 title: 'Componentes de consulta vivem em ui/components'
 type: 'refactor'
 created: '2026-09-23'
-status: 'review'
+status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 context: []

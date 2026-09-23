@@ -2,7 +2,7 @@
 title: 'Usuário sai da própria conta (logout)'
 type: 'feature'
 created: '2026-09-23'
-status: 'review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']

@@ -2,7 +2,7 @@
 title: 'Paciente recebe lembrete de consulta por e-mail 24h antes'
 type: 'feature'
 created: '2026-09-22'
-status: 'review'
+status: 'done'
 baseline_commit: '5da9077e22f9b9ed12c51c781b8048e662472040'
 route: 'dispatch'
 review_loop_iteration: 0

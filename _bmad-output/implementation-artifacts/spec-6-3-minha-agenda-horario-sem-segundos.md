@@ -2,7 +2,7 @@
 title: 'Minha Agenda mostra o horário de atendimento sem os segundos'
 type: 'bugfix'
 created: '2026-09-23'
-status: 'review'
+status: 'done'
 route: 'oneshot'
 review_loop_iteration: 0
 context: []

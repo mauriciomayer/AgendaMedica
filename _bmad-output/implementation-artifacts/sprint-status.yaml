@@ -29,50 +29,50 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-17-2026 12:00
-last_updated: 09-23-2026 17:00
+last_updated: 09-23-2026 19:00
 project: AgendaMedica
 project_key: NOKEY
 tracking_system: file-system
 story_location: _bmad-output/implementation-artifacts
 development_status:
-  epic-1: in-progress
+  epic-1: done
   1-1-médico-se-cadastra-e-configura-seu-perfil-profissional: done
-  1-2-paciente-se-cadastra: review
-  1-3-usuário-recupera-a-senha-esquecida: review
+  1-2-paciente-se-cadastra: done
+  1-3-usuário-recupera-a-senha-esquecida: done
   epic-1-retrospective: optional
 
-  epic-2: in-progress
-  2-1-paciente-busca-médicos-por-especialidade-e-localização: review
-  2-2-paciente-visualiza-horários-disponíveis-de-um-médico: review
-  2-3-paciente-agenda-uma-consulta-com-garantia-de-que-não-haverá: review
-  2-4-paciente-cancela-ou-reagenda-uma-consulta: review
-  2-5-médico-cancela-ou-reagenda-uma-consulta-de-um-paciente: review
+  epic-2: done
+  2-1-paciente-busca-médicos-por-especialidade-e-localização: done
+  2-2-paciente-visualiza-horários-disponíveis-de-um-médico: done
+  2-3-paciente-agenda-uma-consulta-com-garantia-de-que-não-haverá: done
+  2-4-paciente-cancela-ou-reagenda-uma-consulta: done
+  2-5-médico-cancela-ou-reagenda-uma-consulta-de-um-paciente: done
   epic-2-retrospective: optional
 
-  epic-3: in-progress
-  3-1-paciente-recebe-lembrete-de-consulta-por-e-mail-24h-antes: review
-  3-2-sistema-registra-eventos-de-notificação-para-entrega-futura: review
+  epic-3: done
+  3-1-paciente-recebe-lembrete-de-consulta-por-e-mail-24h-antes: done
+  3-2-sistema-registra-eventos-de-notificação-para-entrega-futura: done
   epic-3-retrospective: optional
 
-  epic-4: in-progress
-  4-1-app-exibe-splash-screen-e-icone-proprios-com-o-novo-logo: review
+  epic-4: done
+  4-1-app-exibe-splash-screen-e-icone-proprios-com-o-novo-logo: done
   epic-4-retrospective: optional
 
-  epic-5: in-progress
-  5-1-sistema-usa-consultas-de-30min-com-intervalo-de-15-horario-clinica: review
+  epic-5: done
+  5-1-sistema-usa-consultas-de-30min-com-intervalo-de-15-horario-clinica: done
   epic-5-retrospective: optional
 
-  epic-6: in-progress
-  6-1-login-valida-email-mostra-senha-e-bloqueia-por-papel: review
-  6-2-usuario-sai-da-propria-conta-logout: review
-  6-3-minha-agenda-mostra-horario-sem-segundos: review
-  6-4-cancelamento-de-consulta-usa-modal: review
-  6-5-campos-de-email-aceitam-so-caracteres-validos: review
+  epic-6: done
+  6-1-login-valida-email-mostra-senha-e-bloqueia-por-papel: done
+  6-2-usuario-sai-da-propria-conta-logout: done
+  6-3-minha-agenda-mostra-horario-sem-segundos: done
+  6-4-cancelamento-de-consulta-usa-modal: done
+  6-5-campos-de-email-aceitam-so-caracteres-validos: done
   epic-6-retrospective: optional
 
-  epic-7: in-progress
-  7-1-horario-de-atendimento-tipado-como-hora: review
-  7-2-componentes-de-consulta-em-ui-components: review
-  7-3-spike-teste-de-ui-compose-robolectric: review
-  7-4-splash-screen-tem-teste-de-ui: review
+  epic-7: done
+  7-1-horario-de-atendimento-tipado-como-hora: done
+  7-2-componentes-de-consulta-em-ui-components: done
+  7-3-spike-teste-de-ui-compose-robolectric: done
+  7-4-splash-screen-tem-teste-de-ui: done
   epic-7-retrospective: optional

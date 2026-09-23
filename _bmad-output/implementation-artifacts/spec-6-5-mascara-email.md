@@ -2,7 +2,7 @@
 title: 'Campos de e-mail aceitam só caracteres válidos, como no login do Google'
 type: 'feature'
 created: '2026-09-23'
-status: 'review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/implementation-artifacts/epic-6-context.md']

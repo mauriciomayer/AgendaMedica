@@ -2,7 +2,7 @@
 title: 'Sistema usa consultas de 30 minutos com intervalo de 15, dentro do horário da clínica (08h-18h)'
 type: 'bugfix'
 created: '2026-09-22'
-status: 'review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: ['{project-root}/_bmad-output/planning-artifacts/sprint-change-proposal-2026-09-22.md']

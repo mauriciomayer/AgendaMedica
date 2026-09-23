@@ -2,7 +2,7 @@
 title: 'App exibe splash screen e ícone próprios com o novo logo'
 type: 'feature'
 created: '2026-09-22'
-status: 'review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: []

@@ -2,7 +2,7 @@
 title: 'Cancelamento de consulta usa uma janela de confirmação, não mais inline no card'
 type: 'feature'
 created: '2026-09-23'
-status: 'review'
+status: 'done'
 route: 'dispatch'
 review_loop_iteration: 0
 context: []
