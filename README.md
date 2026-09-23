@@ -31,6 +31,7 @@ supabase/
   migrations/      # Schema, RLS e funções Postgres, uma migração por história (nunca editadas depois de aplicadas)
   functions/       # Edge Functions (Deno): register-doctor, register-patient, send-reminders
   tests/           # Scripts Node que provam as regras do banco contra o projeto hospedado
+  seed/            # Massa de demonstração (médicos, pacientes e consultas fictícios) para a base hospedada
 
 _bmad-output/
   planning-artifacts/       # PRD, arquitetura (ARCHITECTURE-SPINE.md), UX (DESIGN.md/EXPERIENCE.md), epics.md
