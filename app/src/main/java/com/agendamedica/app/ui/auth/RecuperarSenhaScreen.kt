@@ -69,7 +69,7 @@ fun RecuperarSenhaScreen(
                 )
             }
 
-            LabeledTextField(value = uiState.email, onValueChange = viewModel::onEmailChanged, label = "E-mail")
+            LabeledTextField(value = uiState.email, onValueChange = viewModel::onEmailChanged, label = "E-mail", isEmail = true)
             Spacer(Modifier.height(16.dp))
 
             uiState.errorMessage?.let { message ->

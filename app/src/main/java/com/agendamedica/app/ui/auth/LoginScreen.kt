@@ -87,6 +87,7 @@ fun LoginScreen(
                 value = uiState.activeFields.email,
                 onValueChange = viewModel::onEmailChanged,
                 label = "E-mail",
+                isEmail = true,
             )
             Spacer(Modifier.height(12.dp))
             LabeledTextField(

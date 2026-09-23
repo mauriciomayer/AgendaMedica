@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
@@ -27,6 +28,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -141,13 +144,23 @@ fun LabeledTextField(
     label: String,
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
+    isEmail: Boolean = false,
 ) {
     var senhaVisivel by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
-        onValueChange = onValueChange,
+        onValueChange = { onValueChange(if (isEmail) filtrarEmail(it, value) else it) },
         label = { Text(label) },
         singleLine = true,
+        keyboardOptions = if (isEmail) {
+            KeyboardOptions(
+                keyboardType = KeyboardType.Email,
+                capitalization = KeyboardCapitalization.None,
+                autoCorrectEnabled = false,
+            )
+        } else {
+            KeyboardOptions.Default
+        },
         visualTransformation = if (isPassword && !senhaVisivel) {
             PasswordVisualTransformation()
         } else {
@@ -174,6 +187,36 @@ fun LabeledTextField(
         ),
         modifier = modifier.fillMaxWidth(),
     )
+}
+
+private val EMAIL_CHARS = Regex("[A-Za-z0-9._%+\\-]")
+
+/**
+ * Typing mask for e-mail fields (spec-6-5): keeps only ASCII letters, digits and `@ . _ - + %`,
+ * drops everything else silently, and keeps only the first `@`. Case is preserved.
+ */
+internal fun filtrarEmail(input: String, anterior: String = ""): String {
+    var texto = input
+    // Typing an "@" before an existing one must reject the NEW "@", not delete the original:
+    // drop "@" only from the inserted segment (what differs from [anterior]).
+    if ('@' in anterior && input.count { it == '@' } > 1) {
+        val prefixo = anterior.commonPrefixWith(input).length
+        val sufixo = anterior.commonSuffixWith(input).length.coerceAtMost(minOf(anterior.length, input.length) - prefixo)
+        val fim = input.length - sufixo
+        texto = input.substring(0, prefixo) + input.substring(prefixo, fim).replace("@", "") + input.substring(fim)
+    }
+    val sb = StringBuilder()
+    var temArroba = false
+    for (c in texto) {
+        when {
+            c == '@' -> if (!temArroba) {
+                sb.append(c)
+                temArroba = true
+            }
+            EMAIL_CHARS.matches(c.toString()) -> sb.append(c)
+        }
+    }
+    return sb.toString()
 }
 
 /** Circular icon button (back, etc.) with a mandatory accessible label — UX-DR7. */

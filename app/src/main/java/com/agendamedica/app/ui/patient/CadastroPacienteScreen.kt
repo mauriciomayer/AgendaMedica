@@ -61,7 +61,7 @@ fun CadastroPacienteScreen(
 
             LabeledTextField(value = uiState.name, onValueChange = viewModel::onNameChanged, label = "Nome")
             Spacer(Modifier.height(12.dp))
-            LabeledTextField(value = uiState.email, onValueChange = viewModel::onEmailChanged, label = "E-mail")
+            LabeledTextField(value = uiState.email, onValueChange = viewModel::onEmailChanged, label = "E-mail", isEmail = true)
             Spacer(Modifier.height(12.dp))
             LabeledTextField(
                 value = uiState.password,
