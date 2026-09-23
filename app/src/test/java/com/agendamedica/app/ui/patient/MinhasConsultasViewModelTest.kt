@@ -2,6 +2,7 @@ package com.agendamedica.app.ui.patient
 
 import com.agendamedica.app.data.repository.AppError
 import com.agendamedica.app.data.repository.AppointmentRepository
+import com.agendamedica.app.data.repository.AuthRepository
 import com.agendamedica.app.data.repository.CancelResult
 import com.agendamedica.app.data.repository.MinhaConsulta
 import io.mockk.coEvery
@@ -11,7 +12,9 @@ import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -31,6 +34,7 @@ import java.time.ZoneId
 class MinhasConsultasViewModelTest {
 
     private val repository: AppointmentRepository = mockk()
+    private val authRepository: AuthRepository = mockk(relaxed = true)
     private val testDispatcher = UnconfinedTestDispatcher()
     private val now = Instant.parse("2026-09-21T13:00:00Z")
     private val clock = Clock.fixed(now, ZoneId.of("UTC"))
@@ -53,7 +57,7 @@ class MinhasConsultasViewModelTest {
         Dispatchers.resetMain()
     }
 
-    private fun vm() = MinhasConsultasViewModel(repository, clock)
+    private fun vm() = MinhasConsultasViewModel(repository, clock, authRepository)
 
     @Test
     fun `lists appointments soonest first with blocked flag under 24h`() = runTest(testDispatcher) {
@@ -211,5 +215,57 @@ class MinhasConsultasViewModelTest {
         assertEquals("Algo deu errado. Tente novamente.", vm.uiState.value.actionMessage)
         assertEquals(3, vm.uiState.value.consultas.size)
         assertNull(vm.uiState.value.cancelandoId)
+    }
+
+    @Test
+    fun `logout signs out and emits the navigate-to-login event`() = runTest(testDispatcher) {
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+        val vm = vm()
+
+        var navigated = false
+        backgroundScope.launch { vm.navigateToLogin.collect { navigated = true } }
+
+        vm.logout()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertTrue("logout must emit the navigation event", navigated)
+    }
+
+    @Test
+    fun `logout works while the appointment list is still loading or in error`() = runTest(testDispatcher) {
+        coEvery { repository.getMyUpcomingAppointments(any()) } returns Result.failure(IOException("boom"))
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+        val vm = vm()
+        assertNotNullMessage(vm.uiState.value.errorMessage)
+
+        var navigated = false
+        backgroundScope.launch { vm.navigateToLogin.collect { navigated = true } }
+
+        vm.logout()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertTrue("logout must work regardless of the list's loading/error state", navigated)
+    }
+
+    @Test
+    fun `logout navigates even when signOut fails`() = runTest(testDispatcher) {
+        coEvery { authRepository.signOut() } returns Result.failure(IllegalStateException("network error"))
+        val vm = vm()
+
+        var navigated = false
+        backgroundScope.launch { vm.navigateToLogin.collect { navigated = true } }
+
+        vm.logout()
+        advanceUntilIdle()
+
+        assertTrue("logout must not check signOut()'s Result before navigating", navigated)
+    }
+
+    @Test
+    fun `loading the appointment list does not sign the user out`() = runTest(testDispatcher) {
+        vm()
+        coVerify(exactly = 0) { authRepository.signOut() }
     }
 }

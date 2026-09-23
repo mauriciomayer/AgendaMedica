@@ -1,5 +1,6 @@
 package com.agendamedica.app.ui.doctor
 
+import com.agendamedica.app.data.repository.AuthRepository
 import com.agendamedica.app.data.repository.DoctorRepository
 import com.agendamedica.app.domain.model.DoctorProfile
 import com.agendamedica.app.domain.model.Especialidade
@@ -14,7 +15,9 @@ import com.agendamedica.app.ui.patient.MSG_JANELA_24H
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -40,6 +43,7 @@ class MinhaAgendaViewModelTest {
 
     private val doctorRepository: DoctorRepository = mockk()
     private val appointments: AppointmentRepository = mockk()
+    private val authRepository: AuthRepository = mockk(relaxed = true)
     private val now = Instant.parse("2026-09-21T13:00:00Z")
     private val clock = Clock.fixed(now, ZoneId.of("UTC"))
 
@@ -49,7 +53,7 @@ class MinhaAgendaViewModelTest {
     private val near = consulta("near", now.plusSeconds(24 * 3600 - 1))
     private val profile = DoctorProfile("Dr. Ricardo Alves", Especialidade.CARDIOLOGIA, emptyList(), emptyList())
 
-    private fun vm() = MinhaAgendaViewModel(doctorRepository, appointments, clock) { "doc-1" }
+    private fun vm() = MinhaAgendaViewModel(doctorRepository, appointments, clock, authRepository) { "doc-1" }
 
     // Shared with Dispatchers.Main — see CadastroMedicoViewModelTest for why an independent
     // UnconfinedTestDispatcher per side would not hand off correctly (not needed here since
@@ -284,5 +288,59 @@ class MinhaAgendaViewModelTest {
         viewModel.refresh()
         assertEquals(listOf("far"), viewModel.uiState.value.consultas.map { it.consulta.id })
         assertFalse(viewModel.uiState.value.consultasLoading)
+    }
+
+    @Test
+    fun `logout signs out and emits the navigate-to-login event`() = runTest(testDispatcher) {
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+        val viewModel = vm()
+
+        var navigated = false
+        backgroundScope.launch { viewModel.navigateToLogin.collect { navigated = true } }
+
+        viewModel.logout()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertTrue("logout must emit the navigation event", navigated)
+    }
+
+    @Test
+    fun `logout works while the appointment list is still loading or in error`() = runTest(testDispatcher) {
+        val stuck = CompletableDeferred<Result<List<ConsultaDoMedico>>>()
+        coEvery { appointments.getDoctorUpcomingAppointments() } coAnswers { stuck.await() }
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+        val viewModel = vm()
+        assertTrue(viewModel.uiState.value.consultasLoading)
+
+        var navigated = false
+        backgroundScope.launch { viewModel.navigateToLogin.collect { navigated = true } }
+
+        viewModel.logout()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertTrue("logout must work regardless of the list's loading/error state", navigated)
+        stuck.complete(Result.failure(IOException("boom")))
+    }
+
+    @Test
+    fun `logout navigates even when signOut fails`() = runTest(testDispatcher) {
+        coEvery { authRepository.signOut() } returns Result.failure(IllegalStateException("network error"))
+        val viewModel = vm()
+
+        var navigated = false
+        backgroundScope.launch { viewModel.navigateToLogin.collect { navigated = true } }
+
+        viewModel.logout()
+        advanceUntilIdle()
+
+        assertTrue("logout must not check signOut()'s Result before navigating", navigated)
+    }
+
+    @Test
+    fun `loading the profile does not sign the user out`() = runTest(testDispatcher) {
+        vm()
+        coVerify(exactly = 0) { authRepository.signOut() }
     }
 }

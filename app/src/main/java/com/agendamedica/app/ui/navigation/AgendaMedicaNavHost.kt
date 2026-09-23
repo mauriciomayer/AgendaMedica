@@ -197,6 +197,7 @@ fun AgendaMedicaNavHost(
                     // launchSingleTop: a double tap must not stack two copies of the reschedule screen.
                     navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId") { launchSingleTop = true }
                 },
+                onLogout = { navController.goToLogin(passwordChanged = false) },
             )
         }
         composable(Routes.CADASTRO_MEDICO) {
@@ -216,6 +217,7 @@ fun AgendaMedicaNavHost(
                     // launchSingleTop: a double tap must not stack two copies of the reschedule screen.
                     navController.navigate("${Routes.DETALHE_MEDICO}/$doctorId?consultaId=$consultaId") { launchSingleTop = true }
                 },
+                onLogout = { navController.goToLogin(passwordChanged = false) },
             )
         }
     }

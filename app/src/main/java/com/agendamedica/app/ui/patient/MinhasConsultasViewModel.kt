@@ -3,6 +3,7 @@ package com.agendamedica.app.ui.patient
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.agendamedica.app.data.repository.AppointmentRepository
+import com.agendamedica.app.data.repository.AuthRepository
 import com.agendamedica.app.data.repository.CancelResult
 import com.agendamedica.app.data.repository.MinhaConsulta
 import com.agendamedica.app.data.repository.toAppError
@@ -10,8 +11,11 @@ import com.agendamedica.app.data.repository.toUserMessage
 import com.agendamedica.app.domain.agenda.podeAlterarConsulta
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -38,15 +42,27 @@ data class MinhasConsultasUiState(
 class MinhasConsultasViewModel(
     private val repository: AppointmentRepository = AppointmentRepository(),
     private val clock: Clock = Clock.systemUTC(),
+    private val authRepository: AuthRepository = AuthRepository(),
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MinhasConsultasUiState())
     val uiState: StateFlow<MinhasConsultasUiState> = _uiState.asStateFlow()
 
+    private val _navigateToLogin = MutableSharedFlow<Unit>()
+    val navigateToLogin: SharedFlow<Unit> = _navigateToLogin.asSharedFlow()
+
     private var loadJob: Job? = null
 
     init {
         load(showSpinner = true)
+    }
+
+    /** Ends the session (same pattern as `NovaSenhaViewModel`); the screen navigates to Login. */
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _navigateToLogin.emit(Unit)
+        }
     }
 
     fun retry() = load(showSpinner = true)

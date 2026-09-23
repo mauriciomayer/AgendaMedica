@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,8 +21,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,6 +54,7 @@ import com.agendamedica.app.ui.theme.ShapeLg
 fun MinhaAgendaScreen(
     lifecycleOwner: LifecycleOwner,
     onReagendar: (doctorId: String, appointmentId: String) -> Unit,
+    onLogout: () -> Unit,
     viewModel: MinhaAgendaViewModel = viewModel(),
 ) {
     val uiState by viewModel.uiState.collectAsState()
@@ -63,6 +67,10 @@ fun MinhaAgendaScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(viewModel) {
+        viewModel.navigateToLogin.collect { onLogout() }
+    }
+
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(
             modifier = Modifier
@@ -70,11 +78,20 @@ fun MinhaAgendaScreen(
                 .padding(padding)
                 .padding(18.dp),
         ) {
-            Text(
-                text = "Minha Agenda",
-                style = MaterialTheme.typography.titleLarge,
-                color = AgendaMedicaColors.inkPrimary,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    text = "Minha Agenda",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AgendaMedicaColors.inkPrimary,
+                )
+                TextButton(onClick = viewModel::logout) {
+                    Text("Sair", color = AgendaMedicaColors.accentPrimary)
+                }
+            }
             Spacer(Modifier.height(16.dp))
 
             when {

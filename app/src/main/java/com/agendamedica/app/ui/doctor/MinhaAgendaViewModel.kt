@@ -14,8 +14,11 @@ import com.agendamedica.app.domain.model.DoctorProfile
 import com.agendamedica.app.ui.patient.MSG_JANELA_24H
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -49,16 +52,28 @@ class MinhaAgendaViewModel @JvmOverloads constructor(
     private val doctorRepository: DoctorRepository = DoctorRepository(),
     private val appointmentRepository: AppointmentRepository = AppointmentRepository(),
     private val clock: Clock = Clock.systemUTC(),
+    private val authRepository: AuthRepository = AuthRepository(),
     private val doctorIdProvider: () -> String? = { AuthRepository().currentUserId() },
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MinhaAgendaUiState())
     val uiState: StateFlow<MinhaAgendaUiState> = _uiState.asStateFlow()
 
+    private val _navigateToLogin = MutableSharedFlow<Unit>()
+    val navigateToLogin: SharedFlow<Unit> = _navigateToLogin.asSharedFlow()
+
     private var consultasJob: Job? = null
 
     init {
         load()
+    }
+
+    /** Ends the session (same pattern as `NovaSenhaViewModel`); the screen navigates to Login. */
+    fun logout() {
+        viewModelScope.launch {
+            authRepository.signOut()
+            _navigateToLogin.emit(Unit)
+        }
     }
 
     /** Full (visible) reload: profile and appointments. */

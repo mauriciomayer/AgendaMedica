@@ -21,8 +21,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -52,6 +54,7 @@ fun MinhasConsultasScreen(
     onBack: () -> Unit,
     onNovaConsulta: () -> Unit,
     onReagendar: (doctorId: String, appointmentId: String) -> Unit,
+    onLogout: () -> Unit,
 ) {
     val viewModel: MinhasConsultasViewModel = viewModel()
     val state by viewModel.uiState.collectAsState()
@@ -64,6 +67,10 @@ fun MinhasConsultasScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    LaunchedEffect(viewModel) {
+        viewModel.navigateToLogin.collect { onLogout() }
+    }
+
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
         Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp)) {
             AccessibleIconButton(
@@ -71,11 +78,20 @@ fun MinhasConsultasScreen(
                 contentDescription = "Voltar",
                 onClick = onBack,
             )
-            Text(
-                "Minhas consultas",
-                style = MaterialTheme.typography.titleLarge,
-                color = AgendaMedicaColors.inkPrimary,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Minhas consultas",
+                    style = MaterialTheme.typography.titleLarge,
+                    color = AgendaMedicaColors.inkPrimary,
+                )
+                TextButton(onClick = viewModel::logout) {
+                    Text("Sair", color = AgendaMedicaColors.accentPrimary)
+                }
+            }
             Spacer(Modifier.height(12.dp))
             val errorMessage = state.errorMessage
             when {
