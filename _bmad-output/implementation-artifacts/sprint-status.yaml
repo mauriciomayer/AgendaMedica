@@ -69,6 +69,7 @@ development_status:
   6-4-cancelamento-de-consulta-usa-modal: done
   6-5-campos-de-email-aceitam-so-caracteres-validos: done
   6-6-login-exibe-o-logo-do-app: done
+  6-7-tela-de-login-segue-o-layout-do-prototipo: backlog
   epic-6-retrospective: optional
 
   epic-7: done

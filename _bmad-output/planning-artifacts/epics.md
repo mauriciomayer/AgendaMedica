@@ -579,6 +579,32 @@ Para reconhecer o app assim que ele abre e a tela ficar fiel ao design.
 **When** o restante do formulário é usado (abas Paciente/Médico, e-mail, senha, Entrar, Esqueci minha senha, Criar conta)
 **Then** todo o comportamento existente continua igual; o logo é apenas decorativo, sem ação de toque nem leitura por leitor de tela
 
+### Story 6.7: Tela de Login segue o layout do protótipo de design
+
+Como usuário (Paciente ou Médico),
+Eu quero que a tela de Login tenha o mesmo layout do protótipo de design,
+Para a primeira tela do app ficar fiel ao design aprovado (as demais telas serão revistas depois, uma a uma).
+
+**Escopo:** só a tela de Login. Nenhuma outra tela muda de aparência nesta história.
+
+**Acceptance Criteria:**
+
+**Given** a tela de Login
+**When** ela é exibida
+**Then** há um cabeçalho branco com o título "Entrar" e, abaixo, um subtítulo "Acesse sua conta de paciente" (aba Paciente) ou "Acesse sua conta de médico" (aba Médico), separado do conteúdo por uma linha fina
+
+**Given** o conteúdo da Login
+**When** ele é exibido
+**Then** aparecem, de cima para baixo e alinhados como no protótipo: o logo centralizado (Story 6.6), o seletor Paciente/Médico centralizado em formato de pílula (aba ativa azul com texto branco), o campo E-mail com o rótulo acima e o exemplo "voce@email.com", o campo Senha com o rótulo acima e "••••••••", o botão "Entrar", o link "Esqueci minha senha" centralizado e "Não tem conta? Criar conta" centralizado
+
+**Given** mensagens de erro ou de aviso
+**When** existirem (erro de login, papel errado, "senha redefinida")
+**Then** aparecem em caixas arredondadas coloridas acima do botão Entrar (aviso de erro em tom quente, aviso de sucesso em tom verde)
+
+**Given** qualquer interação da Login
+**When** o usuário usa a tela
+**Then** todo o comportamento existente continua igual: máscara e teclado de e-mail, olho na senha, botão "Entrar" desabilitado até o formulário ser válido, bloqueio por papel, "Esqueci minha senha" e "Criar conta" navegam como antes
+
 ## Epic 7: Dívida Técnica e Arquitetura
 
 Refatorações estruturais aprovadas pelo usuário após conversa com o arquiteto (2026-09-23). Nenhuma delas muda o comportamento visível do app; todas reduzem risco de regressão silenciosa ou de acoplamento indevido.
