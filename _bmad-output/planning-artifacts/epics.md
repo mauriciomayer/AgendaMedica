@@ -107,6 +107,10 @@ Adição pós-MVP, fora do escopo original do PRD: o app ganha um logo próprio,
 Correção de requisito (Sprint Change Proposal, 2026-09-22): a Consulta dura 30 minutos, com 15 minutos de intervalo obrigatório até a próxima (grade efetiva de 45 em 45 min), dentro do horário fixo da clínica (8h-18h) que todo Médico precisa respeitar ao configurar seu próprio horário.
 **FRs covered:** FR2, FR5 (correção)
 
+### Epic 6: Ajustes de Login, Sessão e Cancelamento
+Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Login mais robusto (e-mail validado, senha visível, bloqueio por papel — reverte a Story 1.2), botão de logout, horário sem segundos na Minha Agenda, e cancelamento de consulta por modal em vez de confirmação inline (reverte UX-DR5 / Stories 2.4-2.5).
+**FRs covered:** FR1, FR3 (robustez do login), FR8 (fluxo de cancelamento)
+
 ## Epic 1: Cadastro, Perfil e Autenticação
 
 Médico e Paciente criam conta; o Médico configura especialidade, convênios e agenda semanal e já aparece na busca; qualquer um recupera a senha se esquecer. Inclui a base técnica (setup do projeto Android + Supabase, schema inicial, tema visual).
@@ -454,3 +458,75 @@ Para que a grade de horários mostrada ao Paciente corresponda à forma real de 
 **Given** uma chamada direta às funções de agendar/reagendar (fora da grade do app) com um horário que não está alinhado à grade de 45 min do bloco daquele Médico, ou cuja consulta de 30 min ultrapassaria o fim do bloco
 **When** a chamada ocorre
 **Then** é rejeitada com `INVALID:`, sem exceção — a validação vive no banco, não só na UI
+
+## Epic 6: Ajustes de Login, Sessão e Cancelamento
+
+Triagem de bugs e melhorias reportados pelo usuário após uso real do app (bmad-party, 2026-09-23). Duas das quatro histórias revertem decisões de design já revisadas e testadas em histórias anteriores — o usuário confirmou a reversão nos dois casos, com o motivo registrado em cada história.
+
+### Story 6.1: Login valida o e-mail, mostra a senha digitada e bloqueia por papel selecionado
+
+Como usuário (Paciente ou Médico),
+Eu quero que o Login recuse um e-mail mal formado, deixe eu ver a senha que digitei, e me avise se eu selecionar a aba errada,
+Para não digitar errado sem perceber e não cair na tela do papel errado sem entender por quê.
+
+**Decisão de reversão:** a Story 1.2 (Review Triage Log, achado #8) decidiu deliberadamente que a aba Paciente/Médico do Login é só um atalho visual — quem manda é o papel real gravado em `profiles`, mesmo se a aba selecionada for a outra. O usuário testou esse comportamento na prática e achou a experiência ruim; a partir desta história, a aba selecionada passa a ser **obrigatória**: um login bem-sucedido cuja conta pertence ao outro papel é negado com mensagem clara, não redirecionado.
+
+**Acceptance Criteria:**
+
+**Given** o formulário de Login (Paciente ou Médico)
+**When** o e-mail digitado não tem o formato `algo@algo.algo`
+**Then** o botão "Entrar" fica desabilitado, mesmo padrão já usado no Cadastro
+
+**Given** o campo de senha, no Login e em qualquer outro formulário que peça senha
+**When** o usuário toca no ícone de olho ao lado do campo
+**Then** a senha digitada fica visível em texto; tocar de novo volta a ocultar
+
+**Given** que o usuário selecionou a aba "Paciente" e digitou e-mail/senha de uma conta de Médico (ou vice-versa)
+**When** as credenciais são válidas e o login seria aceito
+**Then** o acesso é negado com uma mensagem clara (ex.: "Este e-mail é de uma conta de médico. Selecione a aba correta.") e o usuário permanece no Login, sem sessão aberta
+
+### Story 6.2: Usuário sai da própria conta (logout)
+
+Como usuário autenticado (Paciente ou Médico),
+Eu quero um botão para sair da minha conta,
+Para trocar de usuário sem precisar fechar e reabrir o app.
+
+**Acceptance Criteria:**
+
+**Given** que estou autenticado em Minha Agenda (Médico) ou Minhas Consultas (Paciente)
+**When** toco em "Sair"
+**Then** minha sessão é encerrada e volto ao Login, sem conseguir voltar à tela anterior pelo botão voltar
+
+### Story 6.3: Minha Agenda mostra o horário de atendimento sem os segundos
+
+Como médico,
+Eu quero ver meu horário de atendimento no formato "08:00 - 18:00",
+Para não ver um "08:00:00" que não faz sentido para mim.
+
+**Acceptance Criteria:**
+
+**Given** a tela Minha Agenda com dias/horários de atendimento cadastrados
+**When** a lista é exibida
+**Then** cada horário aparece como "HH:mm" (ex.: "08:00 - 18:00"), nunca com segundos
+
+### Story 6.4: Cancelamento de consulta usa uma janela de confirmação, não mais inline no card
+
+Como paciente ou médico,
+Eu quero que cancelar uma consulta abra uma janela de confirmação que só fecha quando eu escolher Sim ou Não,
+Para não cancelar por engano tocando perto do botão ou fora da área de confirmação.
+
+**Decisão de reversão:** UX-DR5 (e as Stories 2.4/2.5, que a implementaram e testaram nos dois lados) definiram deliberadamente que a confirmação de cancelamento é inline no próprio card, nunca um diálogo modal do sistema. O usuário decidiu reverter essa decisão: um modal que não fecha por toque fora nem pelo botão voltar é mais seguro contra cancelamento acidental do que a confirmação inline.
+
+**Acceptance Criteria:**
+
+**Given** uma consulta confirmada com 24h ou mais de antecedência, em Minhas Consultas (Paciente) ou Minha Agenda (Médico)
+**When** toco em "Cancelar"
+**Then** uma janela de confirmação (modal) abre por cima da tela, com as opções "Sim" e "Não" do mesmo tamanho
+
+**Given** a janela de confirmação aberta
+**When** toco fora dela ou aciono o botão/gesto de voltar do sistema
+**Then** nada acontece — a janela só fecha quando "Sim" ou "Não" é escolhido
+
+**Given** a janela de confirmação aberta
+**When** escolho "Sim"
+**Then** a consulta é cancelada como hoje (mesma regra de 24h, mesmo evento para a outra parte); escolhendo "Não", a janela fecha sem nenhuma alteração

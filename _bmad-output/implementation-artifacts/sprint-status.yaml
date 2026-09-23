@@ -61,3 +61,10 @@ development_status:
   epic-5: in-progress
   5-1-sistema-usa-consultas-de-30min-com-intervalo-de-15-horario-clinica: review
   epic-5-retrospective: optional
+
+  epic-6: backlog
+  6-1-login-valida-email-mostra-senha-e-bloqueia-por-papel: backlog
+  6-2-usuario-sai-da-propria-conta-logout: backlog
+  6-3-minha-agenda-mostra-horario-sem-segundos: backlog
+  6-4-cancelamento-de-consulta-usa-modal: backlog
+  epic-6-retrospective: optional
