@@ -3,7 +3,7 @@ package com.agendamedica.app.domain.model
 /** A single weekly availability block, as stored in `doctor_schedules`. */
 data class ScheduleBlock(
     val dia: DiaSemana,
-    val startTime: String, // "HH:mm", kept as text for display; no arithmetic needed in this story
+    val startTime: String, // raw Postgres `time` text ("HH:mm:ss"); format at the display site (see MinhaAgendaScreen.formatHora)
     val endTime: String,
 )
 

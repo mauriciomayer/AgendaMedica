@@ -43,6 +43,8 @@ import com.agendamedica.app.ui.components.TagChip
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 import com.agendamedica.app.ui.theme.ShapeCircle
 import com.agendamedica.app.ui.theme.ShapeLg
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Minha Agenda — where a Médico lands right after registering, and on every subsequent login
@@ -212,7 +214,7 @@ private fun DoctorProfileCard(profile: DoctorProfile) {
             Spacer(Modifier.height(12.dp))
             profile.schedule.forEach { block ->
                 Text(
-                    text = "${block.dia.label}: ${block.startTime} - ${block.endTime}",
+                    text = "${block.dia.label}: ${formatHora(block.startTime)} - ${formatHora(block.endTime)}",
                     style = MaterialTheme.typography.bodyMedium,
                     color = AgendaMedicaColors.inkSecondary,
                 )
@@ -220,6 +222,10 @@ private fun DoctorProfileCard(profile: DoctorProfile) {
         }
     }
 }
+
+/** Postgres `time` serializes with seconds ("08:00:00"); the schedule card only ever shows "HH:mm". */
+internal fun formatHora(hora: String): String =
+    LocalTime.parse(hora).format(DateTimeFormatter.ofPattern("HH:mm"))
 
 private fun initialsOf(name: String): String =
     name.trim()
