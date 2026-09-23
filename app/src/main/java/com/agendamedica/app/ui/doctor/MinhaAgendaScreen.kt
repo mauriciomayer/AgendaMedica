@@ -231,9 +231,10 @@ private fun DoctorProfileCard(profile: DoctorProfile) {
     }
 }
 
-/** Postgres `time` serializes with seconds ("08:00:00"); the schedule card only ever shows "HH:mm". */
-internal fun formatHora(hora: String): String =
-    LocalTime.parse(hora).format(DateTimeFormatter.ofPattern("HH:mm"))
+private val HORA_FORMAT = DateTimeFormatter.ofPattern("HH:mm")
+
+/** The schedule card only ever shows "HH:mm", whatever precision the [LocalTime] carries. */
+internal fun formatHora(hora: LocalTime): String = hora.format(HORA_FORMAT)
 
 private fun initialsOf(name: String): String =
     name.trim()

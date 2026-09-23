@@ -105,8 +105,8 @@ fun slotsDoDia(
     val diaSemana = diaSemanaDe(dia)
     val horas = sortedSetOf<LocalTime>()
     schedule.filter { it.dia == diaSemana }.forEach { block ->
-        val fim = LocalTime.parse(block.endTime)
-        var t = LocalTime.parse(block.startTime)
+        val fim = block.endTime
+        var t = block.startTime
         while (!t.plusMinutes(DURACAO_CONSULTA_MINUTOS).isAfter(fim)) {
             horas.add(t)
             val next = t.plusMinutes(ESPACAMENTO_SLOTS_MINUTOS)

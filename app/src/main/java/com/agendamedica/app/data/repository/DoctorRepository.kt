@@ -23,6 +23,7 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import java.time.Instant
+import java.time.LocalTime
 import java.time.OffsetDateTime
 
 @Serializable
@@ -159,8 +160,8 @@ class DoctorRepository(
             schedule = scheduleRows.mapNotNull { r ->
                 ScheduleBlock(
                     dia = DiaSemana.entries.firstOrNull { it.isoValue == r.weekday } ?: return@mapNotNull null,
-                    startTime = r.startTime,
-                    endTime = r.endTime,
+                    startTime = LocalTime.parse(r.startTime),
+                    endTime = LocalTime.parse(r.endTime),
                 )
             },
         )
@@ -205,8 +206,8 @@ class DoctorRepository(
             schedule = scheduleRows.map { row ->
                 ScheduleBlock(
                     dia = DiaSemana.entries.first { it.isoValue == row.weekday },
-                    startTime = row.startTime,
-                    endTime = row.endTime,
+                    startTime = LocalTime.parse(row.startTime),
+                    endTime = LocalTime.parse(row.endTime),
                 )
                 // Sort by DiaSemana.ordered's index (Monday-first), matching the order the
                 // médico picked days in during Cadastro (CadastroMedicoScreen) — sorting by

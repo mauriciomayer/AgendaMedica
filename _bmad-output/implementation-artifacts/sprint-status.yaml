@@ -71,7 +71,7 @@ development_status:
   epic-6-retrospective: optional
 
   epic-7: in-progress
-  7-1-horario-de-atendimento-tipado-como-hora: backlog
+  7-1-horario-de-atendimento-tipado-como-hora: review
   7-2-componentes-de-consulta-em-ui-components: backlog
   7-3-spike-teste-de-ui-compose-robolectric: backlog
   epic-7-retrospective: optional

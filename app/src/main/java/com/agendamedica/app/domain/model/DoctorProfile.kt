@@ -1,10 +1,12 @@
 package com.agendamedica.app.domain.model
 
+import java.time.LocalTime
+
 /** A single weekly availability block, as stored in `doctor_schedules`. */
 data class ScheduleBlock(
     val dia: DiaSemana,
-    val startTime: String, // raw Postgres `time` text ("HH:mm:ss"); format at the display site (see MinhaAgendaScreen.formatHora)
-    val endTime: String,
+    val startTime: LocalTime, // parsed once at the Repository boundary from Postgres `time` ("HH:mm:ss")
+    val endTime: LocalTime,
 )
 
 /** The doctor's own profile, as read back from `doctors` + `doctor_schedules` (AD-11). */

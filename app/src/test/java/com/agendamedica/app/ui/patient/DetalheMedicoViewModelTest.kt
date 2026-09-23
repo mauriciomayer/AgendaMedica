@@ -38,6 +38,7 @@ import java.io.IOException
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -56,7 +57,7 @@ class DetalheMedicoViewModelTest {
 
     // 08:00-10:00 gives 3 grid positions (08:00, 08:45, 09:30) under the 45-min grid (Story 5.1).
     private val monWedFri = listOf(DiaSemana.SEGUNDA, DiaSemana.QUARTA, DiaSemana.SEXTA)
-        .map { ScheduleBlock(it, "08:00", "10:00") }
+        .map { ScheduleBlock(it, LocalTime.of(8, 0), LocalTime.of(10, 0)) }
 
     @Before
     fun setUp() {
