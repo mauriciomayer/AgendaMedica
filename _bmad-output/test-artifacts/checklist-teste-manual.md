@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4 e 6.6, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6 e 6.7, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -232,6 +232,20 @@ Repita nos **4 campos de e-mail**: Login, Cadastro de Médico, Cadastro de Pacie
 
 - [ ] **Logo no topo da Login**: ao abrir o app (depois da Splash), a tela de Login mostra o logo (documento branco com selo de cruz vermelha) **centralizado no topo**, acima de "Agenda Médica" e das abas Paciente/Médico, como no protótipo de design.
 - [ ] **Sem efeito colateral**: o restante da Login funciona igual (abas, e-mail, senha, "Esqueci minha senha", "Criar conta"); tocar no logo não faz nada; em celular pequeno ou deitado a tela rola normalmente.
+
+### Story 6.7 — Tela de Login segue o layout do protótipo
+
+Só a Login mudou de aparência; as demais telas continuam como estavam.
+
+- [ ] **Cabeçalho**: no topo, uma faixa branca com o título **"Entrar"** e, embaixo, o subtítulo **"Acesse sua conta de paciente"** (ou **"...de médico"**), com uma linha fina separando do resto. O título "Agenda Médica" não aparece mais no conteúdo.
+- [ ] **Subtítulo acompanha a aba**: ao trocar entre Paciente e Médico, o subtítulo troca junto.
+- [ ] **Seletor em pílula**: Paciente/Médico centralizados numa pílula branca; a opção ativa fica **azul com texto branco**.
+- [ ] **Campos**: "E-mail" e "Senha" com o rótulo **acima** do campo e o exemplo `voce@email.com` / `••••••••` dentro; o olho da senha e a máscara/teclado de e-mail continuam funcionando.
+- [ ] **Links**: "Esqueci minha senha" **centralizado** abaixo do botão Entrar, e "Não tem conta? **Criar conta**" centralizado logo abaixo.
+- [ ] **Avisos**: um erro de login (senha errada, aba errada) aparece numa caixa de fundo alaranjado acima do botão; depois de redefinir a senha, o aviso aparece numa caixa verde.
+- [ ] **Botão Entrar**: cinza (desabilitado) com o formulário vazio; azul quando e-mail e senha estão válidos.
+- [ ] **Tela pequena / celular deitado**: o conteúdo rola, sem cortar nada, e o cabeçalho fica visível.
+- [ ] **As outras telas não mudaram**: Cadastro de Médico, Cadastro de Paciente, Recuperar Senha e Nova Senha continuam com os campos de rótulo flutuante de antes.
 
 ---
 

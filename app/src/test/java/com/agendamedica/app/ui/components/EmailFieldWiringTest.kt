@@ -36,7 +36,12 @@ class EmailFieldWiringTest {
     @get:Rule
     val rule = createComposeRule()
 
-    private fun emailField(): SemanticsNodeInteraction = rule.onNode(hasSetTextAction() and hasText("E-mail"))
+    // Cadastro/Recuperar keep the floating label inside the field node; the Login form has a separate label
+    // above the field, where the e-mail input is the first text field on the screen.
+    private fun emailField(): SemanticsNodeInteraction {
+        val comRotulo = rule.onAllNodes(hasSetTextAction() and hasText("E-mail"))
+        return if (comRotulo.fetchSemanticsNodes().isNotEmpty()) comRotulo[0] else rule.onAllNodes(hasSetTextAction())[0]
+    }
 
     private fun digitar() {
         emailField().performTextInput("a b")
@@ -118,11 +123,11 @@ class EmailFieldWiringTest {
         vm.onRoleSelected(LoginRole.MEDICO)
         rule.setContent { LoginScreen({}, {}, {}, {}, viewModel = vm) }
         rule.waitForIdle()
-        emailField().assertTextEquals("E-mail", "medico@x.com")
+        emailField().assertTextEquals("medico@x.com")
 
         vm.onRoleSelected(LoginRole.PACIENTE)
         rule.waitForIdle()
-        emailField().assertTextEquals("E-mail", "paciente@x.com")
+        emailField().assertTextEquals("paciente@x.com")
 
         emailField().performTextInput("!")
         rule.waitForIdle()

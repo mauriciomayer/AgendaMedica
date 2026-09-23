@@ -1,5 +1,11 @@
 package com.agendamedica.app.ui.components
 
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.graphics.Color
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
@@ -26,6 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
@@ -130,6 +137,9 @@ fun ToggleChip(
     }
 }
 
+/** Field label above the input (prototype's Login form): `oklch(0.4 0.02 75)`, no matching token in DESIGN.md. */
+internal val CampoLabelInk = Color(0xFF57514A)
+
 /**
  * Text/password/e-mail input, `md` rounded, `border-input` border, per DESIGN.md.
  *
@@ -144,6 +154,11 @@ fun ToggleChip(
  * ([value] stays the source of truth: an external change replaces the mirror): with a plain
  * String the cursor would advance past a key the mask just rejected. Password, name and search
  * fields use the plain String overload, exactly as before.
+ *
+ * When [labelAbove] is true (spec-6-7, prototype's Login form), [label] is drawn as a small text
+ * above the input instead of the floating Material label, and [placeholder] is shown inside the
+ * empty input. The label stays a plain text node next to the field (the field keeps announcing its
+ * own typed value); every other field keeps the floating label (the default).
  */
 @Composable
 fun LabeledTextField(
@@ -153,6 +168,8 @@ fun LabeledTextField(
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
     isEmail: Boolean = false,
+    labelAbove: Boolean = false,
+    placeholder: String? = null,
 ) {
     var senhaVisivel by remember { mutableStateOf(false) }
     val keyboardOptions = if (isEmail) {
@@ -183,47 +200,73 @@ fun LabeledTextField(
         focusedContainerColor = AgendaMedicaColors.surfaceInput,
         unfocusedContainerColor = AgendaMedicaColors.surfaceInput,
     )
+    val labelSlot: (@Composable () -> Unit)? = if (labelAbove) null else ({ Text(label) })
+    val placeholderSlot: (@Composable () -> Unit)? = placeholder?.let { texto ->
+        {
+            // A password example ("••••••••") would be read out as bullets, so it is hidden from screen readers.
+            val semanticaPlaceholder = if (isPassword) Modifier.clearAndSetSemantics {} else Modifier
+            Text(texto, color = AgendaMedicaColors.inkTertiary, modifier = semanticaPlaceholder)
+        }
+    }
 
-    if (isEmail) {
-        var campo by remember { mutableStateOf(TextFieldValue(value, selection = TextRange(value.length))) }
-        if (campo.text != value) campo = TextFieldValue(value, selection = TextRange(value.length))
-        OutlinedTextField(
-            value = campo,
-            onValueChange = { novo ->
-                val anterior = campo.text
-                val texto = filtrarEmail(novo.text, anterior)
-                val removidos = novo.text.length - texto.length
-                campo = if (removidos == 0) {
-                    novo
-                } else {
-                    // The mask only ever drops characters from the segment just inserted, i.e. before the cursor.
-                    val cursor = (novo.selection.start - removidos).coerceIn(0, texto.length)
-                    TextFieldValue(texto, selection = TextRange(cursor))
-                }
-                if (texto != anterior) onValueChange(texto)
-            },
-            label = { Text(label) },
-            singleLine = true,
-            keyboardOptions = keyboardOptions,
-            visualTransformation = visualTransformation,
-            trailingIcon = trailingIcon,
-            shape = ShapeMd,
-            colors = colors,
-            modifier = modifier.fillMaxWidth(),
-        )
+    val campo: @Composable (Modifier) -> Unit = { campoModifier ->
+        if (isEmail) {
+            var valor by remember { mutableStateOf(TextFieldValue(value, selection = TextRange(value.length))) }
+            if (valor.text != value) valor = TextFieldValue(value, selection = TextRange(value.length))
+            OutlinedTextField(
+                value = valor,
+                onValueChange = { novo ->
+                    val anterior = valor.text
+                    val texto = filtrarEmail(novo.text, anterior)
+                    val removidos = novo.text.length - texto.length
+                    valor = if (removidos == 0) {
+                        novo
+                    } else {
+                        // The mask only ever drops characters from the segment just inserted, i.e. before the cursor.
+                        val cursor = (novo.selection.start - removidos).coerceIn(0, texto.length)
+                        TextFieldValue(texto, selection = TextRange(cursor))
+                    }
+                    if (texto != anterior) onValueChange(texto)
+                },
+                label = labelSlot,
+                placeholder = placeholderSlot,
+                singleLine = true,
+                keyboardOptions = keyboardOptions,
+                visualTransformation = visualTransformation,
+                trailingIcon = trailingIcon,
+                shape = ShapeMd,
+                colors = colors,
+                modifier = campoModifier,
+            )
+        } else {
+            OutlinedTextField(
+                value = value,
+                onValueChange = onValueChange,
+                label = labelSlot,
+                placeholder = placeholderSlot,
+                singleLine = true,
+                keyboardOptions = keyboardOptions,
+                visualTransformation = visualTransformation,
+                trailingIcon = trailingIcon,
+                shape = ShapeMd,
+                colors = colors,
+                modifier = campoModifier,
+            )
+        }
+    }
+
+    if (labelAbove) {
+        Column(modifier = modifier.fillMaxWidth()) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold),
+                color = CampoLabelInk,
+            )
+            Spacer(Modifier.height(6.dp))
+            campo(Modifier.fillMaxWidth())
+        }
     } else {
-        OutlinedTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = { Text(label) },
-            singleLine = true,
-            keyboardOptions = keyboardOptions,
-            visualTransformation = visualTransformation,
-            trailingIcon = trailingIcon,
-            shape = ShapeMd,
-            colors = colors,
-            modifier = modifier.fillMaxWidth(),
-        )
+        campo(modifier.fillMaxWidth())
     }
 }
 

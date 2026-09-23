@@ -6,6 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.semantics.getOrNull
 import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.performTextInput
 import androidx.compose.ui.test.performTextInputSelection
@@ -73,5 +75,22 @@ class LabeledTextFieldEmailTest {
         rule.waitForIdle()
         assertEquals("joao@x.com", texto)
         assertEquals(TextRange(2), selecao())
+    }
+
+    @Test
+    fun `default fields keep the floating label inside the field, as every other screen expects`() {
+        rule.setContent { LabeledTextField(value = "", onValueChange = {}, label = "Nome") }
+        // The label is merged into the field's own node (floating Material label), not a separate text above it.
+        rule.onNode(hasSetTextAction() and hasText("Nome")).assertExists()
+    }
+
+    @Test
+    fun `labelAbove draws the label and the example outside the field`() {
+        rule.setContent {
+            LabeledTextField(value = "", onValueChange = {}, label = "E-mail", labelAbove = true, placeholder = "voce@email.com")
+        }
+        rule.onNodeWithText("E-mail").assertExists()
+        rule.onNodeWithText("voce@email.com").assertExists()
+        rule.onNode(hasSetTextAction() and hasText("E-mail")).assertDoesNotExist()
     }
 }
