@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4 e 6.6, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -227,6 +227,11 @@ Repita nos **4 campos de e-mail**: Login, Cadastro de Médico, Cadastro de Pacie
 - [ ] **Caracteres permitidos**: `Joao.Silva+x_y-z%1@Mail.com` entra inteiro, mantendo maiúsculas.
 - [ ] **Editar no meio do texto**: digite `joao@x.com`, toque para colocar o cursor depois do `jo` e digite um espaço → o texto não muda **e o cursor fica onde estava** (não pula para frente). Depois digite uma letra ali no meio → entra e o cursor avança uma posição.
 - [ ] **Trocar de aba no Login**: digite um e-mail na aba Médico, troque para Paciente e volte → cada aba mantém o seu e-mail.
+
+### Story 6.6 — Login exibe o logo do app
+
+- [ ] **Logo no topo da Login**: ao abrir o app (depois da Splash), a tela de Login mostra o logo (documento branco com selo de cruz vermelha) **centralizado no topo**, acima de "Agenda Médica" e das abas Paciente/Médico, como no protótipo de design.
+- [ ] **Sem efeito colateral**: o restante da Login funciona igual (abas, e-mail, senha, "Esqueci minha senha", "Criar conta"); tocar no logo não faz nada; em celular pequeno ou deitado a tela rola normalmente.
 
 ---
 

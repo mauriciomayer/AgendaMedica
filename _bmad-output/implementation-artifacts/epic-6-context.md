@@ -4,7 +4,7 @@
 
 ## Goal
 
-This epic triages bugs/improvements the user found using the real app after Epics 1-5 shipped (bmad-party session, 2026-09-23). It makes Login more robust (validated e-mail format, a show/hide toggle for the typed password, and strict enforcement of the selected role tab), adds a missing logout control, fixes a cosmetic time display bug on Minha Agenda, replaces the inline-card cancellation confirmation with a blocking modal dialog, and adds a typing mask to every e-mail field. Two stories deliberately reverse decisions made and tested in earlier epics (6.1 and 6.4), and Story 6.5 corrects how Story 6.1 interpreted the user's e-mail request — the user confirmed each explicitly after hands-on use, and each story records the reason.
+This epic triages bugs/improvements the user found using the real app after Epics 1-5 shipped (bmad-party session, 2026-09-23). It makes Login more robust (validated e-mail format, a show/hide toggle for the typed password, and strict enforcement of the selected role tab), adds a missing logout control, fixes a cosmetic time display bug on Minha Agenda, replaces the inline-card cancellation confirmation with a blocking modal dialog, adds a typing mask to every e-mail field, and shows the app logo at the top of Login as in the design prototype. Two stories deliberately reverse decisions made and tested in earlier epics (6.1 and 6.4), and Story 6.5 corrects how Story 6.1 interpreted the user's e-mail request — the user confirmed each explicitly after hands-on use, and each story records the reason.
 
 ## Stories
 
@@ -13,6 +13,7 @@ This epic triages bugs/improvements the user found using the real app after Epic
 - Story 6.3: Minha Agenda mostra o horário de atendimento sem os segundos
 - Story 6.4: Cancelamento de consulta usa uma janela de confirmação, não mais inline no card
 - Story 6.5: Campos de e-mail aceitam só caracteres válidos, como no login do Google
+- Story 6.6: Login exibe o logo do app
 
 ## Requirements & Constraints
 
@@ -23,6 +24,7 @@ This epic triages bugs/improvements the user found using the real app after Epic
 - Every authenticated screen (Minha Agenda for Médico, Minhas Consultas for Paciente) needs a visible "Sair" action; using it ends the session, returns to Login, and the system back button must not be able to return to the now-closed authenticated screen.
 - Doctor schedule times on Minha Agenda must render as `HH:mm` (e.g. "08:00 - 18:00"), never with seconds.
 - Cancelling an appointment (Paciente in Minhas Consultas, Médico in Minha Agenda) now opens a modal with two equal-size "Sim"/"Não" actions; neither an outside tap nor the system back gesture/button may dismiss it — only choosing Sim or Não closes it. The existing 24h cancellation-window rule, the resulting status change, and the notification event for the other party are unchanged; only the confirmation UI changes.
+- Login must show the app logo (document with red medical-cross seal) centered at the top of the content, 88dp wide, above the rest of the form. It is purely decorative: no tap action, not exposed to screen readers, and all existing Login behavior (role tabs, e-mail, password, Entrar, Esqueci minha senha, Criar conta) is unchanged.
 
 ## Technical Decisions
 
@@ -31,11 +33,13 @@ This epic triages bugs/improvements the user found using the real app after Epic
 - Error convention already in place stays unchanged: Postgres exceptions use `CONFLICT:`/`INVALID:`/`FORBIDDEN:` prefixes, with an implicit `UNEXPECTED` bucket in the app for anything else. The new role-mismatch message on Login is app-side copy, not a new backend error type.
 - MVVM boundaries hold: only the Repository layer talks to Supabase Auth; logout goes through the same auth session teardown call the Repository already exposes.
 - The e-mail mask applies to four different screens, so it should be one shared filter/component rather than per-screen copies.
+- The logo is already an existing reusable composable (`AgendaMedicaLogo` in `ui/theme/Logo.kt`), currently used only by the Splash; Story 6.6 reuses it on Login rather than redrawing it.
 
 ## UX & Interaction Patterns
 
 - Existing button-danger-outline component (white background, danger-colored border and text) is the established style for cancel/destructive actions and is available for the modal's Sim/Não pair.
 - Login's existing inline-error placement (below the fields, non-blocking, e.g. "Nenhum cadastro encontrado...") is the pattern to extend for the new role-mismatch message.
+- The shared design prototype places the logo at the top of the Login content (88dp, centered); Login should match it.
 - Voice and tone stays direct and specific, no apologetic phrasing: the role-mismatch message should name the actual account type and the needed action, not just say "login failed."
 - Accessibility floor still applies: the eye-icon password toggle needs a real `contentDescription`, and the modal's Sim/Não targets must each meet the ≥48dp touch target minimum.
 
@@ -45,4 +49,5 @@ This epic triages bugs/improvements the user found using the real app after Epic
 - Story 6.4 explicitly reverses UX-DR5 and its implementation in Stories 2.4 (Paciente side) and 2.5 (Médico side), which deliberately built and tested inline-in-card Sim/Não cancellation confirmation instead of a modal. The user decided a modal that can't be dismissed by outside tap or back gesture is safer against accidental cancellation than the inline card, and confirmed the reversal for both the Paciente and Médico surfaces.
 - Story 6.5 corrects Story 6.1's interpretation of the user's e-mail request: 6.1 treated "the field accepts any character" as a format-validation problem (disabled button until `algo@algo.algo`), but the user actually wanted a typing mask like Google's Android login. 6.1's validation is kept; 6.5 layers the mask on top and extends it beyond Login to all e-mail fields (Cadastro Médico/Paciente, Recuperar Senha). 6.5 builds on 6.1's Login e-mail field.
 - Story 6.2 (logout) has no prior decision to reverse — the earlier Epic 1 review triage (achado #11) explicitly deferred logout as out of scope for that epic, noting it belonged to no existing story. Epic 6 is where it's finally addressed.
+- Story 6.6 completes an item Story 4.1 left out of scope (logo reuse on Login; the logo was placed only on the Splash). It touches the same Login screen as 6.1 and 6.5 but only adds a decorative element above the form, so it does not conflict with them.
 - Stories 6.2-6.4 are otherwise independent: they touch different screens/components, and none blocks another within this epic.

@@ -23,11 +23,11 @@ private val LogoSealRed = Color(0xFFD6362E)
  * medical-cross seal overlapping its bottom-right corner. Faithful reproduction of the
  * prototype's SVG (viewBox 72x72 — see spec-4-1-splash-icone.md's Design Notes for the exact
  * source markup), scaled uniformly to [size]. Used by [com.agendamedica.app.ui.splash.SplashScreen]
- * and available for future reuse (e.g. Login header, out of scope for this story).
+ * and by the Login screen (Story 6.6). Purely decorative: it carries no semantics of its own.
  */
 @Composable
-fun AgendaMedicaLogo(size: Dp) {
-    Canvas(modifier = Modifier.size(size)) {
+fun AgendaMedicaLogo(size: Dp, modifier: Modifier = Modifier) {
+    Canvas(modifier = modifier.size(size)) {
         val scale = this.size.width / 72f
 
         // Document: white rounded rect, light-gray stroke, 3 horizontal "text" lines.
