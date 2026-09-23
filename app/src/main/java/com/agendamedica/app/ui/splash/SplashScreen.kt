@@ -37,12 +37,18 @@ private const val SPLASH_DURATION_MS = 1600L
  * restart the count from zero, doubling the perceived splash time. [startTimeMillis] is saved
  * across that recreation (`rememberSaveable`, backed by the recreated Activity's saved-instance
  * bundle), so the effect below computes only the *remaining* time instead of a fresh 1600ms.
+ *
+ * @param nowMillis time source used for both the start mark and the elapsed time; defaults to the
+ * wall clock. Injectable so UI tests can drive time deterministically with the Compose test clock.
  */
 @Composable
-fun SplashScreen(onFinished: () -> Unit) {
-    val startTimeMillis = rememberSaveable { System.currentTimeMillis() }
+fun SplashScreen(
+    onFinished: () -> Unit,
+    nowMillis: () -> Long = System::currentTimeMillis,
+) {
+    val startTimeMillis = rememberSaveable { nowMillis() }
     LaunchedEffect(startTimeMillis) {
-        val elapsed = System.currentTimeMillis() - startTimeMillis
+        val elapsed = nowMillis() - startTimeMillis
         delay((SPLASH_DURATION_MS - elapsed).coerceAtLeast(0))
         onFinished()
     }

@@ -129,3 +129,8 @@ real) but out of scope to fix within this story. Each entry names the spec that 
 - source_spec: `_bmad-output/implementation-artifacts/spec-6-5-mascara-email.md`
   summary: Nenhum teste automatizado garante que `isEmail = true` está ligado nas 4 telas (Login, Cadastro Médico, Cadastro Paciente, Recuperar Senha) nem que `KeyboardOptions` de e-mail está aplicado; só `filtrarEmail` (função pura) é testada.
   evidence: Detectado pelo verification-gap da 6.5. O projeto não tem infra de teste de UI Compose (`app/build.gradle.kts:118-119`), mesma limitação já registrada para a Splash e para o diálogo da 6.4; remover a flag numa tela ou inverter o `if (isEmail)` passaria com todos os testes verdes. Se uma história futura trouxer `compose-ui-test`, cobrir aqui também (ou criar um `EmailTextField` que torne o esquecimento da flag impossível).
+
+- source_spec: `_bmad-output/implementation-artifacts/spec-7-4-splash-teste-de-ui.md`
+  summary: `SplashScreen` calcula o tempo restante como `(1600 - elapsed).coerceAtLeast(0)` sem limite superior; se o relógio de parede for atrasado entre salvar e restaurar o estado (Activity recriada dentro dos 1,6 s), `elapsed` fica negativo e a Splash espera mais de 1600 ms.
+  evidence: Apontado no blind-hunter da 7.4; pré-existente (Story 4.1), não introduzido por esta mudança. Severidade `low`: exige recriação da Activity na janela de 1,6 s com o relógio alterado. Correção de um token: `.coerceIn(0, SPLASH_DURATION_MS)`; o parâmetro `nowMillis` injetável já permite testá-lo (relógio devolvendo valor menor que `startTimeMillis`).
+
