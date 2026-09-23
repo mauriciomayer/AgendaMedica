@@ -17,6 +17,11 @@ import kotlinx.coroutines.launch
 
 const val MSG_SENHA_REDEFINIDA = "Senha redefinida. Entre com a nova senha."
 
+// Same convention as CadastroMedicoViewModel/CadastroPacienteViewModel/RecuperarSenhaViewModel —
+// duplicated by design, not extracted to a shared util (spec-6-1: "não extrair para um util
+// compartilhado nesta história").
+private val EMAIL_PATTERN = Regex("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$")
+
 /** Which login form is currently shown — "tabs Paciente/Médico" (Code Map). */
 enum class LoginRole { PACIENTE, MEDICO }
 
@@ -34,7 +39,9 @@ data class LoginUiState(
         get() = if (selectedRole == LoginRole.PACIENTE) pacienteFields else medicoFields
 
     val isSubmitEnabled: Boolean
-        get() = !isLoading && activeFields.email.isNotBlank() && activeFields.password.isNotBlank()
+        get() = !isLoading &&
+            EMAIL_PATTERN.matches(activeFields.email.trim()) &&
+            activeFields.password.isNotBlank()
 }
 
 /**
@@ -103,6 +110,24 @@ class LoginViewModel @JvmOverloads constructor(
             val isDoctor = doctorRepository.isCurrentUserDoctor().getOrElse { throwable ->
                 _uiState.update {
                     it.copy(isLoading = false, errorMessage = throwable.toAppError().toUserMessage())
+                }
+                return@launch
+            }
+
+            // Story 6.1: the selected tab is now authoritative — it reverses Story 1.2's
+            // achado #8 ("aba é só visual"), where the real role silently won and routed
+            // regardless of the tab. On a mismatch the session must not stay open (signOut
+            // first, before anything else), and no navigation happens.
+            val esperandoMedico = state.selectedRole == LoginRole.MEDICO
+            if (isDoctor != esperandoMedico) {
+                authRepository.signOut()
+                val papelReal = if (isDoctor) "médico" else "paciente"
+                val abaCerta = if (isDoctor) "Médico" else "Paciente"
+                _uiState.update {
+                    it.copy(
+                        isLoading = false,
+                        errorMessage = "Este e-mail é de uma conta de $papelReal. Selecione a aba \"$abaCerta\".",
+                    )
                 }
                 return@launch
             }

@@ -110,6 +110,8 @@ Três revisores (Blind Hunter, Edge Case Hunter, Verification Gap), achados veri
 
 ## Design Notes
 
+**Nota de correção (Story 6.1, 2026-09-23):** o achado #8 do Review Triage Log acima (aba Paciente/Médico do Login é só visual; o papel real sempre vence) foi revertido a pedido do usuário, que testou o comportamento na prática e achou a experiência ruim. A partir da Story 6.1, a aba selecionada passa a ser obrigatória: um login com credenciais do outro papel é negado com mensagem clara, não redirecionado. Ver `spec-6-1-login-validacao-senha-papel.md`.
+
 `patients.email` duplica `auth.users.email` por decisão do Épico 1 (usado por lembretes da Story 3.1); copiado uma vez na criação, sem troca de e-mail no MVP. `register-patient` fica autocontido (sem `_shared`) para não tocar `register-doctor`, já em produção.
 
 ## Verification

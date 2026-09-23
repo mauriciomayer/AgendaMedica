@@ -8,6 +8,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -16,6 +19,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
@@ -118,7 +125,15 @@ fun ToggleChip(
     }
 }
 
-/** Text/password input, `md` rounded, `border-input` border, per DESIGN.md. */
+/**
+ * Text/password input, `md` rounded, `border-input` border, per DESIGN.md.
+ *
+ * When [isPassword] is true, a show/hide eye icon is added (spec-6-1: added once here, covering
+ * every screen that uses this shared component — Login, Cadastro de Médico, Cadastro de
+ * Paciente, Nova Senha — instead of duplicated per screen). Visibility state is local to the
+ * field ([remember]) and resets when the screen recomposes from scratch; toggling it never loses
+ * the text already typed.
+ */
 @Composable
 fun LabeledTextField(
     value: String,
@@ -127,12 +142,29 @@ fun LabeledTextField(
     modifier: Modifier = Modifier,
     isPassword: Boolean = false,
 ) {
+    var senhaVisivel by remember { mutableStateOf(false) }
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         label = { Text(label) },
         singleLine = true,
-        visualTransformation = if (isPassword) PasswordVisualTransformation() else VisualTransformation.None,
+        visualTransformation = if (isPassword && !senhaVisivel) {
+            PasswordVisualTransformation()
+        } else {
+            VisualTransformation.None
+        },
+        trailingIcon = if (isPassword) {
+            {
+                IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
+                    Icon(
+                        imageVector = if (senhaVisivel) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                        contentDescription = if (senhaVisivel) "Ocultar senha" else "Mostrar senha",
+                    )
+                }
+            }
+        } else {
+            null
+        },
         shape = ShapeMd,
         colors = OutlinedTextFieldDefaults.colors(
             focusedBorderColor = AgendaMedicaColors.accentPrimary,

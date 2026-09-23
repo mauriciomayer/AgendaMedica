@@ -85,6 +85,7 @@ class LoginViewModelTest {
         assertTrue("expected navigation to Minha Agenda after a correct login", navigated)
         assertNull(viewModel.uiState.value.errorMessage)
         assertFalse(viewModel.uiState.value.isLoading)
+        coVerify(exactly = 0) { authRepository.signOut() }
     }
 
     @Test
@@ -121,6 +122,7 @@ class LoginViewModelTest {
         assertTrue("expected navigation to Busca for a patient", navigatedToBusca)
         assertFalse(navigatedToAgenda)
         assertNull(viewModel.uiState.value.errorMessage)
+        coVerify(exactly = 0) { authRepository.signOut() }
     }
 
     @Test
@@ -144,6 +146,77 @@ class LoginViewModelTest {
         assertFalse(
             "error message must not leak Supabase's raw wording",
             viewModel.uiState.value.errorMessage!!.contains("Invalid login credentials"),
+        )
+    }
+
+    @Test
+    fun `submit disabled when email format is invalid`() {
+        viewModel.onEmailChanged("medico@example")
+        viewModel.onPasswordChanged("senha123")
+        assertFalse(viewModel.uiState.value.isSubmitEnabled)
+    }
+
+    @Test
+    fun `doctor credentials on Paciente tab are denied, signed out, and not navigated`() = runTest(testDispatcher) {
+        viewModel.onRoleSelected(LoginRole.PACIENTE)
+        viewModel.onEmailChanged("medico@example.com")
+        viewModel.onPasswordChanged("senha123")
+        coEvery { authRepository.signIn("medico@example.com", "senha123") } returns Result.success(Unit)
+        coEvery { doctorRepository.isCurrentUserDoctor() } returns Result.success(true)
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+
+        var navigatedToAgenda = false
+        var navigatedToBusca = false
+        backgroundScope.launch { viewModel.navigateToMinhaAgenda.collect { navigatedToAgenda = true } }
+        backgroundScope.launch { viewModel.navigateToBusca.collect { navigatedToBusca = true } }
+
+        viewModel.submit()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertFalse("must not navigate to Minha Agenda on role mismatch", navigatedToAgenda)
+        assertFalse("must not navigate to Busca on role mismatch", navigatedToBusca)
+        assertFalse(viewModel.uiState.value.isLoading)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+        assertTrue(
+            "error message must name the real role (médico)",
+            viewModel.uiState.value.errorMessage!!.contains("médico"),
+        )
+        assertTrue(
+            "error message must name the correct tab (\"Médico\")",
+            viewModel.uiState.value.errorMessage!!.contains("\"Médico\""),
+        )
+    }
+
+    @Test
+    fun `patient credentials on Medico tab are denied, signed out, and not navigated`() = runTest(testDispatcher) {
+        viewModel.onRoleSelected(LoginRole.MEDICO)
+        viewModel.onEmailChanged("paciente@example.com")
+        viewModel.onPasswordChanged("senha123")
+        coEvery { authRepository.signIn("paciente@example.com", "senha123") } returns Result.success(Unit)
+        coEvery { doctorRepository.isCurrentUserDoctor() } returns Result.success(false)
+        coEvery { authRepository.signOut() } returns Result.success(Unit)
+
+        var navigatedToAgenda = false
+        var navigatedToBusca = false
+        backgroundScope.launch { viewModel.navigateToMinhaAgenda.collect { navigatedToAgenda = true } }
+        backgroundScope.launch { viewModel.navigateToBusca.collect { navigatedToBusca = true } }
+
+        viewModel.submit()
+        advanceUntilIdle()
+
+        coVerify(exactly = 1) { authRepository.signOut() }
+        assertFalse("must not navigate to Minha Agenda on role mismatch", navigatedToAgenda)
+        assertFalse("must not navigate to Busca on role mismatch", navigatedToBusca)
+        assertFalse(viewModel.uiState.value.isLoading)
+        assertNotNull(viewModel.uiState.value.errorMessage)
+        assertTrue(
+            "error message must name the real role (paciente)",
+            viewModel.uiState.value.errorMessage!!.contains("paciente"),
+        )
+        assertTrue(
+            "error message must name the correct tab (\"Paciente\")",
+            viewModel.uiState.value.errorMessage!!.contains("\"Paciente\""),
         )
     }
 
