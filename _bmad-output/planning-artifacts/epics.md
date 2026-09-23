@@ -561,6 +561,24 @@ Para não errar por engano (espaço, acento, dois "@") nem colar um e-mail com e
 **When** o usuário cola um texto com caracteres inválidos ou espaços nas pontas (ex.: `" joao silva@gmail.com "`)
 **Then** o texto é limpo pelo mesmo filtro em vez de rejeitado por inteiro (resultado: `joaosilva@gmail.com`); maiúsculas e minúsculas são preservadas como digitadas
 
+### Story 6.6: Login exibe o logo do app
+
+Como usuário (Paciente ou Médico),
+Eu quero ver o logo do app no topo da tela de Login, como no protótipo de design,
+Para reconhecer o app assim que ele abre e a tela ficar fiel ao design.
+
+**Origem:** o protótipo de design (artefato compartilhado pelo usuário) mostra o logo (documento com selo de cruz vermelha) centralizado no topo do conteúdo da tela de Login, com 88 dp. O app nunca o exibiu ali: a Story 4.1 só o colocou na Splash e deixou o reuso no Login "fora de escopo" (KDoc de `Logo.kt`).
+
+**Acceptance Criteria:**
+
+**Given** a tela de Login
+**When** ela é exibida
+**Then** o logo do app aparece centralizado no topo do conteúdo, com 88 dp de largura, acima do restante do formulário
+
+**Given** a tela de Login
+**When** o restante do formulário é usado (abas Paciente/Médico, e-mail, senha, Entrar, Esqueci minha senha, Criar conta)
+**Then** todo o comportamento existente continua igual; o logo é apenas decorativo, sem ação de toque nem leitura por leitor de tela
+
 ## Epic 7: Dívida Técnica e Arquitetura
 
 Refatorações estruturais aprovadas pelo usuário após conversa com o arquiteto (2026-09-23). Nenhuma delas muda o comportamento visível do app; todas reduzem risco de regressão silenciosa ou de acoplamento indevido.

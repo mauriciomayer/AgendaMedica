@@ -68,6 +68,7 @@ development_status:
   6-3-minha-agenda-mostra-horario-sem-segundos: done
   6-4-cancelamento-de-consulta-usa-modal: done
   6-5-campos-de-email-aceitam-so-caracteres-validos: done
+  6-6-login-exibe-o-logo-do-app: backlog
   epic-6-retrospective: optional
 
   epic-7: done
