@@ -81,6 +81,22 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
+    testOptions {
+        unitTests {
+            // Robolectric needs the merged resources/manifest to run Compose UI tests on the JVM.
+            isIncludeAndroidResources = true
+            // Robolectric reaches into JDK internals; JDK 21+ (Android Studio's JBR is 25) needs these opened.
+            all {
+                it.jvmArgs(
+                    "--add-opens=java.base/jdk.internal.access=ALL-UNNAMED",
+                    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+                    "--add-opens=java.base/java.io=ALL-UNNAMED",
+                    "--add-opens=java.base/java.util=ALL-UNNAMED",
+                )
+            }
+        }
+    }
 }
 
 dependencies {
@@ -114,8 +130,11 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
     testImplementation("io.mockk:mockk:1.14.7")
+    // Compose UI tests on the JVM (spec-7-3): Robolectric + compose-ui-test, run by testDebugUnitTest.
+    // There is still no src/androidTest (no instrumented tests, no emulator needed).
+    testImplementation("org.robolectric:robolectric:4.17")
+    testImplementation("androidx.compose.ui:ui-test-junit4")
+    testImplementation("androidx.test.espresso:espresso-core:3.7.0") // Espresso.pressBack() for the dialog test
+    debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("androidx.compose.ui:ui-tooling")
-    // No androidTest/Espresso/Compose-UI-test dependencies: no src/androidTest exists yet in
-    // this story. Add them back (with the src/androidTest sourceset) when a future story
-    // actually adds an instrumented test — declaring them unused was flagged as dead weight.
 }

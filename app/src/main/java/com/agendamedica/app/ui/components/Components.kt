@@ -28,8 +28,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
@@ -129,13 +131,19 @@ fun ToggleChip(
 }
 
 /**
- * Text/password input, `md` rounded, `border-input` border, per DESIGN.md.
+ * Text/password/e-mail input, `md` rounded, `border-input` border, per DESIGN.md.
  *
  * When [isPassword] is true, a show/hide eye icon is added (spec-6-1: added once here, covering
  * every screen that uses this shared component — Login, Cadastro de Médico, Cadastro de
  * Paciente, Nova Senha — instead of duplicated per screen). Visibility state is local to the
  * field ([remember]) and resets when the screen recomposes from scratch; toggling it never loses
  * the text already typed.
+ *
+ * When [isEmail] is true (spec-6-5), the field uses the e-mail keyboard and every change goes
+ * through [filtrarEmail]. Only this mode keeps an internal [TextFieldValue] mirror of [value]
+ * ([value] stays the source of truth: an external change replaces the mirror): with a plain
+ * String the cursor would advance past a key the mask just rejected. Password, name and search
+ * fields use the plain String overload, exactly as before.
  */
 @Composable
 fun LabeledTextField(
@@ -147,46 +155,76 @@ fun LabeledTextField(
     isEmail: Boolean = false,
 ) {
     var senhaVisivel by remember { mutableStateOf(false) }
-    OutlinedTextField(
-        value = value,
-        onValueChange = { onValueChange(if (isEmail) filtrarEmail(it, value) else it) },
-        label = { Text(label) },
-        singleLine = true,
-        keyboardOptions = if (isEmail) {
-            KeyboardOptions(
-                keyboardType = KeyboardType.Email,
-                capitalization = KeyboardCapitalization.None,
-                autoCorrectEnabled = false,
-            )
-        } else {
-            KeyboardOptions.Default
-        },
-        visualTransformation = if (isPassword && !senhaVisivel) {
-            PasswordVisualTransformation()
-        } else {
-            VisualTransformation.None
-        },
-        trailingIcon = if (isPassword) {
-            {
-                IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
-                    Icon(
-                        imageVector = if (senhaVisivel) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                        contentDescription = if (senhaVisivel) "Ocultar senha" else "Mostrar senha",
-                    )
-                }
+    val keyboardOptions = if (isEmail) {
+        KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            capitalization = KeyboardCapitalization.None,
+            autoCorrectEnabled = false,
+        )
+    } else {
+        KeyboardOptions.Default
+    }
+    val visualTransformation = if (isPassword && !senhaVisivel) PasswordVisualTransformation() else VisualTransformation.None
+    val trailingIcon: (@Composable () -> Unit)? = if (isPassword) {
+        {
+            IconButton(onClick = { senhaVisivel = !senhaVisivel }) {
+                Icon(
+                    imageVector = if (senhaVisivel) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = if (senhaVisivel) "Ocultar senha" else "Mostrar senha",
+                )
             }
-        } else {
-            null
-        },
-        shape = ShapeMd,
-        colors = OutlinedTextFieldDefaults.colors(
-            focusedBorderColor = AgendaMedicaColors.accentPrimary,
-            unfocusedBorderColor = AgendaMedicaColors.borderInput,
-            focusedContainerColor = AgendaMedicaColors.surfaceInput,
-            unfocusedContainerColor = AgendaMedicaColors.surfaceInput,
-        ),
-        modifier = modifier.fillMaxWidth(),
+        }
+    } else {
+        null
+    }
+    val colors = OutlinedTextFieldDefaults.colors(
+        focusedBorderColor = AgendaMedicaColors.accentPrimary,
+        unfocusedBorderColor = AgendaMedicaColors.borderInput,
+        focusedContainerColor = AgendaMedicaColors.surfaceInput,
+        unfocusedContainerColor = AgendaMedicaColors.surfaceInput,
     )
+
+    if (isEmail) {
+        var campo by remember { mutableStateOf(TextFieldValue(value, selection = TextRange(value.length))) }
+        if (campo.text != value) campo = TextFieldValue(value, selection = TextRange(value.length))
+        OutlinedTextField(
+            value = campo,
+            onValueChange = { novo ->
+                val anterior = campo.text
+                val texto = filtrarEmail(novo.text, anterior)
+                val removidos = novo.text.length - texto.length
+                campo = if (removidos == 0) {
+                    novo
+                } else {
+                    // The mask only ever drops characters from the segment just inserted, i.e. before the cursor.
+                    val cursor = (novo.selection.start - removidos).coerceIn(0, texto.length)
+                    TextFieldValue(texto, selection = TextRange(cursor))
+                }
+                if (texto != anterior) onValueChange(texto)
+            },
+            label = { Text(label) },
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation,
+            trailingIcon = trailingIcon,
+            shape = ShapeMd,
+            colors = colors,
+            modifier = modifier.fillMaxWidth(),
+        )
+    } else {
+        OutlinedTextField(
+            value = value,
+            onValueChange = onValueChange,
+            label = { Text(label) },
+            singleLine = true,
+            keyboardOptions = keyboardOptions,
+            visualTransformation = visualTransformation,
+            trailingIcon = trailingIcon,
+            shape = ShapeMd,
+            colors = colors,
+            modifier = modifier.fillMaxWidth(),
+        )
+    }
 }
 
 private val EMAIL_CHARS = Regex("[A-Za-z0-9._%+\\-]")

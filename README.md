@@ -17,7 +17,7 @@ Paciente e Médico usam o mesmo app com papéis distintos:
 - **Backend:** um único projeto Supabase (Postgres + Auth + Edge Functions + Realtime + `pg_cron`/`pg_net`), sem separação dev/produção.
 - **Regras de negócio no banco, não só no app:** toda escrita de consulta passa por funções Postgres `SECURITY DEFINER`; a garantia final contra conflito de horário é um índice único parcial, não uma checagem em memória.
 - **E-mail transacional:** [Resend](https://resend.com) (camada gratuita).
-- **Testes:** JUnit para o app (lógica de domínio e ViewModels); scripts Node (`supabase/tests/*.mjs`) que provam as regras de concorrência e as funções do banco contra o projeto Supabase hospedado de verdade, sem mocks.
+- **Testes:** JUnit para o app (lógica de domínio e ViewModels) e testes de UI Compose com Robolectric (`compose-ui-test`, no mesmo `testDebugUnitTest`); scripts Node (`supabase/tests/*.mjs`) que provam as regras de concorrência e as funções do banco contra o projeto Supabase hospedado de verdade, sem mocks.
 
 ## Estrutura do repositório
 
@@ -85,7 +85,7 @@ Instale o APK gerado (`app/build/outputs/apk/debug/app-debug.apk`) no celular, o
 
 ## Testes
 
-**Testes de unidade (Kotlin, lógica de domínio e ViewModels — sem tocar no backend):**
+**Testes de unidade (Kotlin: lógica de domínio, ViewModels e testes de UI Compose via Robolectric — rodam na JVM, sem emulador e sem tocar no backend):**
 ```bash
 ./gradlew testDebugUnitTest
 ```
