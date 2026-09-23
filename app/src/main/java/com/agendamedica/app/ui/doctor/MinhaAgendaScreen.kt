@@ -35,7 +35,9 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
 import com.agendamedica.app.ui.components.OutlineButton
+import com.agendamedica.app.ui.patient.CancelConfirmDialog
 import com.agendamedica.app.ui.patient.ConsultaCard
+import com.agendamedica.app.ui.patient.formatarDataHora
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.agendamedica.app.domain.model.DoctorProfile
@@ -105,64 +107,70 @@ fun MinhaAgendaScreen(
                     color = AgendaMedicaColors.dangerInk,
                     style = MaterialTheme.typography.bodyMedium,
                 )
-                uiState.profile != null -> LazyColumn(
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxSize(),
-                ) {
-                    item { DoctorProfileCard(uiState.profile!!) }
-                    item {
-                        Text(
-                            text = "Próximas consultas",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = AgendaMedicaColors.inkSecondary,
-                            modifier = Modifier.padding(top = 12.dp),
-                        )
-                    }
-                    uiState.actionMessage?.let { msg ->
+                uiState.profile != null -> Box(Modifier.fillMaxSize()) {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
+                        item { DoctorProfileCard(uiState.profile!!) }
                         item {
-                            Text(msg, style = MaterialTheme.typography.bodyMedium, color = AgendaMedicaColors.dangerInk)
+                            Text(
+                                text = "Próximas consultas",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = AgendaMedicaColors.inkSecondary,
+                                modifier = Modifier.padding(top = 12.dp),
+                            )
+                        }
+                        uiState.actionMessage?.let { msg ->
+                            item {
+                                Text(msg, style = MaterialTheme.typography.bodyMedium, color = AgendaMedicaColors.dangerInk)
+                            }
+                        }
+                        when {
+                            uiState.consultasLoading -> item {
+                                Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
+                                    CircularProgressIndicator(color = AgendaMedicaColors.accentPrimary)
+                                }
+                            }
+                            uiState.consultasErro != null -> item {
+                                Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = uiState.consultasErro!!,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = AgendaMedicaColors.dangerInk,
+                                        textAlign = TextAlign.Center,
+                                    )
+                                    Spacer(Modifier.height(12.dp))
+                                    OutlineButton(text = "Tentar novamente", onClick = viewModel::retryConsultas)
+                                }
+                            }
+                            uiState.consultas.isEmpty() -> item {
+                                Text(
+                                    text = MSG_AGENDA_VAZIA,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = AgendaMedicaColors.inkTertiary,
+                                )
+                            }
+                            else -> items(uiState.consultas, key = { it.consulta.id }) { item ->
+                                ConsultaCard(
+                                    titulo = item.consulta.patientName,
+                                    subtitulo = null,
+                                    start = item.consulta.start,
+                                    convenio = item.consulta.convenio,
+                                    bloqueada = item.bloqueada,
+                                    onCancelar = { viewModel.onCancelarClick(item.consulta.id) },
+                                    onReagendar = { uiState.doctorId?.let { onReagendar(it, item.consulta.id) } },
+                                )
+                            }
                         }
                     }
-                    when {
-                        uiState.consultasLoading -> item {
-                            Box(Modifier.fillMaxWidth().wrapContentSize(Alignment.Center)) {
-                                CircularProgressIndicator(color = AgendaMedicaColors.accentPrimary)
-                            }
-                        }
-                        uiState.consultasErro != null -> item {
-                            Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = uiState.consultasErro!!,
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = AgendaMedicaColors.dangerInk,
-                                    textAlign = TextAlign.Center,
-                                )
-                                Spacer(Modifier.height(12.dp))
-                                OutlineButton(text = "Tentar novamente", onClick = viewModel::retryConsultas)
-                            }
-                        }
-                        uiState.consultas.isEmpty() -> item {
-                            Text(
-                                text = MSG_AGENDA_VAZIA,
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = AgendaMedicaColors.inkTertiary,
-                            )
-                        }
-                        else -> items(uiState.consultas, key = { it.consulta.id }) { item ->
-                            ConsultaCard(
-                                titulo = item.consulta.patientName,
-                                subtitulo = null,
-                                start = item.consulta.start,
-                                convenio = item.consulta.convenio,
-                                bloqueada = item.bloqueada,
-                                confirmando = uiState.confirmandoId == item.consulta.id,
-                                cancelando = uiState.cancelandoId == item.consulta.id,
-                                onCancelar = { viewModel.onCancelarClick(item.consulta.id) },
-                                onReagendar = { uiState.doctorId?.let { onReagendar(it, item.consulta.id) } },
-                                onSim = viewModel::onCancelarSim,
-                                onNao = viewModel::onCancelarNao,
-                            )
-                        }
+                    uiState.consultas.firstOrNull { it.consulta.id == uiState.confirmandoId }?.let { item ->
+                        CancelConfirmDialog(
+                            quem = "${item.consulta.patientName}, ${formatarDataHora(item.consulta.start)}",
+                            cancelando = uiState.cancelandoId != null,
+                            onSim = viewModel::onCancelarSim,
+                            onNao = viewModel::onCancelarNao,
+                        )
                     }
                 }
             }

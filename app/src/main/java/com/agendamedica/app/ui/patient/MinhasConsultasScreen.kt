@@ -20,6 +20,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -33,6 +34,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.LifecycleOwner
@@ -135,14 +138,18 @@ fun MinhasConsultasScreen(
                                 start = item.consulta.start,
                                 convenio = item.consulta.convenio,
                                 bloqueada = item.bloqueada,
-                                confirmando = state.confirmandoId == item.consulta.id,
-                                cancelando = state.cancelandoId == item.consulta.id,
                                 onCancelar = { viewModel.onCancelarClick(item.consulta.id) },
                                 onReagendar = { onReagendar(item.consulta.doctorId, item.consulta.id) },
-                                onSim = viewModel::onCancelarSim,
-                                onNao = viewModel::onCancelarNao,
                             )
                         }
+                    }
+                    state.consultas.firstOrNull { it.consulta.id == state.confirmandoId }?.let { item ->
+                        CancelConfirmDialog(
+                            quem = "${item.consulta.doctorName}, ${formatarDataHora(item.consulta.start)}",
+                            cancelando = state.cancelandoId != null,
+                            onSim = viewModel::onCancelarSim,
+                            onNao = viewModel::onCancelarNao,
+                        )
                     }
                 }
             }
@@ -168,12 +175,8 @@ internal fun ConsultaCard(
     start: java.time.Instant,
     convenio: String,
     bloqueada: Boolean,
-    confirmando: Boolean,
-    cancelando: Boolean,
     onCancelar: () -> Unit,
     onReagendar: () -> Unit,
-    onSim: () -> Unit,
-    onNao: () -> Unit,
 ) {
     // Every card repeats the same button labels: name the appointment so TalkBack can tell them apart.
     val quem = "$titulo, ${formatarDataHora(start)}"
@@ -204,12 +207,42 @@ internal fun ConsultaCard(
             if (bloqueada) {
                 Text(MSG_JANELA_24H, style = MaterialTheme.typography.bodySmall, color = AgendaMedicaColors.warningInk)
             }
-            if (confirmando) {
-                Text(
-                    "Cancelar esta consulta?",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = AgendaMedicaColors.inkPrimary,
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                OutlineButton(
+                    text = "Cancelar",
+                    onClick = onCancelar,
+                    enabled = !bloqueada,
+                    borderColor = AgendaMedicaColors.dangerInk,
+                    modifier = Modifier.weight(1f).semantics { contentDescription = "Cancelar a consulta com $quem" },
                 )
+                OutlineButton(
+                    text = "Reagendar",
+                    onClick = onReagendar,
+                    enabled = !bloqueada,
+                    modifier = Modifier.weight(1f).semantics { contentDescription = "Reagendar a consulta com $quem" },
+                )
+            }
+        }
+    }
+}
+
+/**
+ * Blocking confirmation dialog for cancellation (spec-6-4): rendered once per screen, outside the
+ * list, instead of inline per-card (reverts UX-DR5/Stories 2.4-2.5 per explicit user decision).
+ * Neither outside touch nor the system back gesture dismiss it -- only Sim/Não. (A reload that finds
+ * the appointment gone still closes it via the caller no longer supplying a match -- that is the
+ * pre-existing 24h/stale-data guard reacting to changed data, not a user dismissal.)
+ */
+@Composable
+internal fun CancelConfirmDialog(quem: String, cancelando: Boolean, onSim: () -> Unit, onNao: () -> Unit) {
+    Dialog(
+        onDismissRequest = {},
+        properties = DialogProperties(dismissOnBackPress = false, dismissOnClickOutside = false),
+    ) {
+        Surface(shape = ShapeMd, color = AgendaMedicaColors.surfaceCard) {
+            Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text("Cancelar esta consulta?", style = MaterialTheme.typography.titleMedium, color = AgendaMedicaColors.inkPrimary)
+                Text(quem, style = MaterialTheme.typography.bodyMedium, color = AgendaMedicaColors.inkSecondary)
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
                     OutlineButton(
                         text = if (cancelando) "Cancelando..." else "Sim",
@@ -223,22 +256,6 @@ internal fun ConsultaCard(
                         onClick = onNao,
                         enabled = !cancelando,
                         modifier = Modifier.weight(1f).semantics { contentDescription = "Não cancelar a consulta com $quem" },
-                    )
-                }
-            } else {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
-                    OutlineButton(
-                        text = "Cancelar",
-                        onClick = onCancelar,
-                        enabled = !bloqueada,
-                        borderColor = AgendaMedicaColors.dangerInk,
-                        modifier = Modifier.weight(1f).semantics { contentDescription = "Cancelar a consulta com $quem" },
-                    )
-                    OutlineButton(
-                        text = "Reagendar",
-                        onClick = onReagendar,
-                        enabled = !bloqueada,
-                        modifier = Modifier.weight(1f).semantics { contentDescription = "Reagendar a consulta com $quem" },
                     )
                 }
             }
