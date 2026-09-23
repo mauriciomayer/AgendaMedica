@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Party Mode — Triagem do Épico 6</title>
+<style>
+  :root {
+    --bg: #14171c;
+    --card: #1c2129;
+    --ink: #e8e6e0;
+    --ink-soft: #9aa0ab;
+    --accent: #3B6FE0;
+    --accent-soft: #26324d;
+    --danger: #d6362e;
+    --success: #2f7a52;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: radial-gradient(circle at 20% -10%, #1f2530, var(--bg) 60%);
+    color: var(--ink);
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    padding: 40px 16px 80px;
+  }
+  .wrap { max-width: 720px; margin: 0 auto; }
+  header { text-align: center; margin-bottom: 36px; }
+  header .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent-soft); color: #b9cbfa;
+    padding: 6px 16px; border-radius: 100px; font-size: 13px; font-weight: 600;
+    letter-spacing: .04em; text-transform: uppercase;
+  }
+  h1 { font-size: 28px; margin: 16px 0 4px; }
+  header p { color: var(--ink-soft); margin: 0; font-size: 14px; }
+
+  .msg { display: flex; gap: 12px; margin: 18px 0; animation: rise .5s ease both; }
+  .msg .icon {
+    flex: none; width: 40px; height: 40px; border-radius: 50%;
+    background: var(--card); display: flex; align-items: center; justify-content: center;
+    font-size: 20px; border: 1px solid rgba(255,255,255,.08);
+  }
+  .msg .bubble {
+    background: var(--card); border-radius: 14px; padding: 12px 16px;
+    border: 1px solid rgba(255,255,255,.06); line-height: 1.5; font-size: 14.5px;
+  }
+  .msg .name { font-weight: 700; margin-right: 6px; }
+  .msg.walkon .icon { border-color: var(--danger); }
+  .msg.walkon .bubble { border-color: rgba(214,54,46,.35); }
+  .msg.walkon .name { color: #ff8a80; }
+  .msg.user .bubble { background: var(--accent-soft); border-color: rgba(59,111,224,.3); }
+  .msg.user .name { color: #9fc0ff; }
+
+  .divider {
+    text-align: center; color: var(--ink-soft); font-size: 12px;
+    text-transform: uppercase; letter-spacing: .08em; margin: 36px 0 20px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .divider::before, .divider::after { content: ""; flex: 1; height: 1px; background: rgba(255,255,255,.1); }
+
+  .verdicts { display: grid; gap: 14px; margin-top: 8px; }
+  .verdict {
+    background: var(--card); border-radius: 14px; padding: 16px 18px;
+    border-left: 4px solid var(--accent);
+  }
+  .verdict.reversal { border-left-color: var(--danger); }
+  .verdict h3 { margin: 0 0 6px; font-size: 15px; }
+  .verdict p { margin: 0; color: var(--ink-soft); font-size: 13.5px; line-height: 1.5; }
+  .verdict .tag {
+    display: inline-block; font-size: 10.5px; font-weight: 700; letter-spacing: .05em;
+    text-transform: uppercase; padding: 2px 8px; border-radius: 6px; margin-bottom: 6px;
+  }
+  .tag.ok { background: rgba(47,122,82,.2); color: #7be3ab; }
+  .tag.rev { background: rgba(214,54,46,.2); color: #ff9d94; }
+
+  svg.confetti { display: block; margin: 30px auto 0; opacity: .8; }
+
+  footer { text-align: center; margin-top: 48px; color: var(--ink-soft); font-size: 12.5px; }
+
+  @keyframes rise { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <span class="badge">🎉 Party Mode · Sala "installed"</span>
+    <h1>Triagem que virou o Épico 6</h1>
+    <p>Agenda Médica — 23 de setembro de 2026</p>
+  </header>
+
+  <div class="msg"><div class="icon">😤</div><div class="bubble"><span class="name">Grumbal</span><span style="color:#ff8a80;font-size:11px;"> · não convidado, apareceu mesmo assim</span><br>Opa, chegou gente. Alguém vai falar pra que serve essa reunião?</div></div>
+
+  <div class="msg"><div class="icon">💻</div><div class="bubble"><span class="name">Amelia</span><br><code>LoginViewModel.kt:37</code> — <code>isSubmitEnabled</code> só checa <code>isNotBlank()</code>. Zero regex.</div></div>
+
+  <div class="msg"><div class="icon">📋</div><div class="bubble"><span class="name">John</span><br>Isso <b>não é bug novo</b> — é o item 8 do Review Triage Log da Story 1.2, rejeitado como "false" na época.</div></div>
+
+  <div class="msg walkon"><div class="icon">😤</div><div class="bubble"><span class="name">Grumbal</span><br>Modal que só fecha escolhendo Sim/Não é <b>mais seguro contra toque acidental</b>. Ninguém testou esse ângulo.</div></div>
+
+  <div class="msg"><div class="icon">🎨</div><div class="bubble"><span class="name">Sally</span><br>Ou trava quem quis desistir rápido — pior pra acessibilidade, pior pro "escape hatch".</div></div>
+
+  <div class="msg user"><div class="icon">🧑</div><div class="bubble"><span class="name">Mauricio</span><br>1) Sim, pode reverter. Achei que a experiência ficou ruim.<br>2) Pode substituir por modal. Na minha visão fica mais seguro, e concordo com o Grumbal.</div></div>
+
+  <div class="msg"><div class="icon">😤</div><div class="bubble"><span class="name">Grumbal</span><br>Eu <b>disse</b>. Modal trancado. Ninguém cancela por acidente nunca mais.</div></div>
+
+  <div class="msg"><div class="icon">🎨</div><div class="bubble"><span class="name">Sally</span><br>Tudo bem — reconheço o ponto. Só peço: o "Não" do mesmo tamanho do "Sim".</div></div>
+
+  <div class="divider">Veredito da sala</div>
+
+  <div class="verdicts">
+    <div class="verdict">
+      <span class="tag ok">Segue direto</span>
+      <h3>6.1 · 6.2 · 6.3 — validação de e-mail, ícone de senha, logout, horário sem segundos</h3>
+      <p>Baixo risco, baixo esforço, sem controvérsia.</p>
+    </div>
+    <div class="verdict reversal">
+      <span class="tag rev">Reversão · Story 1.2</span>
+      <h3>Login passa a bloquear por aba selecionada</h3>
+      <p>Antes: papel real do banco sempre manda, aba é só atalho visual. Agora: escolher a aba errada dá erro claro.</p>
+    </div>
+    <div class="verdict reversal">
+      <span class="tag rev">Reversão · UX-DR5 (Stories 2.4/2.5)</span>
+      <h3>Cancelamento vira modal travado</h3>
+      <p>Antes: confirmação inline no card, nunca modal. Agora: modal que só fecha escolhendo Sim ou Não.</p>
+    </div>
+  </div>
+
+  <svg class="confetti" width="200" height="40" viewBox="0 0 200 40">
+    <g fill="none" stroke-width="2">
+      <circle cx="20" cy="20" r="4" fill="#3B6FE0"/>
+      <circle cx="60" cy="12" r="3" fill="#d6362e"/>
+      <circle cx="100" cy="24" r="4" fill="#2f7a52"/>
+      <circle cx="140" cy="10" r="3" fill="#e0a83b"/>
+      <circle cx="180" cy="22" r="4" fill="#3B6FE0"/>
+    </g>
+  </svg>
+
+  <footer>Épico 6 — Ajustes de Login, Sessão e Cancelamento · registrado e pronto pro desenvolvimento.</footer>
+
+</div>
+</body>
+</html>
