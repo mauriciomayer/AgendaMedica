@@ -29,7 +29,7 @@
 # - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
 # - Retrospective appends its action items to action_items; the status view surfaces open ones
 generated: 09-17-2026 12:00
-last_updated: 09-23-2026 14:45
+last_updated: 09-23-2026 17:00
 project: AgendaMedica
 project_key: NOKEY
 tracking_system: file-system
@@ -69,3 +69,9 @@ development_status:
   6-4-cancelamento-de-consulta-usa-modal: review
   6-5-campos-de-email-aceitam-so-caracteres-validos: review
   epic-6-retrospective: optional
+
+  epic-7: in-progress
+  7-1-horario-de-atendimento-tipado-como-hora: backlog
+  7-2-componentes-de-consulta-em-ui-components: backlog
+  7-3-spike-teste-de-ui-compose-robolectric: backlog
+  epic-7-retrospective: optional

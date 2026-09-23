@@ -111,6 +111,10 @@ Correção de requisito (Sprint Change Proposal, 2026-09-22): a Consulta dura 30
 Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Login mais robusto (e-mail validado, senha visível, bloqueio por papel — reverte a Story 1.2), botão de logout, horário sem segundos na Minha Agenda, cancelamento de consulta por modal em vez de confirmação inline (reverte UX-DR5 / Stories 2.4-2.5), e máscara de digitação nos campos de e-mail (corrige o entendimento da 6.1).
 **FRs covered:** FR1, FR3 (robustez do login), FR8 (fluxo de cancelamento)
 
+### Epic 7: Dívida Técnica e Arquitetura
+Refatorações estruturais levantadas pelo arquiteto (Winston) ao fechar o Épico 6, sem mudança de comportamento visível: horário do médico tipado como `LocalTime`, componentes de consulta movidos para `ui/components/` (dependência doctor -> patient desfeita) e um spike de teste de UI Compose (Robolectric) para fechar pendências do `deferred-work.md`.
+**FRs covered:** nenhum (qualidade interna)
+
 ## Epic 1: Cadastro, Perfil e Autenticação
 
 Médico e Paciente criam conta; o Médico configura especialidade, convênios e agenda semanal e já aparece na busca; qualquer um recupera a senha se esquecer. Inclui a base técnica (setup do projeto Android + Supabase, schema inicial, tema visual).
@@ -556,3 +560,60 @@ Para não errar por engano (espaço, acento, dois "@") nem colar um e-mail com e
 **Given** um desses campos
 **When** o usuário cola um texto com caracteres inválidos ou espaços nas pontas (ex.: `" joao silva@gmail.com "`)
 **Then** o texto é limpo pelo mesmo filtro em vez de rejeitado por inteiro (resultado: `joaosilva@gmail.com`); maiúsculas e minúsculas são preservadas como digitadas
+
+## Epic 7: Dívida Técnica e Arquitetura
+
+Refatorações estruturais aprovadas pelo usuário após conversa com o arquiteto (2026-09-23). Nenhuma delas muda o comportamento visível do app; todas reduzem risco de regressão silenciosa ou de acoplamento indevido.
+
+### Story 7.1: Horário de atendimento do médico é tipado como hora, não como texto
+
+Como desenvolvedor,
+Eu quero que `ScheduleBlock.startTime`/`endTime` sejam `LocalTime`, com o parse feito uma única vez na fronteira do Repository,
+Para que um horário nunca mais apareça com segundos (bug da Story 6.3) nem exija `LocalTime.parse` espalhado pelo código.
+
+**Acceptance Criteria:**
+
+**Given** um horário de atendimento lido do Postgres (`"08:00:00"`)
+**When** o `DoctorRepository` monta o `ScheduleBlock`
+**Then** o campo já é um `LocalTime`, e nenhum outro código faz `LocalTime.parse` sobre ele
+
+**Given** a tela Minha Agenda
+**When** exibe um bloco de horário
+**Then** aparece como `HH:mm`, igual a antes da mudança
+
+**Given** a geração de horários disponíveis (`slotsDoDia`)
+**When** roda sobre blocos `LocalTime`
+**Then** produz exatamente os mesmos horários de antes
+
+### Story 7.2: Componentes de consulta vivem em `ui/components/`
+
+Como desenvolvedor,
+Eu quero que `ConsultaCard`, `CancelConfirmDialog` e `formatarDataHora` saiam do pacote `patient`,
+Para que a tela do médico não dependa de um pacote de outra feature.
+
+**Acceptance Criteria:**
+
+**Given** a tela Minha Agenda (Médico) e a tela Minhas Consultas (Paciente)
+**When** o app é compilado
+**Then** as duas importam esses componentes de `ui/components/`, e nenhum arquivo do pacote `doctor` importa algo do pacote `patient`
+
+**Given** qualquer uma das duas telas
+**When** usada
+**Then** o comportamento e a aparência são idênticos aos de antes (mudança puramente estrutural)
+
+### Story 7.3: Spike de teste de UI Compose com Robolectric
+
+Como desenvolvedor,
+Eu quero saber se testes de UI Compose rodam no `testDebugUnitTest` deste projeto (Robolectric + `compose-ui-test`, `compileSdk` 37),
+Para decidir com evidência se vale fechar as pendências de teste de UI registradas no `deferred-work.md`.
+
+**Acceptance Criteria:**
+
+**Given** a infraestrutura de teste adicionada
+**When** roda um teste do `CancelConfirmDialog`
+**Then** ele comprova que tocar fora ou apertar voltar não fecha o diálogo, e que Sim/Não chamam seus callbacks
+
+**Given** o spike concluído
+**When** o resultado é avaliado
+**Then** fica registrado (na spec) se a infraestrutura é viável; se sim, os demais testes pendentes (ligação de `isEmail` nas 4 telas, Splash) entram nesta mesma história ou em uma seguinte; se não, o motivo fica documentado e a história termina sem a infra
+
