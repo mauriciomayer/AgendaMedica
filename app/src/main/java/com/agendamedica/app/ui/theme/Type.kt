@@ -2,18 +2,23 @@ package com.agendamedica.app.ui.theme
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.agendamedica.app.R
 
 /**
- * DESIGN.md specifies a single typeface, Inter (weights 400-700), fallback `system-ui,
- * sans-serif`. This build cannot fetch the Inter font binaries (offline environment), so
- * it falls back to the platform default sans-serif for now — swap [InterFontFamily] for a
- * bundled family (e.g. `FontFamily(Font(R.font.inter_regular, FontWeight.Normal), ...)`
- * once .ttf files are added under `app/src/main/res/font/`) without touching call sites.
+ * DESIGN.md specifies a single typeface, Inter (weights 400-700). The four static weights are bundled in
+ * `res/font` (Latin subset of Inter, SIL Open Font License; see docs/licenses/Inter-OFL.txt), cut from the
+ * variable font of the design prototype. Every text style below uses this family.
  */
-val InterFontFamily: FontFamily = FontFamily.SansSerif
+val InterFontFamily: FontFamily = FontFamily(
+    Font(R.font.inter_regular, FontWeight.Normal),
+    Font(R.font.inter_medium, FontWeight.Medium),
+    Font(R.font.inter_semibold, FontWeight.SemiBold),
+    Font(R.font.inter_bold, FontWeight.Bold),
+)
 
 /**
  * Scale from DESIGN.md.typography (11-19px, weights 400-700). Named after the tokens

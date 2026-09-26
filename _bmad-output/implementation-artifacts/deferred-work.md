@@ -138,3 +138,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
   summary: A mensagem de falha ao cancelar (`actionMessage`) é um item da lista rolável em Minhas consultas e Minha agenda; com a lista rolada para baixo o item não está composto e o aviso não é visto nem anunciado.
   evidence: Apontado no blind-hunter da 8.6; comportamento pré-existente (a mensagem já ficava no topo da lista antes do Épico 8) e igual nas duas telas. Severidade `low`: o modal de confirmação fecha e o cartão continua na lista, então o usuário percebe que nada mudou. Se voltar a incomodar, mover a mensagem para fora do `LazyColumn` (fixa sob a barra), como a 8.4 fez com a falha de agendamento no rodapé.
 
+- source_spec: `_bmad-output/implementation-artifacts/spec-8-7-fonte-inter-em-todo-o-app.md`
+  summary: A licença da fonte Inter (OFL 1.1) está no repositório (`docs/licenses/Inter-OFL.txt`), mas não dentro do APK nem numa tela de "licenças de código aberto" do app.
+  evidence: Apontado no blind-hunter da 8.7. O app é projeto de portfólio, ainda não publicado na Play Store; a OFL exige o aviso junto de cada redistribuição, então antes de publicar vale copiar o texto para `app/src/main/assets/` ou uma tela "Sobre/Licenças".
+

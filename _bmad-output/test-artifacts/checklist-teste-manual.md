@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3, 8.4, 8.5 e 8.6, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1 a 8.7, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -337,6 +337,13 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Caixa azul** logo abaixo: conflitos de horário são bloqueados pelo sistema, não há dois pacientes no mesmo horário.
 - [ ] **"Próximas consultas"**: título da seção; cada consulta no cartão compacto (paciente, selo Confirmada/Bloqueada, "dd/MM às HH:mm · Convênio", Cancelar e Reagendar) e o modal de cancelamento continua igual.
 - [ ] **Sem consultas**: mensagem "Nenhuma consulta agendada ainda." centralizada.
+
+### Story 8.7 — Fonte Inter em todo o app
+
+- [ ] **Fonte**: em qualquer tela o texto está na Inter (letras mais "redondas" e uniformes que a fonte anterior). Confira o `a`, o `g` e os números da data nos cartões de consulta.
+- [ ] **Acentos**: "Convênio", "às", "Horários disponíveis", "Localização" aparecem corretos, sem caracteres trocados.
+- [ ] **Sem cortes**: nas telas com títulos longos (Reagendar consulta, Cadastro de paciente) e com a fonte do sistema no máximo, nada fica cortado ou sobreposto.
+- [ ] **Sem internet**: com o modo avião ligado, a fonte continua a mesma (ela vem dentro do app).
 
 ---
 
