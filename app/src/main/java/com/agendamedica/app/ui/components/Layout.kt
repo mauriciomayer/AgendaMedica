@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -31,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -269,5 +271,13 @@ fun BotaoPilula(text: String, onClick: () -> Unit, modifier: Modifier = Modifier
         modifier = modifier,
     ) {
         Text(text, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+/** Text action for the right side of the bar ("Sair"): 13sp semibold in the accent color, 48dp touch target. */
+@Composable
+fun BotaoBarra(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    TextButton(onClick = onClick, modifier = modifier.sizeIn(minHeight = 48.dp)) {
+        Text(text, color = AgendaMedicaColors.accentPrimary, fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
     }
 }

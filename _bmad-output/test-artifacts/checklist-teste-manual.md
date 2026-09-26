@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1 e 8.2, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2 e 8.3, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -299,6 +299,15 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Teclado**: no campo de cidade a tecla do teclado é "Concluído" e fecha o teclado.
 - [ ] **Resultados**: linha "N médico(s) encontrado(s)"; cada cartão tem avatar azul com iniciais brancas, nome, "Especialidade · Cidade" numa linha e os convênios em chips. Tocar em qualquer ponto do cartão abre o médico.
 - [ ] **Tela pequena / fonte grande**: o cartão de filtros rola junto com a lista (nada fica espremido).
+
+### Story 8.3 — Minhas consultas no layout do protótipo
+
+- [ ] **Barra**: título "Minhas consultas" com o botão redondo de voltar à esquerda e "Sair" à direita (sair leva ao Login).
+- [ ] **Cartão de consulta**: nome do médico e especialidade, selo "Confirmada" (verde) ou "Bloqueada" (alaranjado) no canto e uma linha só "29/09 às 10:00 · Unimed".
+- [ ] **Botões**: "Cancelar" (vermelho) à esquerda e "Reagendar" (azul) à direita, mais baixos que antes; o modal de confirmação do cancelamento continua igual.
+- [ ] **Consulta bloqueada** (menos de 24 h): caixa alaranjada com o aviso e os dois botões desabilitados.
+- [ ] **"+ Nova consulta"**: sempre no fim da lista (com ou sem consultas); com muitas consultas, é preciso rolar até ele.
+- [ ] **Minha agenda do médico**: os cartões de consulta usam o mesmo visual novo (o resto da tela muda na Story 8.6).
 
 ---
 

@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
  */
 val ShapePill = RoundedCornerShape(percent = 50) // functionally "100px" for any control height used here
 val ShapeLg = RoundedCornerShape(14.dp)
+val ShapeSm = RoundedCornerShape(9.dp) // compact buttons and small tinted boxes of the prototype
 val ShapeMd = RoundedCornerShape(11.dp) // midpoint of the documented 10-12px range
 val ShapeCircle = CircleShape
 
