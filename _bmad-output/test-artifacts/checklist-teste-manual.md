@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6 e 6.7, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7 e 8.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -271,6 +271,25 @@ Nenhuma dessas histórias muda o comportamento visível; os testes abaixo confir
 ### Story 7.4 — Splash com teste de UI
 
 - [ ] **Splash**: os passos da Story 4.1 (seção acima) continuam valendo; agora o tempo de 1,6 s e a recriação também têm teste automatizado, mas o **visual** (logo e nome) segue só conferível a olho.
+
+---
+
+## Épico 8 — Telas seguem o layout do protótipo
+
+As telas passam, uma história por vez, para o layout do protótipo de design. Marque só as histórias já entregues.
+
+### Story 8.1 — Barra compartilhada e telas de acesso
+
+Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e também para a Login (agora sobre a mesma barra).
+
+- [ ] **Barra branca no topo**: título em negrito, linha fina embaixo e, nas telas com voltar, um **botão redondo** cinza-claro com seta à esquerda. Toque bem na área do botão e também um pouco ao redor: deve voltar.
+- [ ] **Criar conta**: pergunta "Como você quer usar o app?" e **dois cartões** ("Sou paciente" primeiro, "Sou médico" depois). Tocar em qualquer ponto do cartão abre o cadastro correspondente.
+- [ ] **Recuperar senha**: texto de apoio, campo E-mail com o rótulo acima e o exemplo `voce@email.com`. Ao enviar, o formulário **some** e aparece uma caixa verde com "Voltar ao login" (para corrigir o e-mail, volte ao Login e toque em "Esqueci minha senha" de novo).
+- [ ] **Link expirado**: abrindo um link antigo de redefinição, aparece o aviso alaranjado no topo da Recuperar senha.
+- [ ] **Nova senha** (pelo link do e-mail): barra "Nova senha" com voltar, campo com rótulo acima, olho e a dica "Mínimo de 6 caracteres."; o botão voltar da barra **e** o do sistema saem sem trocar a senha.
+- [ ] **Cadastro de paciente**: título "Cadastro de paciente"; "Nome completo" (exemplo "Seu nome"), "E-mail" e "Senha" com rótulo acima; a dica da senha continua; erros aparecem numa caixa alaranjada.
+- [ ] **Teclado**: com o teclado aberto nessas telas, o campo em foco e o botão continuam alcançáveis (a tela rola).
+- [ ] **Fonte grande**: em Configurações -> Tela -> Tamanho da fonte (máximo), os títulos das barras quebram em duas linhas em vez de serem cortados.
 
 ---
 

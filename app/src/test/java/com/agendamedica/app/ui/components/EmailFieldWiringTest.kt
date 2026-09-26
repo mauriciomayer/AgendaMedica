@@ -36,15 +36,16 @@ class EmailFieldWiringTest {
     @get:Rule
     val rule = createComposeRule()
 
-    // Cadastro/Recuperar keep the floating label inside the field node; the Login form has a separate label
-    // above the field, where the e-mail input is the first text field on the screen.
-    private fun emailField(): SemanticsNodeInteraction {
+    // Fields with the floating label (Cadastro de Médico) carry "E-mail" inside their own node. Fields with the label
+    // above (Login, Recuperar Senha, Cadastro de Paciente) do not, so the e-mail input is found by its position among
+    // the text fields on the screen ([indiceSemRotulo]).
+    private fun emailField(indiceSemRotulo: Int = 0): SemanticsNodeInteraction {
         val comRotulo = rule.onAllNodes(hasSetTextAction() and hasText("E-mail"))
-        return if (comRotulo.fetchSemanticsNodes().isNotEmpty()) comRotulo[0] else rule.onAllNodes(hasSetTextAction())[0]
+        return if (comRotulo.fetchSemanticsNodes().isNotEmpty()) comRotulo[0] else rule.onAllNodes(hasSetTextAction())[indiceSemRotulo]
     }
 
-    private fun digitar() {
-        emailField().performTextInput("a b")
+    private fun digitar(indiceSemRotulo: Int = 0) {
+        emailField(indiceSemRotulo).performTextInput("a b")
         rule.waitForIdle()
     }
 
@@ -78,7 +79,7 @@ class EmailFieldWiringTest {
     fun `Cadastro de Paciente e-mail field applies the mask`() {
         val vm = CadastroPacienteViewModel(mockk(relaxed = true), mockk(relaxed = true))
         rule.setContent { CadastroPacienteScreen(onBack = {}, onRegistered = {}, viewModel = vm) }
-        digitar()
+        digitar(indiceSemRotulo = 1) // Nome, E-mail, Senha
         assertEquals("ab", vm.uiState.value.email)
     }
 
