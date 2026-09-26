@@ -78,3 +78,13 @@ development_status:
   7-3-spike-teste-de-ui-compose-robolectric: done
   7-4-splash-screen-tem-teste-de-ui: done
   epic-7-retrospective: optional
+
+  epic-8: in-progress
+  8-1-barra-compartilhada-e-telas-de-acesso: backlog
+  8-2-busca-no-layout-do-prototipo: backlog
+  8-3-minhas-consultas-e-cartao-de-consulta: backlog
+  8-4-detalhe-do-medico-e-confirmacao: backlog
+  8-5-cadastro-de-medico-no-layout-do-prototipo: backlog
+  8-6-minha-agenda-no-layout-do-prototipo: backlog
+  8-7-fonte-inter-em-todo-o-app: backlog
+  epic-8-retrospective: optional

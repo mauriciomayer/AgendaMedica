@@ -115,6 +115,10 @@ Triagem de bugs/melhorias reportados pelo usuário (bmad-party, 2026-09-23): Log
 Refatorações estruturais levantadas pelo arquiteto (Winston) ao fechar o Épico 6, sem mudança de comportamento visível: horário do médico tipado como `LocalTime`, componentes de consulta movidos para `ui/components/` (dependência doctor -> patient desfeita), um spike de teste de UI Compose (Robolectric) e o teste de UI da Splash, para fechar pendências do `deferred-work.md`.
 **FRs covered:** nenhum (qualidade interna)
 
+### Epic 8: Telas Seguem o Layout do Protótipo
+Depois de alinhar a Login ao protótipo de design (Stories 6.6 e 6.7), as demais telas passam a seguir o mesmo layout: barra branca no topo com título/subtítulo/voltar, rótulos acima dos campos, cartões e avatares no estilo do protótipo, e a fonte Inter. As decisões posteriores ao protótipo (Sair, janela de confirmação do cancelamento, máscara de e-mail, campo Localização, convênio no agendamento, 7 dias da semana, Cancelar/Reagendar na agenda do médico) são mantidas.
+**FRs covered:** nenhum (identidade visual, fora do PRD)
+
 ## Epic 1: Cadastro, Perfil e Autenticação
 
 Médico e Paciente criam conta; o Médico configura especialidade, convênios e agenda semanal e já aparece na busca; qualquer um recupera a senha se esquecer. Inclui a base técnica (setup do projeto Android + Supabase, schema inicial, tema visual).
@@ -680,4 +684,114 @@ Para fechar a pendência de cobertura registrada na Story 4.1 (navegação ao Lo
 **Given** uma recriação da Activity (ex.: rotação) depois de parte do tempo já ter passado
 **When** a Splash é recriada
 **Then** ela conta só o tempo restante, não reinicia os 1600 ms do zero
+
+## Epic 8: Telas Seguem o Layout do Protótipo
+
+Levantamento feito com o arquiteto (2026-09-25) comparando cada tela do app com o protótipo de design. Decisões do usuário: (1) incluir a fonte Inter; (2) executar todas as histórias em sequência; (3) nos cartões de consulta a ordem dos botões continua **Cancelar, Reagendar**; (4) o avatar do médico é azul cheio com letras brancas, como no protótipo. Decisões já tomadas por padrão: o botão de voltar é desenhado com 36 dp dentro de uma área de toque de 48 dp (acessibilidade); o **Sair** vai para o canto direito da barra; o texto "intervalos de 15 min" do protótipo **não** é copiado (as consultas são de 30 minutos).
+
+**Mantido mesmo sem existir no protótipo:** botão Sair, janela de confirmação do cancelamento, olho da senha, máscara de e-mail, campo Localização e "Mínimo de 6 caracteres" nos cadastros, convênio ao agendar, 7 dias da semana no cadastro do médico, Cancelar/Reagendar com a regra de 24h na agenda do médico, fluxo de GPS da Busca, "Nova senha".
+
+### Story 8.1: Barra do topo compartilhada e telas de acesso no layout do protótipo
+
+Como usuário,
+Eu quero que Recuperar senha, Nova senha, Criar conta e Cadastro de paciente tenham a barra branca do protótipo e o mesmo estilo de campos,
+Para as telas de acesso ficarem consistentes com a Login.
+
+**Acceptance Criteria:**
+
+**Given** qualquer uma dessas 4 telas
+**When** ela é exibida
+**Then** aparece a barra branca com título em negrito, subtítulo quando houver, botão de voltar redondo (36 dp visuais, toque de 48 dp) e a linha fina embaixo; a Login passa a usar o mesmo componente
+
+**Given** Criar conta
+**When** exibida
+**Then** mostra o texto "Como você quer usar o app?" e dois cartões clicáveis por inteiro: "Sou paciente" (Buscar médicos e agendar consultas) e "Sou médico" (Cadastrar meu perfil e atender pacientes), nessa ordem
+
+**Given** Cadastro de paciente e Recuperar senha
+**When** exibidos
+**Then** os campos têm rótulo acima e exemplo dentro (Nome completo/"Seu nome", E-mail/"voce@email.com", Senha/"••••••••"); Recuperar senha mostra o texto de apoio e, depois de enviar, uma caixa verde com "Voltar ao login"
+
+### Story 8.2: Busca no layout do protótipo
+
+Como paciente,
+Eu quero a Busca com a barra "Agende / Encontre um médico e agende", os filtros num cartão, a contagem de resultados e os cartões de médico com avatar,
+Para a tela principal ficar fiel ao design.
+
+**Acceptance Criteria:**
+
+**Given** a Busca
+**When** exibida
+**Then** a barra tem o título "Agende", o subtítulo "Encontre um médico e agende" e o botão "Minhas consultas" em pílula com borda azul; os filtros (especialidade e cidade, com o botão de localização) ficam num único cartão; uma linha "N médico(s) encontrado(s)" aparece acima da lista
+
+**Given** a lista de resultados
+**When** exibida
+**Then** cada cartão tem avatar azul cheio com iniciais brancas, nome, "Especialidade · Cidade" numa linha e os convênios em chips menores; o fluxo de GPS, os estados de carregando/erro e "Tentar novamente" continuam iguais
+
+### Story 8.3: Minhas consultas e cartão de consulta no layout do protótipo
+
+Como paciente,
+Eu quero Minhas consultas com a barra do protótipo e o cartão de consulta no estilo do design,
+Para a lista ficar fiel ao design sem perder a regra de 24 horas.
+
+**Acceptance Criteria:**
+
+**Given** Minhas consultas
+**When** exibida
+**Then** a barra tem título "Minhas consultas", voltar e o **Sair** no canto direito; o botão "+ Nova consulta" fica sempre visível ao final da lista
+
+**Given** um cartão de consulta (paciente e médico)
+**When** exibido
+**Then** mostra nome, especialidade (quando houver), selo Confirmada/Bloqueada, "dd/MM às HH:mm · Convênio" numa linha, a nota de bloqueio em caixa de aviso quando faltar menos de 24h, e os botões Cancelar e Reagendar (nessa ordem) com a regra de 24h e a janela de confirmação inalteradas
+
+### Story 8.4: Detalhe do médico e Confirmação no layout do protótipo
+
+Como paciente,
+Eu quero escolher horário e ver a confirmação como no protótipo,
+Para o fluxo de agendamento ficar fiel ao design.
+
+**Acceptance Criteria:**
+
+**Given** o Detalhe do médico
+**When** exibido
+**Then** a barra tem "Escolher horário" (ou "Reagendar consulta") com voltar; o médico aparece num cartão com avatar, nome e "Especialidade · Cidade" com os convênios em chips; os dias são cartões com dia da semana e número; "Escolha o dia" e "Horários disponíveis" aparecem como títulos de seção; o botão de confirmar fica numa barra fixa embaixo; a nota "Agendamento exige mínimo de 48h de antecedência." aparece; o seletor de convênio continua
+
+**Given** a Confirmação
+**When** exibida
+**Then** tem a barra "Confirmado", um círculo verde com check, "Consulta agendada!" centralizado e o resumo (nome, especialidade, data/hora, convênio) num único cartão, com "Buscar outro médico" e "Ver minhas consultas"
+
+### Story 8.5: Cadastro de médico no layout do protótipo
+
+Como médico,
+Eu quero o Cadastro de médico com a barra e os campos no estilo do protótipo,
+Para o cadastro ficar consistente com as outras telas de acesso.
+
+**Acceptance Criteria:**
+
+**Given** o Cadastro de médico
+**When** exibido
+**Then** a barra tem "Cadastro de médico" e o subtítulo "Autocadastro, sem validação de CRM"; o aviso do CRM aparece numa caixa azul; os campos e as seleções (especialidade, horário de início e fim, localização) têm rótulo acima; os chips de convênio e de dia da semana seguem o estilo do protótipo, com os 7 dias; o campo Localização e as regras existentes continuam
+
+### Story 8.6: Minha agenda no layout do protótipo
+
+Como médico,
+Eu quero a Minha agenda com a barra do protótipo e o cartão de perfil no estilo do design,
+Para a tela inicial do médico ficar fiel ao design.
+
+**Acceptance Criteria:**
+
+**Given** Minha agenda
+**When** exibida
+**Then** a barra tem o título "Minha agenda" e o **Sair** à direita; o cartão de perfil segue o estilo do protótipo (mantendo os horários de atendimento); uma caixa azul avisa que não é possível haver dois pacientes no mesmo horário; "Próximas consultas" é um título de seção; os cartões de consulta mantêm Cancelar/Reagendar e a regra de 24h
+
+### Story 8.7: Fonte Inter em todo o app
+
+Como usuário,
+Eu quero que o app use a fonte Inter, como no protótipo,
+Para a tipografia ficar igual ao design em todas as telas.
+
+**Acceptance Criteria:**
+
+**Given** qualquer tela do app
+**When** exibida
+**Then** o texto usa a fonte Inter (pesos regular, médio, semibold e negrito) embutida no app, sem depender de download nem de conexão, e nenhum texto fica cortado ou desalinhado pela troca de fonte
 
