@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3 e 8.4, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3, 8.4 e 8.5, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -319,6 +319,16 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Barra de confirmar fixa**: "Confirmar agendamento" (ou "Confirmar novo horário") fica sempre visível embaixo, mesmo rolando a tela; cinza até escolher dia/horário/convênio.
 - [ ] **Erro ao agendar** (ex.: horário com menos de 48h): a caixa de aviso aparece logo acima do botão fixo.
 - [ ] **Confirmação**: barra "Confirmado" sem voltar, círculo verde com check, "Consulta agendada!", um cartão com médico, especialidade, "dd/MM às HH:mm" e convênio; botões "Ver minhas consultas" e "Buscar outro médico".
+
+### Story 8.5 — Cadastro de médico no layout do protótipo
+
+- [ ] **Barra**: "Cadastro de médico" com o subtítulo "Autocadastro, sem validação de CRM" e o botão de voltar.
+- [ ] **Caixa azul** logo abaixo com o aviso de que não há validação de CRM.
+- [ ] **Campos**: rótulo acima de cada um ("Nome completo", "E-mail", "Senha") com o exemplo dentro (`Dr(a). Nome Sobrenome`, `voce@email.com`); a dica "Mínimo de 6 caracteres." e o olho da senha continuam.
+- [ ] **Listas**: "Especialidade" e "Localização" com o rótulo acima e "Selecione…" dentro; tocar abre a lista.
+- [ ] **Chips**: "Convênios atendidos" e "Dias de atendimento" (7 dias) com o rótulo acima; tocar marca/desmarca (borda azul quando marcado).
+- [ ] **Horário**: "Início" e "Fim" lado a lado (08:00 e 18:00 por padrão).
+- [ ] **Botão** "Criar perfil e começar a atender" cinza até preencher tudo; erros aparecem numa caixa alaranjada acima dele.
 
 ---
 

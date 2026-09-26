@@ -71,7 +71,7 @@ class EmailFieldWiringTest {
     fun `Cadastro de Medico e-mail field applies the mask`() {
         val vm = CadastroMedicoViewModel(mockk(relaxed = true), mockk(relaxed = true))
         rule.setContent { CadastroMedicoScreen(onBack = {}, onRegistered = {}, viewModel = vm) }
-        digitar()
+        digitar(indiceSemRotulo = 1) // Nome, E-mail, Senha
         assertEquals("ab", vm.uiState.value.email)
     }
 

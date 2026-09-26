@@ -14,6 +14,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuAnchorType
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Visibility
@@ -34,6 +39,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextRange
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -131,7 +137,8 @@ fun ToggleChip(
             contentColor = contentColor,
         ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-        modifier = modifier.sizeIn(minHeight = 48.dp),
+        // The selected state must be readable by screen readers, not only visible as border and tint.
+        modifier = modifier.sizeIn(minHeight = 48.dp).semantics { this.selected = selected },
     ) {
         Text(text, style = MaterialTheme.typography.labelLarge)
     }
@@ -329,4 +336,70 @@ fun TagChip(text: String, modifier: Modifier = Modifier) {
             .background(AgendaMedicaColors.successBg, ShapePill)
             .padding(horizontal = 8.dp, vertical = 3.dp),
     )
+}
+
+/** Label above a group of chips or a field of the prototype's forms (12.5sp semibold). */
+@Composable
+fun RotuloCampo(text: String, modifier: Modifier = Modifier) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelLarge.copy(fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold),
+        color = CampoLabelInk,
+        modifier = modifier.padding(bottom = 6.dp),
+    )
+}
+
+/**
+ * Single-choice dropdown of the prototype's forms: label above, read-only field with the choice (or
+ * [placeholder]) and a menu of [opcoes]. The field is announced as "[label], [choice]" so a screen reader
+ * user hears which field it is, not just its current value.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun <T> CampoSelecao(
+    label: String,
+    selecionado: T?,
+    opcoes: List<T>,
+    rotulo: (T) -> String,
+    onSelecionado: (T) -> Unit,
+    modifier: Modifier = Modifier,
+    placeholder: String = "Selecione…",
+) {
+    var expandido by remember { mutableStateOf(false) }
+    Column(modifier = modifier) {
+        RotuloCampo(label)
+        ExposedDropdownMenuBox(expanded = expandido, onExpandedChange = { expandido = it }) {
+            val valor = selecionado?.let(rotulo)
+            OutlinedTextField(
+                value = valor.orEmpty(),
+                onValueChange = {},
+                readOnly = true,
+                singleLine = true,
+                placeholder = { Text(placeholder) },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expandido) },
+                shape = ShapeMd,
+                colors = OutlinedTextFieldDefaults.colors(
+                    focusedBorderColor = AgendaMedicaColors.accentPrimary,
+                    unfocusedBorderColor = AgendaMedicaColors.borderInput,
+                    focusedContainerColor = AgendaMedicaColors.surfaceInput,
+                    unfocusedContainerColor = AgendaMedicaColors.surfaceInput,
+                ),
+                modifier = Modifier
+                    .menuAnchor(ExposedDropdownMenuAnchorType.PrimaryNotEditable)
+                    .fillMaxWidth()
+                    .semantics { contentDescription = "$label, ${valor ?: "nenhum selecionado"}" },
+            )
+            ExposedDropdownMenu(expanded = expandido, onDismissRequest = { expandido = false }) {
+                opcoes.forEach { opcao ->
+                    DropdownMenuItem(
+                        text = { Text(rotulo(opcao)) },
+                        onClick = {
+                            onSelecionado(opcao)
+                            expandido = false
+                        },
+                    )
+                }
+            }
+        }
+    }
 }
