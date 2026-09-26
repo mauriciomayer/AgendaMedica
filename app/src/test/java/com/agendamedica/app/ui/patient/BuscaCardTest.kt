@@ -1,5 +1,6 @@
 package com.agendamedica.app.ui.patient
 
+import com.agendamedica.app.ui.components.initialsOf
 import org.junit.Assert.assertEquals
 import org.junit.Test
 

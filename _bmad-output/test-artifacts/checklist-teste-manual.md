@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7 e 8.1, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1 e 8.2, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -290,6 +290,15 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Cadastro de paciente**: título "Cadastro de paciente"; "Nome completo" (exemplo "Seu nome"), "E-mail" e "Senha" com rótulo acima; a dica da senha continua; erros aparecem numa caixa alaranjada.
 - [ ] **Teclado**: com o teclado aberto nessas telas, o campo em foco e o botão continuam alcançáveis (a tela rola).
 - [ ] **Fonte grande**: em Configurações -> Tela -> Tamanho da fonte (máximo), os títulos das barras quebram em duas linhas em vez de serem cortados.
+
+### Story 8.2 — Busca no layout do protótipo
+
+- [ ] **Barra**: título "Agende", subtítulo "Encontre um médico e agende" e, à direita, o botão em pílula "Minhas consultas" (abre suas consultas).
+- [ ] **Filtros num cartão só**: especialidade ("Todas as especialidades" abre a lista), cidade com o exemplo "Cidade (ex.: São Paulo, SP)" e o botão de localização ao lado.
+- [ ] **Localização**: tocar no botão pede a permissão; negar mostra o aviso dentro do cartão; permitir mostra "Obtendo sua localização..." e depois preenche a cidade.
+- [ ] **Teclado**: no campo de cidade a tecla do teclado é "Concluído" e fecha o teclado.
+- [ ] **Resultados**: linha "N médico(s) encontrado(s)"; cada cartão tem avatar azul com iniciais brancas, nome, "Especialidade · Cidade" numa linha e os convênios em chips. Tocar em qualquer ponto do cartão abre o médico.
+- [ ] **Tela pequena / fonte grande**: o cartão de filtros rola junto com a lista (nada fica espremido).
 
 ---
 

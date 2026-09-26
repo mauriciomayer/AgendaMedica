@@ -323,10 +323,10 @@ fun AccessibleIconButton(
 fun TagChip(text: String, modifier: Modifier = Modifier) {
     Text(
         text = text,
-        style = MaterialTheme.typography.labelLarge,
+        style = MaterialTheme.typography.labelLarge.copy(fontSize = 11.sp, lineHeight = 14.sp, fontWeight = FontWeight.SemiBold),
         color = AgendaMedicaColors.successInkMuted,
         modifier = modifier
             .background(AgendaMedicaColors.successBg, ShapePill)
-            .padding(horizontal = 12.dp, vertical = 6.dp),
+            .padding(horizontal = 8.dp, vertical = 3.dp),
     )
 }

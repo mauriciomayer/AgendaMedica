@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -21,19 +22,24 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.liveRegion
@@ -48,6 +54,7 @@ import androidx.compose.ui.unit.sp
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 import com.agendamedica.app.ui.theme.ShapeLg
 import com.agendamedica.app.ui.theme.ShapeMd
+import com.agendamedica.app.ui.theme.ShapePill
 
 /**
  * Screen shell of the design prototype (spec-8-1): a white app bar (title, optional subtitle, optional
@@ -220,5 +227,47 @@ fun CartaoEscolha(titulo: String, descricao: String, onClick: () -> Unit, modifi
             color = AgendaMedicaColors.inkSecondary,
             modifier = Modifier.padding(top = 4.dp),
         )
+    }
+}
+
+/**
+ * Doctor/patient avatar of the prototype: filled `accent-primary` circle with the initials in white
+ * (semibold, ~34% of the size). Purely decorative — the name is always written next to it.
+ */
+@Composable
+fun Avatar(nome: String, modifier: Modifier = Modifier, tamanho: Dp = 44.dp) {
+    Box(
+        modifier = modifier.size(tamanho).background(AgendaMedicaColors.accentPrimary, CircleShape).clearAndSetSemantics {},
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = initialsOf(nome),
+            color = Color.White,
+            // dp -> sp through toSp(): the letters keep their size relative to the circle at any font scale.
+            fontSize = with(LocalDensity.current) { (tamanho * 0.34f).toSp() },
+            fontWeight = FontWeight.SemiBold,
+        )
+    }
+}
+
+/** First letters of the first two words, ignoring a leading "Dr."/"Dra." title. */
+internal fun initialsOf(name: String): String {
+    val words = name.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+    val significant = words.filterNot { it.trimEnd('.').lowercase() in setOf("dr", "dra") }.ifEmpty { words }
+    return significant.take(2).joinToString("") { it.first().uppercase() }
+}
+
+/** Small outlined pill button of the prototype's bar ("Minhas consultas"): blue border and text, 12.5sp semibold. */
+@Composable
+fun BotaoPilula(text: String, onClick: () -> Unit, modifier: Modifier = Modifier) {
+    OutlinedButton(
+        onClick = onClick,
+        shape = ShapePill,
+        border = BorderStroke(1.dp, AgendaMedicaColors.accentPrimary),
+        colors = ButtonDefaults.outlinedButtonColors(containerColor = AgendaMedicaColors.surfaceCard, contentColor = AgendaMedicaColors.accentPrimary),
+        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
+        modifier = modifier,
+    ) {
+        Text(text, fontSize = 12.5.sp, fontWeight = FontWeight.SemiBold)
     }
 }
