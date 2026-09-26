@@ -179,7 +179,8 @@ enum class TomInfoBox { SUCESSO, AVISO, INFO }
 /**
  * Rounded message box of the prototype (login errors, "senha redefinida", "link enviado", notes). It is a
  * polite live region, so screen readers announce it when it appears: compose it only while there is a message
- * to show (as every caller does), never as a permanently present, empty box.
+ * to show (as every caller does), never as a permanently present, empty box. A note that is always on the
+ * screen (not a reaction to something the user did) passes `anunciar = false`.
  */
 @Composable
 fun InfoBox(
@@ -187,6 +188,7 @@ fun InfoBox(
     modifier: Modifier = Modifier,
     tom: TomInfoBox = TomInfoBox.AVISO,
     fontSize: TextUnit = 13.sp,
+    anunciar: Boolean = true,
 ) {
     val (fundo, tinta) = when (tom) {
         TomInfoBox.SUCESSO -> AgendaMedicaColors.successBg to AgendaMedicaColors.inkPrimary
@@ -198,7 +200,7 @@ fun InfoBox(
         color = tinta,
         fontSize = fontSize,
         modifier = modifier
-            .semantics { liveRegion = LiveRegionMode.Polite }
+            .semantics { if (anunciar) liveRegion = LiveRegionMode.Polite }
             .fillMaxWidth()
             .background(fundo, ShapeMd)
             .padding(horizontal = 12.dp, vertical = 10.dp),

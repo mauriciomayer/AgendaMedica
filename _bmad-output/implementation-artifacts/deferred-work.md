@@ -134,3 +134,7 @@ real) but out of scope to fix within this story. Each entry names the spec that 
   summary: `SplashScreen` calcula o tempo restante como `(1600 - elapsed).coerceAtLeast(0)` sem limite superior; se o relógio de parede for atrasado entre salvar e restaurar o estado (Activity recriada dentro dos 1,6 s), `elapsed` fica negativo e a Splash espera mais de 1600 ms.
   evidence: Apontado no blind-hunter da 7.4; pré-existente (Story 4.1), não introduzido por esta mudança. Severidade `low`: exige recriação da Activity na janela de 1,6 s com o relógio alterado. Correção de um token: `.coerceIn(0, SPLASH_DURATION_MS)`; o parâmetro `nowMillis` injetável já permite testá-lo (relógio devolvendo valor menor que `startTimeMillis`).
 
+- source_spec: `_bmad-output/implementation-artifacts/spec-8-6-minha-agenda-no-layout-do-prototipo.md`
+  summary: A mensagem de falha ao cancelar (`actionMessage`) é um item da lista rolável em Minhas consultas e Minha agenda; com a lista rolada para baixo o item não está composto e o aviso não é visto nem anunciado.
+  evidence: Apontado no blind-hunter da 8.6; comportamento pré-existente (a mensagem já ficava no topo da lista antes do Épico 8) e igual nas duas telas. Severidade `low`: o modal de confirmação fecha e o cartão continua na lista, então o usuário percebe que nada mudou. Se voltar a incomodar, mover a mensagem para fora do `LazyColumn` (fixa sob a barra), como a 8.4 fez com a falha de agendamento no rodapé.
+

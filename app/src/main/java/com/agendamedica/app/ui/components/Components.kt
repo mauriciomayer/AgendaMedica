@@ -36,7 +36,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.selected
@@ -305,24 +304,6 @@ internal fun filtrarEmail(input: String, anterior: String = ""): String {
         }
     }
     return sb.toString()
-}
-
-/** Circular icon button (back, etc.) with a mandatory accessible label — UX-DR7. */
-@Composable
-fun AccessibleIconButton(
-    icon: ImageVector,
-    contentDescription: String,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    IconButton(
-        onClick = onClick,
-        modifier = modifier
-            .sizeIn(minWidth = 48.dp, minHeight = 48.dp)
-            .semantics { this.contentDescription = contentDescription },
-    ) {
-        Icon(icon, contentDescription = null)
-    }
 }
 
 /** Read-only tag chip (accepted insurance), success-family, per DESIGN.md. */

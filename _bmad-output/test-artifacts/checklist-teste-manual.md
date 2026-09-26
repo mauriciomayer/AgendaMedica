@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3, 8.4 e 8.5, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3, 8.4, 8.5 e 8.6, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -329,6 +329,14 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Chips**: "Convênios atendidos" e "Dias de atendimento" (7 dias) com o rótulo acima; tocar marca/desmarca (borda azul quando marcado).
 - [ ] **Horário**: "Início" e "Fim" lado a lado (08:00 e 18:00 por padrão).
 - [ ] **Botão** "Criar perfil e começar a atender" cinza até preencher tudo; erros aparecem numa caixa alaranjada acima dele.
+
+### Story 8.6 — Minha agenda no layout do protótipo
+
+- [ ] **Barra**: "Minha agenda" com "Sair" à direita (sem botão de voltar).
+- [ ] **Cartão do médico**: nome em negrito, especialidade, convênios em chips verdes e, abaixo, as linhas de horário de atendimento ("Segunda: 08:00 - 12:00").
+- [ ] **Caixa azul** logo abaixo: conflitos de horário são bloqueados pelo sistema, não há dois pacientes no mesmo horário.
+- [ ] **"Próximas consultas"**: título da seção; cada consulta no cartão compacto (paciente, selo Confirmada/Bloqueada, "dd/MM às HH:mm · Convênio", Cancelar e Reagendar) e o modal de cancelamento continua igual.
+- [ ] **Sem consultas**: mensagem "Nenhuma consulta agendada ainda." centralizada.
 
 ---
 
