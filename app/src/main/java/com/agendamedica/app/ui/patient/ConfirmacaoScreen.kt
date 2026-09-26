@@ -1,20 +1,32 @@
 package com.agendamedica.app.ui.patient
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.clearAndSetSemantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.agendamedica.app.ui.components.AppCard
 import com.agendamedica.app.ui.components.OutlineButton
 import com.agendamedica.app.ui.components.PrimaryButton
-import com.agendamedica.app.ui.components.formatarDataHora
+import com.agendamedica.app.ui.components.TelaPadrao
+import com.agendamedica.app.ui.components.formatarDiaHora
 import com.agendamedica.app.ui.theme.AgendaMedicaColors
 import java.time.Instant
 
@@ -28,33 +40,47 @@ fun ConfirmacaoScreen(
     onVoltarBusca: () -> Unit,
     onVerConsultas: () -> Unit = {},
 ) {
-    Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas) { padding ->
+    TelaPadrao(title = "Confirmado", espacamento = 16.dp) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 18.dp, vertical = 24.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
+            // Decorative: the title below already says what happened.
+            Box(
+                modifier = Modifier.size(64.dp).background(AgendaMedicaColors.successBg, CircleShape).clearAndSetSemantics {},
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Check,
+                    contentDescription = null,
+                    tint = AgendaMedicaColors.successInkMuted,
+                    modifier = Modifier.size(30.dp),
+                )
+            }
             Text(
                 "Consulta agendada!",
-                style = MaterialTheme.typography.titleLarge,
-                color = AgendaMedicaColors.successInk,
+                color = AgendaMedicaColors.inkPrimary,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.semantics { heading() },
             )
-            Spacer(Modifier.height(8.dp))
-            Linha("Médico", doctorName)
-            Linha("Especialidade", especialidade)
-            Linha("Data e horário", formatarDataHora(Instant.ofEpochMilli(startMillis)))
-            Linha("Convênio", convenio)
-            Spacer(Modifier.height(16.dp))
-            PrimaryButton(text = "Ver minhas consultas", onClick = onVerConsultas)
-            Spacer(Modifier.height(8.dp))
-            OutlineButton(text = "Voltar à Busca", onClick = onVoltarBusca)
         }
-    }
-}
-
-@Composable
-private fun Linha(rotulo: String, valor: String) {
-    Column {
-        Text(rotulo, style = MaterialTheme.typography.labelSmall, color = AgendaMedicaColors.inkTertiary)
-        Text(valor, style = MaterialTheme.typography.bodyLarge, color = AgendaMedicaColors.inkPrimary)
+        AppCard(contentPadding = 16.dp) {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(doctorName, color = AgendaMedicaColors.inkPrimary, fontSize = 15.sp, fontWeight = FontWeight.SemiBold)
+                Text(especialidade, color = AgendaMedicaColors.inkSecondary, fontSize = 13.sp)
+                Text(
+                    formatarDiaHora(Instant.ofEpochMilli(startMillis)),
+                    color = AgendaMedicaColors.inkPrimary,
+                    fontSize = 13.5.sp,
+                    modifier = Modifier.padding(top = 4.dp),
+                )
+                Text("Convênio: $convenio", color = AgendaMedicaColors.inkTertiary, fontSize = 12.sp)
+            }
+        }
+        PrimaryButton(text = "Ver minhas consultas", onClick = onVerConsultas)
+        OutlineButton(text = "Buscar outro médico", onClick = onVoltarBusca)
     }
 }

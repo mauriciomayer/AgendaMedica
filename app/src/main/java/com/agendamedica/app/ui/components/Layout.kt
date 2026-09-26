@@ -69,6 +69,9 @@ import com.agendamedica.app.ui.theme.ShapePill
  *
  * @param scrollable when false the body is a plain [Column], for screens that host their own lazy list.
  * @param espacamento vertical gap between body children (14dp in the prototype; forms use 16dp).
+ * @param rodape fixed white bar under the body (hairline on top, 14dp/18dp padding), e.g. the confirm button
+ *   of Detalhe do médico; it takes over the bottom navigation inset (for screens without text fields:
+ *   the keyboard inset is only applied to the body).
  */
 @Composable
 fun TelaPadrao(
@@ -79,6 +82,7 @@ fun TelaPadrao(
     actions: @Composable RowScope.() -> Unit = {},
     scrollable: Boolean = true,
     espacamento: Dp = 14.dp,
+    rodape: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Scaffold(containerColor = AgendaMedicaColors.surfaceCanvas, modifier = modifier) { padding ->
@@ -129,8 +133,17 @@ fun TelaPadrao(
                 .fillMaxWidth()
                 .imePadding() // edge-to-edge: without this the keyboard would cover the focused field and the button
                 .let { if (scrollable) it.verticalScroll(rememberScrollState()) else it }
-                .padding(start = ladoInicio, end = ladoFim, top = 16.dp, bottom = 16.dp + padding.calculateBottomPadding())
+                .padding(start = ladoInicio, end = ladoFim, top = 16.dp, bottom = 16.dp + (if (rodape == null) padding.calculateBottomPadding() else 0.dp))
             Column(modifier = corpo, verticalArrangement = Arrangement.spacedBy(espacamento), content = content)
+            if (rodape != null) {
+                HorizontalDivider(color = AgendaMedicaColors.borderHairline)
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(AgendaMedicaColors.surfaceCard)
+                        .padding(start = ladoInicio, end = ladoFim, top = 14.dp, bottom = 14.dp + padding.calculateBottomPadding()),
+                ) { rodape() }
+            }
         }
     }
 }

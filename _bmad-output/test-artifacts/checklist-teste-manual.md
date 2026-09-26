@@ -1,6 +1,6 @@
 # Checklist de Teste Manual — Agenda Médica
 
-Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2 e 8.3, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
+Este arquivo reúne **todos os casos de teste manual** das Stories 1.1 a 7.4, 6.6, 6.7, 8.1, 8.2, 8.3 e 8.4, para você validar o app instalado no celular contra o projeto Supabase hospedado (`vuqvizzkdeiseyunjrms`). Tudo que já tem prova automatizada (testes unitários Kotlin, scripts contra o banco) **não** está repetido aqui — este arquivo cobre só o que precisa de olho humano e de um aparelho real: aparência, gestos, GPS, e-mail de verdade, dois usuários ao mesmo tempo, etc.
 
 Marque `[x]` conforme for testando. Onde o resultado não bater com o esperado, anote o que aconteceu (print ajuda) e me avise.
 
@@ -308,6 +308,17 @@ Vale para Criar conta, Recuperar senha, Nova senha, Cadastro de paciente e tamb�
 - [ ] **Consulta bloqueada** (menos de 24 h): caixa alaranjada com o aviso e os dois botões desabilitados.
 - [ ] **"+ Nova consulta"**: sempre no fim da lista (com ou sem consultas); com muitas consultas, é preciso rolar até ele.
 - [ ] **Minha agenda do médico**: os cartões de consulta usam o mesmo visual novo (o resto da tela muda na Story 8.6).
+
+### Story 8.4 — Detalhe do médico e Confirmação no layout do protótipo
+
+- [ ] **Barra do Detalhe**: "Escolher horário" (ao agendar) ou "Reagendar consulta" (vindo de Minhas consultas), com o botão redondo de voltar.
+- [ ] **Cartão do médico**: avatar azul com as iniciais, nome em negrito e "Especialidade · Cidade".
+- [ ] **Dias**: "Escolha o dia" com cartões estreitos (dia da semana em cima, número embaixo); o selecionado fica com borda azul.
+- [ ] **Horários**: "Horários disponíveis" em 3 colunas; horários ocupados/sem antecedência aparecem cinza com o motivo e não respondem ao toque; o escolhido fica azul. Nota "Agendamento exige mínimo de 48h de antecedência." embaixo.
+- [ ] **Convênio**: ao agendar, a seção "Convênio" continua (escolha obrigatória); ao reagendar ela não aparece.
+- [ ] **Barra de confirmar fixa**: "Confirmar agendamento" (ou "Confirmar novo horário") fica sempre visível embaixo, mesmo rolando a tela; cinza até escolher dia/horário/convênio.
+- [ ] **Erro ao agendar** (ex.: horário com menos de 48h): a caixa de aviso aparece logo acima do botão fixo.
+- [ ] **Confirmação**: barra "Confirmado" sem voltar, círculo verde com check, "Consulta agendada!", um cartão com médico, especialidade, "dd/MM às HH:mm" e convênio; botões "Ver minhas consultas" e "Buscar outro médico".
 
 ---
 
